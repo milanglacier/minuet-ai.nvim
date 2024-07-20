@@ -21,13 +21,10 @@
 
 # Minuet AI
 
-Minuet AI: Dance with Intelligence in Your Code
+Minuet AI: Dance with Intelligence in Your Code 💃.
 
-`Minuet-ai` brings the grace and harmony of a minuet to your coding process.
-Just as dancers move during a minuet
-
-Minuet AI integrates with `nvim-cmp`, offering intelligent, context-aware code
-suggestions.
+`Minuet-ai` integrates with `nvim-cmp`, brings the grace and harmony of a
+minuet to your coding process. Just as dancers move during a minuet.
 
 # Features
 
@@ -50,15 +47,19 @@ suggestions.
 Lazy
 
 ```lua
-{
-    'milanglaicer/minuet-ai.nvim',
-    requires = {'nvim-lua/plenary.nvim'},
-    config = function()
-        require('minuet').setup {
-            -- Your configuration options here
-        }
-    end
+specs = {
+    {
+        'milanglaicer/minuet-ai.nvim',
+        config = function()
+            require('minuet').setup {
+                -- Your configuration options here
+            }
+        end
+    },
+    { 'nvim-lua/plenary.nvim' },
+    { 'hrsh7th/nvim-cmp' },
 }
+
 
 -- If you wish to invoke completion manually,
 -- The following configuration binds `A-y` key
@@ -122,10 +123,10 @@ default_config = {
     },
     -- see the documentation in the `System Prompt` section
     default_template = {
-        template = default_system_template,
-        prompt = default_prompt,
-        guidelines = default_guidelines,
-        n_completion_template = n_completion_template,
+        template = '...',
+        prompt = '...',
+        guidelines = '...',
+        n_completion_template = '...',
     },
 }
 ```
@@ -149,10 +150,10 @@ The default system prompt template is:
 
 ```lua
 system = {
-    template = get_default_template_option 'template',
-    prompt = get_default_template_option 'prompt',
-    guidelines = get_default_template_option 'guidelines',
-    n_completion_template = get_default_template_option 'n_completion_template',
+    template = function() return default_config.default_template.template end,
+    prompt = function() return default_config.default_template.prompt end,
+    guidelines = function() return default_config.default_template.guidelines end,
+    n_completion_template = function() return default_config.default_template.n_completion_template end,
 }
 ```
 
@@ -183,12 +184,7 @@ the following is the default configuration for OpenAI:
 provider_options = {
     openai = {
         model = 'gpt-4o-mini',
-        system = {
-            template = default_system_template,
-            prompt = default_prompt,
-            guidelines = default_guidelines,
-            n_completion_template = n_completion_template,
-        },
+        system = system,
         few_shots = default_fewshots,
         optional = {
             -- pass any additional parameters you want to send to OpenAI request,
@@ -223,12 +219,7 @@ provider_options = {
     claude = {
         max_tokens = 512,
         model = 'claude-3-5-sonnet-20240620',
-        system = {
-            template = default_system_template,
-            prompt = default_prompt,
-            guidelines = default_guidelines,
-            n_completion_template = n_completion_template,
-        },
+        system = system,
         few_shots = default_fewshots,
         optional = {
             -- pass any additional parameters you want to send to claude request,
@@ -276,16 +267,13 @@ provider_options = {
 
 ## Gemini
 
+The following config is the default.
+
 ```lua
 provider_options = {
     gemini = {
         model = 'gemini-1.5-flash-latest',
-        system = {
-            template = default_system_template,
-            prompt = default_prompt,
-            guidelines = default_guidelines,
-            n_completion_template = n_completion_template,
-        },
+        system = system,
         few_shots = default_fewshots,
         optional = {
             -- generationConfig = {
@@ -303,7 +291,7 @@ request timeout from outputing too many tokens.
 
 ```lua
 provider_options = {
-    codestral = {
+    gemini = {
         optional = {
             generationConfig = {
                 maxOutputTokens = 256,
@@ -317,21 +305,18 @@ provider_options = {
 
 ```lua
 provider_options = {
-    model = 'codestral-mamba-latest',
-    system = {
-        template = default_system_template,
-        prompt = default_prompt,
-        guidelines = default_guidelines,
-        n_completion_template = n_completion_template,
-    },
-    few_shots = default_fewshots,
-    end_point = 'https://api.mistral.ai/v1/chat/completions',
-    api_key = 'MISTRAL_API_KEY',
-    name = 'Mistral',
-    optional = {
-        stop = nil,
-        max_tokens = nil,
-    },
+    openai_compatible = {
+        model = 'codestral-mamba-latest',
+        system = system,
+        few_shots = default_fewshots,
+        end_point = 'https://api.mistral.ai/v1/chat/completions',
+        api_key = 'MISTRAL_API_KEY',
+        name = 'Mistral',
+        optional = {
+            stop = nil,
+            max_tokens = nil,
+        },
+    }
 }
 ```
 
@@ -395,13 +380,13 @@ cmp.setup {
 ```lua
 {
     'milanglaicer/minuet-ai.nvim',
-    requires = {'nvim-lua/plenary.nvim'},
     config = function()
         require('minuet').setup {
             -- Your configuration options here
         }
     end
 },
+{ 'nvim-lua/plenary.nvim' },
 {
     'nvim-cmp',
     opts = function(_, opts)
@@ -424,6 +409,7 @@ cmp.setup {
 
 1. Implement `RAG` on the codebase and encode the codebase information into the request to LLM.
 2. Add `stream` support and return partial results when request timeout.
+3. Virtual text UI support.
 
 # Contributing
 
