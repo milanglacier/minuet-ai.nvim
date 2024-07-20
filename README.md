@@ -1,3 +1,24 @@
+- [Minuet AI](#minuet-ai)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [API Keys](#api-keys)
+- [System Prompt](#system-prompt)
+- [Providers](#providers)
+  - [OpenAI](#openai)
+  - [Claude](#claude)
+  - [Codestral](#codestral)
+  - [Gemini](#gemini)
+  - [OpenAI-compatible](#openai-compatible)
+  - [Huggingface](#huggingface)
+- [FAQ](#faq)
+  - [Customize `cmp` ui](#customize-cmp-ui)
+  - [Integration with `lazyvim`](#integration-with-lazyvim)
+- [TODO](#todo)
+- [Contributing](#contributing)
+- [Acknowledgement](#acknowledgement)
+
 # Minuet AI
 
 Minuet AI: Dance with Intelligence in Your Code
@@ -14,6 +35,8 @@ suggestions.
 - Support for multiple AI providers (OpenAI, Claude, Gemini, Codestral,
   Huggingface, and OpenAI-compatible services)
 - Customizable configuration options
+
+![example](./assets/example.png)
 
 # Requirements
 
@@ -357,6 +380,41 @@ cmp.setup {
   },
 }
 ```
+
+## Integration with `lazyvim`
+
+```lua
+{
+    'milanglaicer/minuet-ai.nvim',
+    requires = {'nvim-lua/plenary.nvim'},
+    config = function()
+        require('minuet').setup {
+            -- Your configuration options here
+        }
+    end
+},
+{
+    'nvim-cmp',
+    opts = function(_, opts)
+        -- if you wish to use autocomplete
+        table.insert(opts.sources, 1, {
+            name = 'minuet',
+            group_index = 1,
+            priority = 100
+        })
+
+        -- if you wish to use manual complete
+        opts.mapping = cmp.mapping.preset.insert(vim.tbl_deep_extend('force', opts.mapping, {
+            ['<A-y>'] = require('minuet').make_cmp_map()
+        }))
+    end,
+}
+```
+
+# TODO
+
+1. Implement `RAG` on the codebase and encode the codebase information into the request to LLM.
+2. Add `stream` support and return partial results when request timeout.
 
 # Contributing
 
