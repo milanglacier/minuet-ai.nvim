@@ -29,13 +29,26 @@ function M.make_system_prompt(template, n_completion)
     local system_prompt = template.template
     local n_completion_template = template.n_completion_template
 
+    if type(system_prompt) == 'function' then
+        system_prompt = system_prompt()
+    end
+
+    if type(n_completion_template) == 'function' then
+        n_completion_template = n_completion_template()
+    end
+
     if type(n_completion_template) == 'string' and type(n_completion) == 'number' then
         n_completion_template = string.format(n_completion_template, n_completion)
         system_prompt = system_prompt:gsub('{{{n_completion_template}}}', n_completion_template)
     end
 
+    template.template = nil
+    template.n_completion_template = nil
+
     for k, v in pairs(template) do
-        if k ~= 'template' and k ~= 'n_completion_template' and type(v) == 'string' then
+        if type(v) == 'function' then
+            system_prompt = system_prompt:gsub('{{{' .. k .. '}}}', v())
+        elseif type(v) == 'string' then
             system_prompt = system_prompt:gsub('{{{' .. k .. '}}}', v)
         end
     end

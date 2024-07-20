@@ -18,7 +18,7 @@ if not M.is_available() then
 end
 
 local function make_request_data()
-    local options = config.provider_options.claude
+    local options = vim.deepcopy(config.provider_options.claude)
     local system = utils.make_system_prompt(options.system, config.n_completions)
 
     local request_data = {

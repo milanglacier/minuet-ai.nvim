@@ -1,3 +1,7 @@
+# Default Template
+
+`{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}`
+
 # Default Prompt
 
 You are the backend of an AI-powered code completion engine. Your task is to

@@ -77,94 +77,95 @@ local M = {
     -- guarantee the exact number of completion items specified, as this
     -- parameter serves only as a prompt guideline.
     n_completions = 3,
-    provider_options = {
-        codestral = {
-            model = 'codestral-latest',
-            optional = {
-                stop = nil, -- the identifier to stop the completion generation
-                max_tokens = nil,
-            },
+}
+
+M.default_template = {
+    template = default_system_template,
+    prompt = default_prompt,
+    guidelines = default_guidelines,
+    n_completion_template = n_completion_template,
+}
+
+local function get_default_template_option(opt)
+    return function()
+        return M.default_template[opt]
+    end
+end
+
+local default_system = {
+    template = get_default_template_option 'template',
+    prompt = get_default_template_option 'prompt',
+    guidelines = get_default_template_option 'guidelines',
+    n_completion_template = get_default_template_option 'n_completion_template',
+}
+
+M.provider_options = {
+    codestral = {
+        model = 'codestral-latest',
+        optional = {
+            stop = nil, -- the identifier to stop the completion generation
+            max_tokens = nil,
         },
-        openai = {
-            model = 'gpt-4o-mini',
-            system = {
-                template = default_system_template,
-                prompt = default_prompt,
-                guidelines = default_guidelines,
-                n_completion_template = n_completion_template,
-            },
-            few_shots = default_fewshots,
-            optional = {
-                stop = nil,
-                max_tokens = nil,
-            },
+    },
+    openai = {
+        model = 'gpt-4o-mini',
+        system = vim.deepcopy(default_system),
+        few_shots = default_fewshots,
+        optional = {
+            stop = nil,
+            max_tokens = nil,
         },
-        claude = {
-            max_tokens = 512,
-            model = 'claude-3-5-sonnet-20240620',
-            system = {
-                template = default_system_template,
-                prompt = default_prompt,
-                guidelines = default_guidelines,
-                n_completion_template = n_completion_template,
-            },
-            few_shots = default_fewshots,
-            optional = {
-                stop_sequences = nil,
-            },
+    },
+    claude = {
+        max_tokens = 512,
+        model = 'claude-3-5-sonnet-20240620',
+        system = vim.deepcopy(default_system),
+        few_shots = default_fewshots,
+        optional = {
+            stop_sequences = nil,
         },
-        openai_compatible = {
-            model = 'codestral-mamba-latest',
-            system = {
-                template = default_system_template,
-                prompt = default_prompt,
-                guidelines = default_guidelines,
-                n_completion_template = n_completion_template,
-            },
-            few_shots = default_fewshots,
-            end_point = 'https://api.mistral.ai/v1/chat/completions',
-            api_key = 'MISTRAL_API_KEY',
-            name = 'Mistral',
-            optional = {
-                stop = nil,
-                max_tokens = nil,
-            },
+    },
+    openai_compatible = {
+        model = 'codestral-mamba-latest',
+        system = vim.deepcopy(default_system),
+        few_shots = default_fewshots,
+        end_point = 'https://api.mistral.ai/v1/chat/completions',
+        api_key = 'MISTRAL_API_KEY',
+        name = 'Mistral',
+        optional = {
+            stop = nil,
+            max_tokens = nil,
         },
-        gemini = {
-            model = 'gemini-1.5-flash-latest',
-            system = {
-                template = default_system_template,
-                prompt = default_prompt,
-                guidelines = default_guidelines,
-                n_completion_template = n_completion_template,
-            },
-            few_shots = default_fewshots,
-            optional = {
-                -- generationConfig = {
-                --     stopSequences = {},
-                --     maxOutputTokens = 256,
-                --     topP = 0.8,
-                -- },
-            },
+    },
+    gemini = {
+        model = 'gemini-1.5-flash-latest',
+        system = vim.deepcopy(default_system),
+        few_shots = default_fewshots,
+        optional = {
+            -- generationConfig = {
+            --     stopSequences = {},
+            --     maxOutputTokens = 256,
+            --     topP = 0.8,
+            -- },
         },
-        huggingface = {
-            end_point = 'https://api-inference.huggingface.co/models/bigcode/starcoder2-3b',
-            type = 'completion', -- chat or completion
-            strategies = {
-                completion = {
-                    markers = {
-                        prefix = '<fim_prefix>',
-                        suffix = '<fim_suffix>',
-                        middle = '<fim_middle>',
-                    },
-                    strategy = 'PSM', -- PSM, SPM or PM
+    },
+    huggingface = {
+        end_point = 'https://api-inference.huggingface.co/models/bigcode/starcoder2-3b',
+        type = 'completion', -- chat or completion
+        strategies = {
+            completion = {
+                markers = {
+                    prefix = '<fim_prefix>',
+                    suffix = '<fim_suffix>',
+                    middle = '<fim_middle>',
                 },
+                strategy = 'PSM', -- PSM, SPM or PM
             },
-            optional = {
-                parameters = {
-                    stop = { '<fim_prefix>', '<fim_suffix>', '<fim_middle>', '<|endoftext|>' },
-                    max_tokens = 128,
-                },
+        },
+        optional = {
+            parameters = {
+                stop = { '<fim_prefix>', '<fim_suffix>', '<fim_middle>', '<|endoftext|>' },
+                max_tokens = 128,
             },
         },
     },

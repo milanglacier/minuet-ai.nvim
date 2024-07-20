@@ -95,7 +95,7 @@ the problem if it exists.
 Minuet AI comes with the following defaults:
 
 ```lua
-require('minuet').setup({
+default_config = {
     provider = 'codestral',
     -- the maximum total characters of the context before and after cursor.
     -- Note that this does not count tokens but simply characters. 12800
@@ -119,8 +119,15 @@ require('minuet').setup({
     n_completions = 3,
     provider_options = {
         -- see the documentation in each provider in the following part.
-    }
-})
+    },
+    -- see the documentation in the `System Prompt` section
+    default_template = {
+        template = default_system_template,
+        prompt = default_prompt,
+        guidelines = default_guidelines,
+        n_completion_template = n_completion_template,
+    },
+}
 ```
 
 # API Keys
@@ -142,20 +149,22 @@ The default system prompt template is:
 
 ```lua
 system = {
-    template = '{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}'
-    prompt = default_prompt,
-    guidelines = default_guidelines,
-    n_completion_template = n_completion_template,
+    template = get_default_template_option 'template',
+    prompt = get_default_template_option 'prompt',
+    guidelines = get_default_template_option 'guidelines',
+    n_completion_template = get_default_template_option 'n_completion_template',
 }
 ```
 
 You can adjust the `template` by encoding any placeholdes inside the three
 braces, the placeholders will be interpolated from the key/value in this table.
+The value can be a string or a function that takes no argument and returns a
+string.
 
 ```lua
 system = {
     template = '{{{assistant}}}\n{{{role}}}'
-    assistant = 'you are a helpful assistant',
+    assistant = function() return 'you are a helpful assistant' end,
     role = "you are also a code expert.",
 }
 ```
