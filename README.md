@@ -49,7 +49,7 @@ Lazy
 ```lua
 specs = {
     {
-        'milanglaicer/minuet-ai.nvim',
+        'milanglacier/minuet-ai.nvim',
         config = function()
             require('minuet').setup {
                 -- Your configuration options here
@@ -379,7 +379,7 @@ cmp.setup {
 
 ```lua
 {
-    'milanglaicer/minuet-ai.nvim',
+    'milanglacier/minuet-ai.nvim',
     config = function()
         require('minuet').setup {
             -- Your configuration options here
