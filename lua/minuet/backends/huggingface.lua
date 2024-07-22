@@ -6,6 +6,7 @@ local function make_request_data()
     local request_data = {
         parameters = {
             return_full_text = false,
+            num_return_sequences = config.n_completions,
         },
         options = {
             use_cache = false,
@@ -96,6 +97,11 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
             local json = utils.json_decode(response, exit_code, data_file, 'huggingface', callback)
 
             if not json then
+                return
+            end
+
+            if json.error then
+                vim.notify(json.error, vim.log.levels.ERROR)
                 return
             end
 

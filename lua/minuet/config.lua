@@ -164,8 +164,12 @@ M.provider_options = {
         },
         optional = {
             parameters = {
-                stop = { '<fim_prefix>', '<fim_suffix>', '<fim_middle>', '<|endoftext|>' },
-                max_tokens = 128,
+                -- The parameter specifications for different LLMs may vary.
+                -- Ensure you specify the parameters after reading the API
+                -- documentation.
+                stop = nil,
+                max_tokens = nil,
+                do_sample = nil,
             },
         },
     },
