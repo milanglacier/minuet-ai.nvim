@@ -66,7 +66,11 @@ local M = {
     -- context before cursor and after cursor, the larger the ratio the more
     -- context before cursor will be used.
     throttle = 1000, -- only send the request every x milliseconds, use 0 to disable throttle.
-    notify = true, -- show notification when request is sent
+    -- show notification when request is sent or request fails. options:
+    -- `false` to disable notification, "verbose" to show notification when
+    -- request is sent or request fails. "error" to show notification when
+    -- request failed.
+    notify = 'verbose',
     request_timeout = 3, -- the timeout of the request in seconds
     -- if completion item has multiple lines, create another completion item only containing its first line.
     add_single_line_entry = true,

@@ -7,9 +7,7 @@ function M.initial_process_completion_items(items_raw, provider)
     local success
     success, items_raw = pcall(vim.split, items_raw, '<endCompletion>')
     if not success then
-        if config.notify then
-            vim.notify('Failed to parse ' .. provider .. "'s content text", vim.log.levels.INFO)
-        end
+        utils.notify('Failed to parse ' .. provider .. "'s content text", 'error', vim.log.levels.INFO)
         return
     end
 
@@ -83,9 +81,7 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
             end
 
             if not json.choices then
-                if config.notify then
-                    vim.notify(options.name .. ' API returns no content', vim.log.levels.INFO)
-                end
+                utils.notify(options.name .. ' API returns no content', 'error', vim.log.levels.INFO)
                 callback()
                 return
             end

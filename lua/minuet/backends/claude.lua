@@ -14,7 +14,7 @@ M.is_available = function()
 end
 
 if not M.is_available() then
-    vim.notify('Anthropic API key is not set', vim.log.levels.ERROR)
+    utils.notify('Anthropic API key is not set', 'error', vim.log.levels.ERROR)
 end
 
 local function make_request_data()
@@ -81,9 +81,7 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
             end
 
             if not json.content then
-                if config.notify then
-                    vim.notify('Claude API returns no content', vim.log.levels.INFO)
-                end
+                utils.notify('Claude API returns no content', 'error', vim.log.levels.INFO)
                 callback()
                 return
             end

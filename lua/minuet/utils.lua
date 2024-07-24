@@ -1,20 +1,31 @@
 local M = {}
 local config = require('minuet').config
 
+function M.notify(msg, minuet_level, vim_level, opts)
+    local notify_levels = {
+        verbose = 1,
+        error = 2,
+    }
+
+    if config.notify and notify_levels[minuet_level] >= notify_levels[config.notify] then
+        vim.notify(msg, vim_level, opts)
+    end
+end
+
 -- referenced from cmp_ai
 function M.make_tmp_file(content)
     local tmp_file = os.tmpname()
 
     local f = io.open(tmp_file, 'w+')
     if f == nil then
-        vim.notify('Cannot open temporary message file: ' .. tmp_file, vim.log.levels.ERROR)
+        M.notify('Cannot open temporary message file: ' .. tmp_file, 'error', vim.log.levels.ERROR)
         return
     end
 
     local result, json = pcall(vim.json.encode, content)
 
     if not result then
-        vim.notify('Failed to encode completion request data', vim.log.levels.ERROR)
+        M.notify('Failed to encode completion request data', 'error', vim.log.levels.ERROR)
         return
     end
 
@@ -160,9 +171,7 @@ function M.json_decode(response, exit_code, data_file, provider, callback)
     os.remove(data_file)
 
     if exit_code ~= 0 then
-        if config.notify then
-            vim.notify(string.format('Request failed with exit code %d', exit_code), vim.log.levels.ERROR)
-        end
+        M.notify(string.format('Request failed with exit code %d', exit_code), 'error', vim.log.levels.ERROR)
         if callback then
             callback()
         end
@@ -172,9 +181,7 @@ function M.json_decode(response, exit_code, data_file, provider, callback)
     local result = table.concat(response:result(), '\n')
     local success, json = pcall(vim.json.decode, result)
     if not success then
-        if config.notify then
-            vim.notify('Failed to parse' .. provider .. 'API response', vim.log.levels.INFO)
-        end
+        M.notify('Failed to parse' .. provider .. 'API response', 'error', vim.log.levels.INFO)
         if callback then
             callback()
         end

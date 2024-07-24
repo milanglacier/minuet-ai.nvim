@@ -14,7 +14,7 @@ M.is_available = function()
 end
 
 if not M.is_available() then
-    vim.notify('Gemini API key is not set', vim.log.levels.ERROR)
+    utils.notify('Gemini API key is not set', 'error', vim.log.levels.ERROR)
 end
 
 local function make_request_data()
@@ -107,9 +107,7 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
             end
 
             if not json.candidates then
-                if config.notify then
-                    vim.notify('Gemini API returns no content', vim.log.levels.INFO)
-                end
+                utils.notify('Gemini API returns no content', 'error', vim.log.levels.INFO)
                 callback()
                 return
             end

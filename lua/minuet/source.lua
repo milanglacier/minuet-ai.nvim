@@ -31,9 +31,7 @@ function M:complete(ctx, callback)
         return
     end
 
-    if config.notify then
-        vim.notify 'Minuet completion started'
-    end
+    utils.notify('Minuet completion started', 'verbose')
 
     local context = utils.get_context(ctx.context)
 

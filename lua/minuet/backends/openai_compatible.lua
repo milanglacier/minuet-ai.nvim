@@ -1,5 +1,6 @@
 local config = require('minuet').config
 local common = require 'minuet.backends.common'
+local utils = require 'minuet.utils'
 
 local M = {}
 
@@ -17,7 +18,11 @@ M.is_available = function()
 end
 
 if not M.is_available() then
-    vim.notify('The provider specified as OpenAI compatible is not properly configured.', vim.log.levels.ERROR)
+    utils.notify(
+        'The provider specified as OpenAI compatible is not properly configured.',
+        'error',
+        vim.log.levels.ERROR
+    )
 end
 
 M.complete = function(context_before_cursor, context_after_cursor, callback)

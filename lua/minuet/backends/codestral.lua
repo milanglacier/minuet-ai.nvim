@@ -13,7 +13,7 @@ M.is_available = function()
 end
 
 if not M.is_available() then
-    vim.notify('Codestral API key is not set', vim.log.levels.ERROR)
+    utils.notify('Codestral API key is not set', 'error', vim.log.levels.ERROR)
 end
 
 local function make_request_data()
@@ -83,9 +83,7 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
                 end
 
                 if not json.choices then
-                    if config.notify then
-                        vim.notify('Codestral API returns no content', vim.log.levels.INFO)
-                    end
+                    utils.notify('Codestral API returns no content', 'error', vim.log.levels.INFO)
                     check_and_callback()
                     return
                 end

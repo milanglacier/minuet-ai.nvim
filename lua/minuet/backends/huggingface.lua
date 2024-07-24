@@ -31,7 +31,7 @@ M.is_available = function()
 end
 
 if not M.is_available() then
-    vim.notify('Huggingface API key is not set', vim.log.levels.ERROR)
+    utils.notify('Huggingface API key is not set', 'error', vim.log.levels.ERROR)
 end
 
 M.complete_completion = function(context_before_cursor, context_after_cursor, callback)
@@ -65,7 +65,7 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
     elseif options.strategies.completion.strategy == 'PM' then
         inputs = markers.prefix .. language .. '\n' .. tab .. '\n' .. context_before_cursor .. markers.middle
     else
-        vim.notify('huggingface: Unknown completion strategy', vim.log.levels.ERROR)
+        utils.notify('huggingface: Unknown completion strategy', 'error', vim.log.levels.ERROR)
         return
     end
 
@@ -101,7 +101,7 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
             end
 
             if json.error then
-                vim.notify(json.error, vim.log.levels.ERROR)
+                utils.notify(json.error, 'error', vim.log.levels.ERROR)
                 return
             end
 
@@ -123,7 +123,7 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
     if options.type == 'completion' then
         M.complete_completion(context_before_cursor, context_after_cursor, callback)
     else
-        vim.notify('huggingface: Unknown type', vim.log.levels.ERROR)
+        utils.notify('huggingface: Unknown type', 'error', vim.log.levels.ERROR)
     end
 end
 

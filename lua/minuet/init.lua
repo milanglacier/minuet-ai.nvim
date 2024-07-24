@@ -4,6 +4,15 @@ local M = {}
 
 function M.setup(config)
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
+
+    if M.config.notify == true then
+        vim.notify(
+            'Minuet config.notify specs has been updated. Please change true to one of false, "error" or "verbose".',
+            vim.log.levels.WAN
+        )
+        M.config.notify = 'verbose'
+    end
+
     require('cmp').register_source('minuet', require('minuet.source'):new())
 end
 

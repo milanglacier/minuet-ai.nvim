@@ -1,5 +1,6 @@
 local config = require('minuet').config
 local common = require 'minuet.backends.common'
+local utils = require 'minuet.utils'
 
 local M = {}
 
@@ -12,7 +13,7 @@ M.is_available = function()
 end
 
 if not M.is_available() then
-    vim.notify('OpenAI API key is not set', vim.log.levels.ERROR)
+    utils.notify('OpenAI API key is not set', 'error', vim.log.levels.ERROR)
 end
 
 M.complete = function(context_before_cursor, context_after_cursor, callback)
