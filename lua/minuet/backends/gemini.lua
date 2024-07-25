@@ -112,6 +112,16 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
                 return
             end
 
+            if not json.candidates[1].content then
+                utils.notify(
+                    'Gemini API returns no content, probably due to safety settings',
+                    'error',
+                    vim.log.levels.INFO
+                )
+                callback()
+                return
+            end
+
             local items_raw = json.candidates[1].content.parts[1].text
 
             local items = common.initial_process_completion_items(items_raw, 'gemini')
