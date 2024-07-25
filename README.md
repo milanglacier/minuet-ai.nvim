@@ -82,7 +82,16 @@ require('cmp').setup {
             { name = 'minuet' },
             -- and your other sources
         }
-    }
+    },
+    performance = {
+        -- It is recommended to increase the timeout duration due to
+        -- the typically slower response speed of LLMs compared to
+        -- other completion sources. While this adjustment is
+        -- automatically handled in manual completion mode by Minuet,
+        -- you need to configure this option yourself when using
+        -- auto-completion mode.
+        fetching_timeout = 2000,
+    },
 }
 ```
 
@@ -107,6 +116,8 @@ default_config = {
     -- context before cursor and after cursor, the larger the ratio the more
     -- context before cursor will be used.
     throttle = 1000, -- only send the request every x milliseconds, use 0 to disable throttle.
+    -- debounce the request in x milliseconds, set to 0 to disable debounce
+    debounce = 400,
     -- show notification when request is sent or request fails. options:
     -- `false` to disable notification, "verbose" to show notification when
     -- request is sent or request fails. "error" to show notification when

@@ -66,6 +66,8 @@ local M = {
     -- context before cursor and after cursor, the larger the ratio the more
     -- context before cursor will be used.
     throttle = 1000, -- only send the request every x milliseconds, use 0 to disable throttle.
+    -- debounce the request in x milliseconds, set to 0 to disable debounce
+    debounce = 400,
     -- show notification when request is sent or request fails. options:
     -- `false` to disable notification, "verbose" to show notification when
     -- request is sent or request fails. "error" to show notification when
