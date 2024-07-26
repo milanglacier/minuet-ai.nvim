@@ -78,8 +78,8 @@ function M:complete(ctx, callback)
     end
 
     if config.debounce > 0 then
-        if self.debounce_timer then
-            vim.uv.timer_stop(self.debounce_timer)
+        if self.debounce_timer and not self.debounce_timer:is_closing() then
+            self.debounce_timer:close()
         end
         self.debounce_timer = vim.defer_fn(_complete, config.debounce)
     else
