@@ -10,7 +10,7 @@ function M:is_available()
 end
 
 function M.get_trigger_characters()
-    return { '@', '.', '(', '{', ' ' }
+    return { '@', '.', '(', ' ' }
 end
 
 function M.get_keyword_pattern()
