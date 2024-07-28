@@ -39,14 +39,14 @@ function M:complete(ctx, callback)
         return
     end
 
-    if config.throttle > 0 then
-        self.is_in_throttle = true
-        vim.defer_fn(function()
-            self.is_in_throttle = nil
-        end, config.throttle)
-    end
-
     local function _complete()
+        if config.throttle > 0 then
+            self.is_in_throttle = true
+            vim.defer_fn(function()
+                self.is_in_throttle = nil
+            end, config.throttle)
+        end
+
         local context = utils.get_context(ctx.context)
         utils.notify('Minuet completion started', 'verbose')
 
