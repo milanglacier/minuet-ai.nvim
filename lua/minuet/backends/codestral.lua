@@ -5,7 +5,8 @@ local common = require 'minuet.backends.common'
 local M = {}
 
 M.is_available = function()
-    if vim.env.CODESTRAL_API_KEY == nil or vim.env.CODESTRAL_API_KEY == '' then
+    local options = config.provider_options.codestral
+    if vim.env[options.api_key] == nil or vim.env[options.api_key] == '' then
         return false
     else
         return true
@@ -24,8 +25,6 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
     local options = vim.deepcopy(config.provider_options.codestral)
 
     options.name = 'Codestral'
-    options.end_point = 'https://codestral.mistral.ai/v1/fim/completions'
-    options.api_key = 'CODESTRAL_API_KEY'
 
     common.complete_openai_fim_base(options, get_text_fn, context_before_cursor, context_after_cursor, callback)
 end

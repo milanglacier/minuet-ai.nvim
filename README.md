@@ -250,7 +250,8 @@ provider_options = {
 Codestral is a text completion model, not a chat model, so the system prompt
 and few shot examples does not apply. Note that you should use the
 `CODESTRAL_API_KEY`, not the `MISTRAL_API_KEY`, as they are using different
-endpoint.
+endpoint. To use the Mistral endpoint, simply modify the `end_point` and
+`api_key` parameters in the configuration.
 
 the following is the default configuration for Codestral:
 
@@ -258,6 +259,8 @@ the following is the default configuration for Codestral:
 provider_options = {
     codestral = {
         model = 'codestral-latest',
+        end_point = 'https://codestral.mistral.ai/v1/fim/completions',
+        api_key = 'CODESTRAL_API_KEY',
         optional = {
             stop = nil, -- the identifier to stop the completion generation
             max_tokens = nil,
