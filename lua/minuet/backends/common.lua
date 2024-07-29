@@ -164,6 +164,8 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
 
                 if has_result then
                     table.insert(items, result)
+                else
+                    utils.notify(options.name .. ' failed to get text', 'error', vim.log.levels.INFO)
                 end
 
                 check_and_callback()
