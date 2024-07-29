@@ -25,8 +25,8 @@ if not M.is_available() then
     )
 end
 
-local function get_text_fn(json)
-    return json.choices[1].text
+local function get_text_fn(choices)
+    return choices[1].text
 end
 
 M.complete = function(context_before_cursor, context_after_cursor, callback)

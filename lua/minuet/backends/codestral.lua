@@ -17,8 +17,8 @@ if not M.is_available() then
     utils.notify('Codestral API key is not set', 'error', vim.log.levels.ERROR)
 end
 
-local function get_text_fn(json)
-    return json.choices[1].message.content
+local function get_text_fn(choices)
+    return choices[1].message.content
 end
 
 M.complete = function(context_before_cursor, context_after_cursor, callback)

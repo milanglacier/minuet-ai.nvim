@@ -160,7 +160,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
                     return
                 end
 
-                local has_result, result = pcall(get_text_fn, json)
+                local has_result, result = pcall(get_text_fn, json.choices)
 
                 if has_result then
                     table.insert(items, result)
