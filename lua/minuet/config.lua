@@ -134,7 +134,7 @@ M.provider_options = {
         },
     },
     openai_compatible = {
-        model = 'codestral-mamba-latest',
+        model = 'open-mistral-nemo',
         system = vim.deepcopy(default_system),
         few_shots = default_fewshots,
         end_point = 'https://api.mistral.ai/v1/chat/completions',
