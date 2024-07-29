@@ -318,6 +318,8 @@ provider_options = {
 
 ## OpenAI-compatible
 
+Use any providers compatible with OpenAI's chat completion API.
+
 ```lua
 provider_options = {
     openai_compatible = {
@@ -332,6 +334,45 @@ provider_options = {
             max_tokens = nil,
         },
     }
+}
+```
+
+## OpenAI-FIM-compatible
+
+Use any providers that is compatible with OpenAI's completion API. Note that
+this will generate a text completion request, so the system prompt and few shot
+examples does not apply.
+
+See [Completions
+Legacy](https://platform.openai.com/docs/api-reference/completions) part of the
+OpenAI documentation.
+
+```lua
+provider_options = {
+    openai_fim_compatible = {
+        model = 'deepseek-coder',
+        end_point = 'https://api.deepseek.com/beta/completions',
+        api_key = 'DEEPSEEK_API_KEY',
+        name = 'Deepseek',
+        optional = {
+            stop = nil,
+            max_tokens = nil,
+        },
+    }
+}
+```
+
+The following configuration is not the default, but recommended to prevent
+request timeout from outputing too many tokens.
+
+```lua
+provider_options = {
+    openai_fim_compatible = {
+        optional = {
+            max_tokens = 256,
+            stop = { '\n\n' },
+        },
+    },
 }
 ```
 

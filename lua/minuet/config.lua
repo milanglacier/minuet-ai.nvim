@@ -155,6 +155,16 @@ M.provider_options = {
             -- },
         },
     },
+    openai_fim_compatible = {
+        model = 'deepseek-coder',
+        end_point = 'https://api.deepseek.com/beta/completions',
+        api_key = 'DEEPSEEK_API_KEY',
+        name = 'Deepseek',
+        optional = {
+            stop = nil,
+            max_tokens = nil,
+        },
+    },
     huggingface = {
         end_point = 'https://api-inference.huggingface.co/models/bigcode/starcoder2-3b',
         type = 'completion', -- chat or completion
