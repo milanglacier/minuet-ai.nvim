@@ -11,6 +11,7 @@
   - [Codestral](#codestral)
   - [Gemini](#gemini)
   - [OpenAI-compatible](#openai-compatible)
+  - [OpenAI-FIM-compatible](#openai-fim-compatible)
   - [Huggingface](#huggingface)
 - [FAQ](#faq)
   - [Customize `cmp` ui](#customize-cmp-ui)
@@ -323,10 +324,12 @@ provider_options = {
 
 Use any providers compatible with OpenAI's chat completion API.
 
+The following config is the default.
+
 ```lua
 provider_options = {
     openai_compatible = {
-        model = 'codestral-mamba-latest',
+        model = 'open-mistral-nemo',
         system = system,
         few_shots = default_fewshots,
         end_point = 'https://api.mistral.ai/v1/chat/completions',
@@ -342,13 +345,13 @@ provider_options = {
 
 ## OpenAI-FIM-compatible
 
-Use any providers that is compatible with OpenAI's completion API. Note that
-this will generate a text completion request, so the system prompt and few shot
-examples does not apply.
+Use any provider compatible with OpenAI's completion API. This request uses the
+text completion API, not chat completion, so system prompts and few-shot
+examples are not applicable.
 
-See [Completions
-Legacy](https://platform.openai.com/docs/api-reference/completions) part of the
-OpenAI documentation.
+Refer to the [Completions
+Legacy](https://platform.openai.com/docs/api-reference/completions) section of
+the OpenAI documentation for details.
 
 ```lua
 provider_options = {
