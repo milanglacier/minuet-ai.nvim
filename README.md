@@ -13,6 +13,8 @@
   - [OpenAI-compatible](#openai-compatible)
   - [OpenAI-FIM-compatible](#openai-fim-compatible)
   - [Huggingface](#huggingface)
+- [Commands](#commands)
+  - [MinuetChangeProvider](#minuetchangeprovider)
 - [FAQ](#faq)
   - [Customize `cmp` ui](#customize-cmp-ui)
   - [Integration with `lazyvim`](#integration-with-lazyvim)
@@ -415,6 +417,12 @@ provider_options = {
     },
 }
 ```
+
+# Commands
+
+## MinuetChangeProvider
+
+This command allows you to change the provider after `Minuet` has been setup.
 
 # FAQ
 

@@ -32,4 +32,36 @@ function M.make_cmp_map()
     })
 end
 
+function M.change_provider(provider)
+    if not M.config then
+        vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
+        return
+    end
+
+    if not M.config.provider_options[provider] then
+        vim.notify(
+            'The provider is not supported, please refer to minuet.nvim document for more information.',
+            vim.log.levels.ERR
+        )
+        return
+    end
+
+    M.config.provider = provider
+    vim.notify('Minuet Provider changed to: ' .. provider, vim.log.levels.INFO)
+end
+
+vim.api.nvim_create_user_command('MinuetChangeProvider', function(args)
+    M.change_provider(args.args)
+end, {
+    nargs = 1,
+    complete = function()
+        local providers = {}
+        for k, _ in pairs(M.config.provider_options) do
+            table.insert(providers, k)
+        end
+        return providers
+    end,
+    desc = 'Change the provider of Minuet.',
+})
+
 return M
