@@ -117,7 +117,7 @@ M.provider_options = {
     },
     openai = {
         model = 'gpt-4o-mini',
-        system = vim.deepcopy(default_system),
+        system = default_system,
         few_shots = default_fewshots,
         optional = {
             stop = nil,
@@ -127,7 +127,7 @@ M.provider_options = {
     claude = {
         max_tokens = 512,
         model = 'claude-3-5-sonnet-20240620',
-        system = vim.deepcopy(default_system),
+        system = default_system,
         few_shots = default_fewshots,
         optional = {
             stop_sequences = nil,
@@ -135,7 +135,7 @@ M.provider_options = {
     },
     openai_compatible = {
         model = 'open-mistral-nemo',
-        system = vim.deepcopy(default_system),
+        system = default_system,
         few_shots = default_fewshots,
         end_point = 'https://api.mistral.ai/v1/chat/completions',
         api_key = 'MISTRAL_API_KEY',
@@ -147,7 +147,7 @@ M.provider_options = {
     },
     gemini = {
         model = 'gemini-1.5-flash-latest',
-        system = vim.deepcopy(default_system),
+        system = default_system,
         few_shots = default_fewshots,
         optional = {
             -- generationConfig = {
