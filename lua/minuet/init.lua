@@ -64,4 +64,17 @@ end, {
     desc = 'Change the provider of Minuet.',
 })
 
+vim.api.nvim_create_user_command('MinuetToggle', function()
+    if not M.config then
+        vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
+        return
+    end
+
+    M.config.enabled = not M.config.enabled
+
+    vim.notify('Auto completion for minuet is ' .. (M.config.enabled and 'enabled' or 'disabled'), vim.log.levels.INFO)
+end, {
+    desc = 'Toggle Minuet Auto Completion',
+})
+
 return M

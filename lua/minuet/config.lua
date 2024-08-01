@@ -59,6 +59,13 @@ local n_completion_template = '7. Provide at most %d completion items.'
 local default_system_template = '{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}'
 
 local M = {
+    -- Enable or disable auto-completion. Note that you still need to add
+    -- Minuet to your cmp sources. This option controls whether cmp will
+    -- attempt to invoke minuet when minuet is included in cmp sources. This
+    -- setting has no effect on manual completion; Minuet will always be
+    -- enabled when invoked manually. You can use the command `MinuetToggle` to
+    -- toggle this option.
+    enabled = true,
     provider = 'codestral',
     context_window = 12800, -- the maximum total characters of the context before and after cursor
     context_ratio = 0.6,

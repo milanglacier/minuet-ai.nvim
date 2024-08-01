@@ -15,6 +15,7 @@
   - [Huggingface](#huggingface)
 - [Commands](#commands)
   - [MinuetChangeProvider](#minuetchangeprovider)
+  - [MinuetToggle](#minuettoggle)
 - [FAQ](#faq)
   - [Customize `cmp` ui](#customize-cmp-ui)
   - [Integration with `lazyvim`](#integration-with-lazyvim)
@@ -109,6 +110,12 @@ Minuet AI comes with the following defaults:
 
 ```lua
 default_config = {
+    -- Enable or disable auto-completion. Note that you still need to add
+    -- Minuet to your cmp sources. This option controls whether cmp will
+    -- attempt to invoke minuet when minuet is included in cmp sources. This
+    -- setting has no effect on manual completion; Minuet will always be
+    -- enabled when invoked manually.
+    enabled = true,
     provider = 'codestral',
     -- the maximum total characters of the context before and after cursor.
     -- Note that this does not count tokens but simply characters. 12800
@@ -423,6 +430,13 @@ provider_options = {
 ## MinuetChangeProvider
 
 This command allows you to change the provider after `Minuet` has been setup.
+
+## MinuetToggle
+
+Enable or disable auto-completion. Note that you still need to add Minuet to
+your cmp sources. This command controls whether cmp will attempt to invoke
+minuet when minuet is included in cmp sources. This command has no effect on
+manual completion; Minuet will always be enabled when invoked manually.
 
 # FAQ
 

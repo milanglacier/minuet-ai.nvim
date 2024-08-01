@@ -34,6 +34,12 @@ function M:new()
 end
 
 function M:complete(ctx, callback)
+    -- we want to always invoke completion when invoked manually
+    if not config.enabled and ctx.context.option.reason ~= 'manual' then
+        callback()
+        return
+    end
+
     if config.throttle > 0 and self.is_in_throttle then
         callback()
         return
