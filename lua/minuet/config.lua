@@ -67,11 +67,14 @@ local M = {
     -- toggle this option.
     enabled = true,
     provider = 'codestral',
-    context_window = 12800, -- the maximum total characters of the context before and after cursor
-    context_ratio = 0.6,
+    -- the maximum total characters of the context before and after the cursor
+    -- 12,800 characters typically equate to approximately 4,000 tokens for
+    -- LLMs.
+    context_window = 12800,
     -- when the total characters exceed the context window, the ratio of
     -- context before cursor and after cursor, the larger the ratio the more
     -- context before cursor will be used.
+    context_ratio = 0.75,
     throttle = 1000, -- only send the request every x milliseconds, use 0 to disable throttle.
     -- debounce the request in x milliseconds, set to 0 to disable debounce
     debounce = 400,

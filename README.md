@@ -117,14 +117,14 @@ default_config = {
     -- enabled when invoked manually.
     enabled = true,
     provider = 'codestral',
-    -- the maximum total characters of the context before and after cursor.
-    -- Note that this does not count tokens but simply characters. 12800
-    -- characters are usually counted around 4000 tokens.
+    -- the maximum total characters of the context before and after the cursor
+    -- 12,800 characters typically equate to approximately 4,000 tokens for
+    -- LLMs.
     context_window = 12800,
-    context_ratio = 0.6,
     -- when the total characters exceed the context window, the ratio of
     -- context before cursor and after cursor, the larger the ratio the more
     -- context before cursor will be used.
+    context_ratio = 0.75,
     throttle = 1000, -- only send the request every x milliseconds, use 0 to disable throttle.
     -- debounce the request in x milliseconds, set to 0 to disable debounce
     debounce = 400,
