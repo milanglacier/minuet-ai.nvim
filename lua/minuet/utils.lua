@@ -143,11 +143,13 @@ function M.get_context(cmp_context)
 
     if n_chars_before + n_chars_after > config.context_window then
         -- use some heuristic to decide the context length of before cursor and after cursor
-        if n_chars_before < config.context_window * 0.5 then
-            -- at the very beginning of the file
+        if n_chars_before < config.context_window * config.context_ratio then
+            -- If the context length before cursor does not exceed the maximum
+            -- size, we include the full content before the cursor.
             lines_after = vim.fn.strcharpart(lines_after, 0, config.context_window - n_chars_before)
-        elseif n_chars_after < config.context_window * 0.5 then
-            -- at the very end of the file
+        elseif n_chars_after < config.context_window * (1 - config.context_ratio) then
+            -- if the context length after cursor does not exceed the maximum
+            -- size, we include the full content after the cursor.
             lines_before = vim.fn.strcharpart(lines_before, n_chars_before + n_chars_after - config.context_window)
         else
             -- at the middle of the file, use the context_ratio to determine the allocation
