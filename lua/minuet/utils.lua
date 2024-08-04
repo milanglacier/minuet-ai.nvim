@@ -183,7 +183,7 @@ function M.json_decode(response, exit_code, data_file, provider, callback)
     local result = table.concat(response:result(), '\n')
     local success, json = pcall(vim.json.decode, result)
     if not success then
-        M.notify('Failed to parse' .. provider .. 'API response', 'error', vim.log.levels.INFO)
+        M.notify('Failed to parse ' .. provider .. ' API response', 'error', vim.log.levels.INFO)
         if callback then
             callback()
         end
