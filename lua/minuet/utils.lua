@@ -175,9 +175,9 @@ function M.json_decode(response, exit_code, data_file, provider, callback)
 
     if exit_code ~= 0 then
         if exit_code == 28 then
-          M.notify('Request timed out.', 'warn', vim.log.levels.WARN)
+            M.notify('Request timed out.', 'warn', vim.log.levels.WARN)
         else
-          M.notify(string.format('Request failed with exit code %d', exit_code), 'error', vim.log.levels.ERROR)
+            M.notify(string.format('Request failed with exit code %d', exit_code), 'error', vim.log.levels.ERROR)
         end
 
         if callback then
