@@ -73,7 +73,8 @@ local M = {
     context_window = 12800,
     -- when the total characters exceed the context window, the ratio of
     -- context before cursor and after cursor, the larger the ratio the more
-    -- context before cursor will be used.
+    -- context before cursor will be used. This option should be between 0 and
+    -- 1, context_ratio = 0.75 means the ratio will be 3:1.
     context_ratio = 0.75,
     throttle = 1000, -- only send the request every x milliseconds, use 0 to disable throttle.
     -- debounce the request in x milliseconds, set to 0 to disable debounce
