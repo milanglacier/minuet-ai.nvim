@@ -36,6 +36,7 @@ minuet to your coding process. Just as dancers move during a minuet.
 - Support for multiple AI providers (OpenAI, Claude, Gemini, Codestral,
   Huggingface, and OpenAI-compatible services)
 - Customizable configuration options
+- Streaming support to enable completion delivery even with slower LLMs
 
 ![example](./assets/example.png)
 
@@ -135,7 +136,12 @@ default_config = {
     -- "warn" for warnings and above.
     -- "error" just errors.
     notify = 'verbose',
-    request_timeout = 3, -- the timeout of the request in seconds
+    -- The request timeout, measured in seconds. When streaming is enabled
+    -- (stream = true), setting a shorter request_timeout allows for faster
+    -- retrieval of completion items, albeit potentially incomplete.
+    -- Conversely, with streaming disabled (stream = false), a timeout
+    -- occurring before the LLM returns results will yield no completion items.
+    request_timeout = 3,
     -- if completion item has multiple lines, create another completion item only containing its first line.
     add_single_line_entry = true,
     -- The number of completion items (encoded as part of the prompt for the
@@ -213,6 +219,7 @@ provider_options = {
         model = 'gpt-4o-mini',
         system = system,
         few_shots = default_fewshots,
+        stream = true,
         optional = {
             -- pass any additional parameters you want to send to OpenAI request,
             -- e.g.
@@ -248,6 +255,7 @@ provider_options = {
         model = 'claude-3-5-sonnet-20240620',
         system = system,
         few_shots = default_fewshots,
+        stream = true,
         optional = {
             -- pass any additional parameters you want to send to claude request,
             -- e.g.
@@ -273,6 +281,7 @@ provider_options = {
         model = 'codestral-latest',
         end_point = 'https://codestral.mistral.ai/v1/fim/completions',
         api_key = 'CODESTRAL_API_KEY',
+        stream = true,
         optional = {
             stop = nil, -- the identifier to stop the completion generation
             max_tokens = nil,
@@ -305,6 +314,7 @@ provider_options = {
         model = 'gemini-1.5-flash-latest',
         system = system,
         few_shots = default_fewshots,
+        stream = true,
         optional = {
             -- generationConfig = {
             --     stopSequences = {},
@@ -335,6 +345,9 @@ provider_options = {
 
 Use any providers compatible with OpenAI's chat completion API.
 
+Note that not all openAI compatible services has streaming support, in such
+case, you should change `stream=False` to disable streaming.
+
 The following config is the default.
 
 ```lua
@@ -346,6 +359,7 @@ provider_options = {
         end_point = 'https://api.mistral.ai/v1/chat/completions',
         api_key = 'MISTRAL_API_KEY',
         name = 'Mistral',
+        stream = true,
         optional = {
             stop = nil,
             max_tokens = nil,
@@ -364,6 +378,9 @@ Refer to the [Completions
 Legacy](https://platform.openai.com/docs/api-reference/completions) section of
 the OpenAI documentation for details.
 
+Note that not all openAI compatible services has streaming support, in such
+case, you should change `stream=False` to disable streaming.
+
 ```lua
 provider_options = {
     openai_fim_compatible = {
@@ -371,6 +388,7 @@ provider_options = {
         end_point = 'https://api.deepseek.com/beta/completions',
         api_key = 'DEEPSEEK_API_KEY',
         name = 'Deepseek',
+        stream = true,
         optional = {
             stop = nil,
             max_tokens = nil,
@@ -498,8 +516,7 @@ cmp.setup {
 # TODO
 
 1. Implement `RAG` on the codebase and encode the codebase information into the request to LLM.
-2. Add `stream` support and return partial results when request timeout.
-3. Virtual text UI support.
+2. Virtual text UI support.
 
 # Contributing
 

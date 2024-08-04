@@ -85,7 +85,12 @@ local M = {
     -- "warn" for warnings and above.
     -- "error" just errors.
     notify = 'verbose',
-    request_timeout = 3, -- the timeout of the request in seconds
+    -- The request timeout, measured in seconds. When streaming is enabled
+    -- (stream = true), setting a shorter request_timeout allows for faster
+    -- retrieval of completion items, albeit potentially incomplete.
+    -- Conversely, with streaming disabled (stream = false), a timeout
+    -- occurring before the LLM returns results will yield no completion items.
+    request_timeout = 3,
     -- if completion item has multiple lines, create another completion item only containing its first line.
     add_single_line_entry = true,
     -- The number of completion items (encoded as part of the prompt for the
@@ -122,6 +127,7 @@ M.provider_options = {
         model = 'codestral-latest',
         end_point = 'https://codestral.mistral.ai/v1/fim/completions',
         api_key = 'CODESTRAL_API_KEY',
+        stream = true,
         optional = {
             stop = nil, -- the identifier to stop the completion generation
             max_tokens = nil,
@@ -131,6 +137,7 @@ M.provider_options = {
         model = 'gpt-4o-mini',
         system = default_system,
         few_shots = default_fewshots,
+        stream = true,
         optional = {
             stop = nil,
             max_tokens = nil,
@@ -141,6 +148,7 @@ M.provider_options = {
         model = 'claude-3-5-sonnet-20240620',
         system = default_system,
         few_shots = default_fewshots,
+        stream = true,
         optional = {
             stop_sequences = nil,
         },
@@ -152,6 +160,7 @@ M.provider_options = {
         end_point = 'https://api.mistral.ai/v1/chat/completions',
         api_key = 'MISTRAL_API_KEY',
         name = 'Mistral',
+        stream = true,
         optional = {
             stop = nil,
             max_tokens = nil,
@@ -161,6 +170,7 @@ M.provider_options = {
         model = 'gemini-1.5-flash-latest',
         system = default_system,
         few_shots = default_fewshots,
+        stream = true,
         optional = {
             -- generationConfig = {
             --     stopSequences = {},
@@ -174,6 +184,7 @@ M.provider_options = {
         end_point = 'https://api.deepseek.com/beta/completions',
         api_key = 'DEEPSEEK_API_KEY',
         name = 'Deepseek',
+        stream = true,
         optional = {
             stop = nil,
             max_tokens = nil,

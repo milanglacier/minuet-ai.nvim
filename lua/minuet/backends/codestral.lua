@@ -17,8 +17,12 @@ if not M.is_available() then
     utils.notify('Codestral API key is not set', 'error', vim.log.levels.ERROR)
 end
 
-local function get_text_fn(choices)
-    return choices[1].message.content
+local function get_text_fn_no_stream(json)
+    return json.choices[1].message.content
+end
+
+local function get_text_fn_stream(json)
+    return json.choices[1].delta.content
 end
 
 M.complete = function(context_before_cursor, context_after_cursor, callback)
@@ -26,7 +30,13 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
 
     options.name = 'Codestral'
 
-    common.complete_openai_fim_base(options, get_text_fn, context_before_cursor, context_after_cursor, callback)
+    common.complete_openai_fim_base(
+        options,
+        options.stream and get_text_fn_stream or get_text_fn_no_stream,
+        context_before_cursor,
+        context_after_cursor,
+        callback
+    )
 end
 
 return M

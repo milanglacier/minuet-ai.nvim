@@ -199,6 +199,48 @@ function M.json_decode(response, exit_code, data_file, provider, callback)
     return json
 end
 
+function M.stream_decode(response, exit_code, data_file, provider, get_text_fn, callback)
+    os.remove(data_file)
+
+    if not (exit_code == 28 or exit_code == 0) then
+        M.notify(string.format('Request failed with exit code %d', exit_code), 'error', vim.log.levels.ERROR)
+        if callback then
+            callback()
+        end
+    end
+
+    local result = {}
+
+    for _, line in ipairs(response:result()) do
+        local success, json, text
+
+        line = line:gsub('^data:', '')
+        success, json = pcall(vim.json.decode, line)
+        if not success then
+            goto continue
+        end
+
+        success, text = pcall(get_text_fn, json)
+        if not success then
+            goto continue
+        end
+
+        if type(text) == 'string' and text ~= '' then
+            table.insert(result, text)
+        end
+        ::continue::
+    end
+
+    local result_str = #result > 0 and table.concat(result) or nil
+
+    if not result_str then
+        M.notify(provider .. ' returns no text on streaming', 'error', vim.log.levels.INFO)
+        callback()
+    end
+
+    return result_str
+end
+
 M.add_single_line_entry = function(list)
     local newlist = {}
 

@@ -25,6 +25,7 @@ local function make_request_data()
         system = system,
         max_tokens = options.max_tokens,
         model = options.model,
+        stream = options.stream,
     }
 
     request_data = vim.tbl_deep_extend('force', request_data, options.optional or {})
@@ -58,6 +59,27 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
         return
     end
 
+    local function get_raw_items_no_stream(response, exit_code)
+        local json = utils.json_decode(response, exit_code, data_file, 'Claude', callback)
+
+        if not json then
+            return
+        end
+
+        if not json.content then
+            utils.notify('Claude API returns no content', 'error', vim.log.levels.INFO)
+            callback()
+            return
+        end
+
+        local items_raw = json.content[1].text
+        return items_raw
+    end
+
+    local function get_text_fn_stream(json)
+        return json.delta.text
+    end
+
     job:new({
         command = 'curl',
         args = {
@@ -74,19 +96,13 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
             '@' .. data_file,
         },
         on_exit = vim.schedule_wrap(function(response, exit_code)
-            local json = utils.json_decode(response, exit_code, data_file, 'Claude', callback)
+            local items_raw
 
-            if not json then
-                return
+            if options.stream then
+                items_raw = utils.stream_decode(response, exit_code, data_file, 'Claude', get_text_fn_stream, callback)
+            else
+                items_raw = get_raw_items_no_stream(response, exit_code)
             end
-
-            if not json.content then
-                utils.notify('Claude API returns no content', 'error', vim.log.levels.INFO)
-                callback()
-                return
-            end
-
-            local items_raw = json.content[1].text
 
             local items = common.initial_process_completion_items(items_raw, 'claude')
 

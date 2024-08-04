@@ -84,12 +84,41 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
         return
     end
 
+    local function get_raw_items_no_stream(response, exit_code)
+        local json = utils.json_decode(response, exit_code, data_file, 'Gemini', callback)
+
+        if not json then
+            return
+        end
+
+        if not json.candidates then
+            utils.notify('Gemini API returns no content', 'error', vim.log.levels.INFO)
+            callback()
+            return
+        end
+
+        if not json.candidates[1].content then
+            utils.notify('Gemini API returns no content, probably due to safety settings', 'error', vim.log.levels.INFO)
+            callback()
+            return
+        end
+
+        local items_raw = json.candidates[1].content.parts[1].text
+
+        return items_raw
+    end
+
+    local function get_text_fn_stream(json)
+        return json.candidates[1].content.parts[1].text
+    end
+
     job:new({
         command = 'curl',
         args = {
             string.format(
-                'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s',
+                'https://generativelanguage.googleapis.com/v1beta/models/%s:%skey=%s',
                 options.model,
+                options.stream and 'streamGenerateContent?alt=sse&' or 'generateContent?',
                 vim.env.GEMINI_API_KEY
             ),
             '-H',
@@ -100,29 +129,16 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
             '@' .. data_file,
         },
         on_exit = vim.schedule_wrap(function(response, exit_code)
-            local json = utils.json_decode(response, exit_code, data_file, 'Gemini', callback)
-
-            if not json then
-                return
+            local items_raw
+            if options.stream then
+                items_raw = utils.stream_decode(response, exit_code, data_file, 'Gemini', get_text_fn_stream, callback)
+            else
+                items_raw = get_raw_items_no_stream(response, exit_code)
             end
 
-            if not json.candidates then
-                utils.notify('Gemini API returns no content', 'error', vim.log.levels.INFO)
-                callback()
+            if not items_raw then
                 return
             end
-
-            if not json.candidates[1].content then
-                utils.notify(
-                    'Gemini API returns no content, probably due to safety settings',
-                    'error',
-                    vim.log.levels.INFO
-                )
-                callback()
-                return
-            end
-
-            local items_raw = json.candidates[1].content.parts[1].text
 
             local items = common.initial_process_completion_items(items_raw, 'gemini')
 

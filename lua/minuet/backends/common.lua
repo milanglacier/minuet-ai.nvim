@@ -48,8 +48,8 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
 
     local data = {
         model = options.model,
-        -- response_format = { type = 'json_object' }, -- NOTE: in practice this option yiled even worse result
         messages = messages,
+        stream = options.stream,
     }
 
     data = vim.tbl_deep_extend('force', data, options.optional or {})
@@ -58,6 +58,27 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
 
     if data_file == nil then
         return
+    end
+
+    local function get_raw_items_no_stream(response, exit_code)
+        local json = utils.json_decode(response, exit_code, data_file, options.name, callback)
+
+        if not json then
+            return
+        end
+
+        if not json.choices then
+            utils.notify(options.name .. ' API returns no content', 'error', vim.log.levels.INFO)
+            callback()
+            return
+        end
+
+        local items_raw = json.choices[1].message.content
+        return items_raw
+    end
+
+    local function get_text_fn_stream(json)
+        return json.choices[1].delta.content
     end
 
     job:new({
@@ -74,19 +95,18 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
             '@' .. data_file,
         },
         on_exit = vim.schedule_wrap(function(response, exit_code)
-            local json = utils.json_decode(response, exit_code, data_file, options.name, callback)
+            local items_raw
 
-            if not json then
-                return
+            if options.stream then
+                items_raw =
+                    utils.stream_decode(response, exit_code, data_file, options.name, get_text_fn_stream, callback)
+            else
+                items_raw = get_raw_items_no_stream(response, exit_code)
             end
 
-            if not json.choices then
-                utils.notify(options.name .. ' API returns no content', 'error', vim.log.levels.INFO)
-                callback()
+            if not items_raw then
                 return
             end
-
-            local items_raw = json.choices[1].message.content
 
             local items = M.initial_process_completion_items(items_raw, options.name)
 
@@ -99,6 +119,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
     local data = {}
 
     data.model = options.model
+    data.stream = options.stream
 
     data = vim.tbl_deep_extend('force', data, options.optional or {})
 
@@ -127,6 +148,28 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
         end
     end
 
+    local function get_items_no_stream(response, exit_code)
+        local json = utils.json_decode(response, exit_code, data_file, options.name, check_and_callback)
+
+        if not json then
+            return
+        end
+
+        if not json.choices then
+            utils.notify(options.name .. ' API returns no content', 'error', vim.log.levels.INFO)
+            check_and_callback()
+            return
+        end
+
+        local has_result, result = pcall(get_text_fn, json)
+        if has_result then
+            return result
+        else
+            utils.notify(options.name .. ' failed to get text', 'error', vim.log.levels.INFO)
+            return nil
+        end
+    end
+
     for _ = 1, n_completions do
         job:new({
             command = 'curl',
@@ -148,24 +191,23 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
                 -- Increment the request_send counter
                 request_complete = request_complete + 1
 
-                local json = utils.json_decode(response, exit_code, data_file, options.name, check_and_callback)
+                local result
 
-                if not json then
-                    return
-                end
-
-                if not json.choices then
-                    utils.notify(options.name .. ' API returns no content', 'error', vim.log.levels.INFO)
-                    check_and_callback()
-                    return
-                end
-
-                local has_result, result = pcall(get_text_fn, json.choices)
-
-                if has_result then
-                    table.insert(items, result)
+                if options.stream then
+                    result = utils.stream_decode(
+                        response,
+                        exit_code,
+                        data_file,
+                        options.name,
+                        get_text_fn,
+                        check_and_callback
+                    )
                 else
-                    utils.notify(options.name .. ' failed to get text', 'error', vim.log.levels.INFO)
+                    result = get_items_no_stream(response, exit_code)
+                end
+
+                if result then
+                    table.insert(items, result)
                 end
 
                 check_and_callback()
