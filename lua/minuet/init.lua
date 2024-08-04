@@ -8,7 +8,7 @@ function M.setup(config)
     if M.config.notify == true then
         vim.notify(
             'Minuet config.notify specs has been updated. Please change true to one of false, "error" or "verbose".',
-            vim.log.levels.WAN
+            vim.log.levels.WARN
         )
         M.config.notify = 'verbose'
     end
@@ -41,7 +41,7 @@ function M.change_provider(provider)
     if not M.config.provider_options[provider] then
         vim.notify(
             'The provider is not supported, please refer to minuet.nvim document for more information.',
-            vim.log.levels.ERR
+            vim.log.levels.ERROR
         )
         return
     end
