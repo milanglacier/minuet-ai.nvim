@@ -129,9 +129,10 @@ default_config = {
     -- debounce the request in x milliseconds, set to 0 to disable debounce
     debounce = 400,
     -- show notification when request is sent or request fails. options:
-    -- `false` to disable notification, "verbose" to show notification when
-    -- request is sent or request fails. "error" to show notification when
-    -- request failed.
+    -- `false` to disable notification
+    -- "verbose" for all notifications
+    -- "warn" for warnings and above
+    -- "error" just errors
     notify = 'verbose',
     request_timeout = 3, -- the timeout of the request in seconds
     -- if completion item has multiple lines, create another completion item only containing its first line.

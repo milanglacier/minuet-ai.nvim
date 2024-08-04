@@ -3,7 +3,8 @@ local config = require('minuet').config
 
 function M.notify(msg, minuet_level, vim_level, opts)
     local notify_levels = {
-        verbose = 1,
+        verbose = 0,
+        warn = 1,
         error = 2,
     }
 
@@ -173,7 +174,12 @@ function M.json_decode(response, exit_code, data_file, provider, callback)
     os.remove(data_file)
 
     if exit_code ~= 0 then
-        M.notify(string.format('Request failed with exit code %d', exit_code), 'error', vim.log.levels.ERROR)
+        if exit_code == 28 then
+          M.notify('Request timed out.', 'warn', vim.log.levels.WARN)
+        else
+          M.notify(string.format('Request failed with exit code %d', exit_code), 'error', vim.log.levels.ERROR)
+        end
+
         if callback then
             callback()
         end
