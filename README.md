@@ -348,8 +348,9 @@ Use any providers compatible with OpenAI's chat completion API.
 For example, you can set the `end_point` to
 `http://localhost:11434/v1/chat/completions` to use `ollama`.
 
-Note that not all openAI compatible services has streaming support, in such
-case, you should change `stream=False` to disable streaming.
+Note that not all openAI compatible services has streaming support, you should
+change `stream=false` to disable streaming in case your services do not support
+it.
 
 The following config is the default.
 
@@ -384,8 +385,9 @@ Refer to the [Completions
 Legacy](https://platform.openai.com/docs/api-reference/completions) section of
 the OpenAI documentation for details.
 
-Note that not all openAI compatible services has streaming support, in such
-case, you should change `stream=False` to disable streaming.
+Note that not all openAI compatible services has streaming support, you should
+change `stream=false` to disable streaming in case your services do not support
+it.
 
 ```lua
 provider_options = {
