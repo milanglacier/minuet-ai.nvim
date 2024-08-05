@@ -506,9 +506,9 @@ cmp.setup {
         })
 
         -- if you wish to use manual complete
-        opts.mapping = cmp.mapping.preset.insert(vim.tbl_deep_extend('force', opts.mapping, {
+        opts.mapping = vim.tbl_deep_extend('force', opts.mapping or {}, {
             ['<A-y>'] = require('minuet').make_cmp_map()
-        }))
+        })
     end,
 }
 ```
