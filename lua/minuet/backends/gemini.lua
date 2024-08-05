@@ -84,31 +84,7 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
         return
     end
 
-    local function get_raw_items_no_stream(response, exit_code)
-        local json = utils.json_decode(response, exit_code, data_file, 'Gemini', callback)
-
-        if not json then
-            return
-        end
-
-        if not json.candidates then
-            utils.notify('Gemini API returns no content', 'error', vim.log.levels.INFO)
-            callback()
-            return
-        end
-
-        if not json.candidates[1].content then
-            utils.notify('Gemini API returns no content, probably due to safety settings', 'error', vim.log.levels.INFO)
-            callback()
-            return
-        end
-
-        local items_raw = json.candidates[1].content.parts[1].text
-
-        return items_raw
-    end
-
-    local function get_text_fn_stream(json)
+    local function get_text_fn(json)
         return json.candidates[1].content.parts[1].text
     end
 
@@ -131,9 +107,9 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
         on_exit = vim.schedule_wrap(function(response, exit_code)
             local items_raw
             if options.stream then
-                items_raw = utils.stream_decode(response, exit_code, data_file, 'Gemini', get_text_fn_stream, callback)
+                items_raw = utils.stream_decode(response, exit_code, data_file, 'Gemini', get_text_fn, callback)
             else
-                items_raw = get_raw_items_no_stream(response, exit_code)
+                items_raw = utils.no_stream_decode(response, exit_code, data_file, 'Gemini', get_text_fn, callback)
             end
 
             if not items_raw then

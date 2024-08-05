@@ -60,21 +60,8 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
         return
     end
 
-    local function get_raw_items_no_stream(response, exit_code)
-        local json = utils.json_decode(response, exit_code, data_file, options.name, callback)
-
-        if not json then
-            return
-        end
-
-        if not json.choices then
-            utils.notify(options.name .. ' API returns no content', 'error', vim.log.levels.INFO)
-            callback()
-            return
-        end
-
-        local items_raw = json.choices[1].message.content
-        return items_raw
+    local function get_text_fn_no_stream(json)
+        return json.choices[1].message.content
     end
 
     local function get_text_fn_stream(json)
@@ -101,7 +88,14 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
                 items_raw =
                     utils.stream_decode(response, exit_code, data_file, options.name, get_text_fn_stream, callback)
             else
-                items_raw = get_raw_items_no_stream(response, exit_code)
+                items_raw = utils.no_stream_decode(
+                    response,
+                    exit_code,
+                    data_file,
+                    options.name,
+                    get_text_fn_no_stream,
+                    callback
+                )
             end
 
             if not items_raw then
@@ -148,28 +142,6 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
         end
     end
 
-    local function get_items_no_stream(response, exit_code)
-        local json = utils.json_decode(response, exit_code, data_file, options.name, check_and_callback)
-
-        if not json then
-            return
-        end
-
-        if not json.choices then
-            utils.notify(options.name .. ' API returns no content', 'error', vim.log.levels.INFO)
-            check_and_callback()
-            return
-        end
-
-        local has_result, result = pcall(get_text_fn, json)
-        if has_result then
-            return result
-        else
-            utils.notify(options.name .. ' failed to get text', 'error', vim.log.levels.INFO)
-            return nil
-        end
-    end
-
     for _ = 1, n_completions do
         job:new({
             command = 'curl',
@@ -203,7 +175,14 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
                         check_and_callback
                     )
                 else
-                    result = get_items_no_stream(response, exit_code)
+                    result = utils.no_stream_decode(
+                        response,
+                        exit_code,
+                        data_file,
+                        options.name,
+                        get_text_fn,
+                        check_and_callback
+                    )
                 end
 
                 if result then

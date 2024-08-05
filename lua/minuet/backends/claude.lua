@@ -59,21 +59,8 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
         return
     end
 
-    local function get_raw_items_no_stream(response, exit_code)
-        local json = utils.json_decode(response, exit_code, data_file, 'Claude', callback)
-
-        if not json then
-            return
-        end
-
-        if not json.content then
-            utils.notify('Claude API returns no content', 'error', vim.log.levels.INFO)
-            callback()
-            return
-        end
-
-        local items_raw = json.content[1].text
-        return items_raw
+    local function get_text_fn_no_steam(json)
+        return json.content[1].text
     end
 
     local function get_text_fn_stream(json)
@@ -101,7 +88,8 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
             if options.stream then
                 items_raw = utils.stream_decode(response, exit_code, data_file, 'Claude', get_text_fn_stream, callback)
             else
-                items_raw = get_raw_items_no_stream(response, exit_code)
+                items_raw =
+                    utils.no_stream_decode(response, exit_code, data_file, 'Claude', get_text_fn_no_steam, callback)
             end
 
             local items = common.initial_process_completion_items(items_raw, 'claude')

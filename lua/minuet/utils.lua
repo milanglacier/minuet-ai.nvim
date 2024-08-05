@@ -170,7 +170,7 @@ function M.get_context(cmp_context)
     }
 end
 
-function M.json_decode(response, exit_code, data_file, provider, callback)
+function M.no_stream_decode(response, exit_code, data_file, provider, get_text_fn, callback)
     os.remove(data_file)
 
     if exit_code ~= 0 then
@@ -189,14 +189,26 @@ function M.json_decode(response, exit_code, data_file, provider, callback)
     local result = table.concat(response:result(), '\n')
     local success, json = pcall(vim.json.decode, result)
     if not success then
-        M.notify('Failed to parse ' .. provider .. ' API response', 'error', vim.log.levels.INFO)
+        M.notify('Failed to parse ' .. provider .. ' API response as json', 'error', vim.log.levels.INFO)
         if callback then
             callback()
         end
         return
     end
 
-    return json
+    local result_str
+
+    success, result_str = pcall(get_text_fn, json)
+
+    if not success or not result_str then
+        M.notify(provider .. ' returns no text: ' .. vim.inspect(json), 'error', vim.log.levels.INFO)
+        if callback then
+            callback()
+        end
+        return
+    end
+
+    return result_str
 end
 
 function M.stream_decode(response, exit_code, data_file, provider, get_text_fn, callback)
@@ -210,8 +222,9 @@ function M.stream_decode(response, exit_code, data_file, provider, get_text_fn, 
     end
 
     local result = {}
+    local responses = response:result()
 
-    for _, line in ipairs(response:result()) do
+    for _, line in ipairs(responses) do
         local success, json, text
 
         line = line:gsub('^data:', '')
@@ -234,7 +247,7 @@ function M.stream_decode(response, exit_code, data_file, provider, get_text_fn, 
     local result_str = #result > 0 and table.concat(result) or nil
 
     if not result_str then
-        M.notify(provider .. ' returns no text on streaming', 'error', vim.log.levels.INFO)
+        M.notify(provider .. ' returns no text on streaming: ' .. vim.inspect(responses), 'error', vim.log.levels.INFO)
         callback()
     end
 
