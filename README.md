@@ -315,19 +315,14 @@ provider_options = {
         system = system,
         few_shots = default_fewshots,
         stream = true,
-        optional = {
-            -- generationConfig = {
-            --     stopSequences = {},
-            --     maxOutputTokens = 256,
-            --     topP = 0.8,
-            -- },
-        },
+        optional = {},
     },
 }
 ```
 
 The following configuration is not the default, but recommended to prevent
-request timeout from outputing too many tokens.
+request timeout from outputing too many tokens. You can also adjust the safety
+settings following the example:
 
 ```lua
 provider_options = {
@@ -335,6 +330,16 @@ provider_options = {
         optional = {
             generationConfig = {
                 maxOutputTokens = 256,
+            },
+            safetySettings = {
+                {
+                    -- HARM_CATEGORY_HATE_SPEECH,
+                    -- HARM_CATEGORY_HARASSMENT
+                    -- HARM_CATEGORY_SEXUALLY_EXPLICIT
+                    category = 'HARM_CATEGORY_DANGEROUS_CONTENT',
+                    -- BLOCK_NONE
+                    threshold = 'BLOCK_ONLY_HIGH',
+                },
             },
         },
     },
