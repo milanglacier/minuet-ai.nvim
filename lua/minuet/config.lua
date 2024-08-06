@@ -154,12 +154,12 @@ M.provider_options = {
         },
     },
     openai_compatible = {
-        model = 'open-mistral-nemo',
+        model = 'llama-3.1-70b-versatile',
         system = default_system,
         few_shots = default_fewshots,
-        end_point = 'https://api.mistral.ai/v1/chat/completions',
-        api_key = 'MISTRAL_API_KEY',
-        name = 'Mistral',
+        end_point = 'https://api.groq.com/openai/v1/chat/completions',
+        api_key = 'GROQ_API_KEY',
+        name = 'Groq',
         stream = true,
         optional = {
             stop = nil,
