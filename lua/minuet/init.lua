@@ -23,11 +23,6 @@ function M.make_cmp_map()
             sources = cmp.config.sources {
                 { name = 'minuet' },
             },
-            performance = {
-                fetching_timeout = M.config.request_timeout,
-                -- Increase the fetching timeout here since LLM takes much more
-                -- time to respond.
-            },
         },
     })
 end

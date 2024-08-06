@@ -92,10 +92,8 @@ require('cmp').setup {
     performance = {
         -- It is recommended to increase the timeout duration due to
         -- the typically slower response speed of LLMs compared to
-        -- other completion sources. While this adjustment is
-        -- automatically handled in manual completion mode by Minuet,
-        -- you need to configure this option yourself when using
-        -- auto-completion mode.
+        -- other completion sources. This is not needed when you only
+        -- need manual completion.
         fetching_timeout = 2000,
     },
 }
