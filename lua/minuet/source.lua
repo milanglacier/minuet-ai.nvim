@@ -75,6 +75,10 @@ function M:complete(ctx, callback)
                 result = result:gsub('^%s*', '')
                 table.insert(items, {
                     label = result,
+                    cmp = {
+                        kind_hl_group = 'CmpItemKindMinuetAI',
+                        kind_text = 'Minuet AI',
+                    },
                     documentation = {
                         kind = cmp.lsp.MarkupKind.Markdown,
                         value = '```' .. (vim.bo.ft or '') .. '\n' .. result .. '\n```',
