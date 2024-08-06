@@ -18,6 +18,7 @@
   - [MinuetToggle](#minuettoggle)
 - [FAQ](#faq)
   - [Customize `cmp` ui](#customize-cmp-ui)
+  - [Significant Input Delay When Moving to a New Line](#significant-input-delay-when-moving-to-a-new-line)
   - [Integration with `lazyvim`](#integration-with-lazyvim)
 - [TODO](#todo)
 - [Contributing](#contributing)
@@ -496,6 +497,16 @@ cmp.setup {
 }
 ```
 
+## Significant Input Delay When Moving to a New Line
+
+When using Minuet with auto-complete enabled, you may experience a noticeable
+delay when pressing `<CR>` to move to the next line. This occurs because Minuet
+triggers autocompletion at the start of a new line, while cmp blocks the `<CR>`
+key, awaiting Minuet's response.
+
+To resolve this issue, you may want to unbind the `<CR>` key from your cmp
+keymap.
+
 ## Integration with `lazyvim`
 
 ```lua
@@ -518,10 +529,14 @@ cmp.setup {
             priority = 100
         })
 
+    opts.mapping = vim.tbl_deep_extend('force', opts.mapping or {}, {
         -- if you wish to use manual complete
-        opts.mapping = vim.tbl_deep_extend('force', opts.mapping or {}, {
-            ['<A-y>'] = require('minuet').make_cmp_map()
-        })
+        ['<A-y>'] = require('minuet').make_cmp_map(),
+        -- if you wish to use auto complete, you may want to rebind <CR> because cmp may block <CR>
+        ['<CR>'] = cmp.mapping(function(fallback)
+            fallback()
+        end),
+    })
     end,
 }
 ```
