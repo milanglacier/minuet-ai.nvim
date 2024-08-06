@@ -81,6 +81,7 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
     local data_file = utils.make_tmp_file(data)
 
     if data_file == nil then
+        callback()
         return
     end
 
@@ -107,12 +108,13 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
         on_exit = vim.schedule_wrap(function(response, exit_code)
             local items_raw
             if options.stream then
-                items_raw = utils.stream_decode(response, exit_code, data_file, 'Gemini', get_text_fn, callback)
+                items_raw = utils.stream_decode(response, exit_code, data_file, 'Gemini', get_text_fn)
             else
-                items_raw = utils.no_stream_decode(response, exit_code, data_file, 'Gemini', get_text_fn, callback)
+                items_raw = utils.no_stream_decode(response, exit_code, data_file, 'Gemini', get_text_fn)
             end
 
             if not items_raw then
+                callback()
                 return
             end
 

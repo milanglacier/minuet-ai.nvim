@@ -96,14 +96,16 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
         on_exit = vim.schedule_wrap(function(response, exit_code)
             local json = utils.no_stream_decode(response, exit_code, data_file, 'huggingface', function(json)
                 return json
-            end, callback)
+            end)
 
             if not json then
+                callback()
                 return
             end
 
             if json.error then
                 utils.notify(json.error, 'error', vim.log.levels.ERROR)
+                callback()
                 return
             end
 
@@ -126,6 +128,7 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
         M.complete_completion(context_before_cursor, context_after_cursor, callback)
     else
         utils.notify('huggingface: Unknown type', 'error', vim.log.levels.ERROR)
+        callback()
     end
 end
 

@@ -170,7 +170,7 @@ function M.get_context(cmp_context)
     }
 end
 
-function M.no_stream_decode(response, exit_code, data_file, provider, get_text_fn, callback)
+function M.no_stream_decode(response, exit_code, data_file, provider, get_text_fn)
     os.remove(data_file)
 
     if exit_code ~= 0 then
@@ -179,10 +179,6 @@ function M.no_stream_decode(response, exit_code, data_file, provider, get_text_f
         else
             M.notify(string.format('Request failed with exit code %d', exit_code), 'error', vim.log.levels.ERROR)
         end
-
-        if callback then
-            callback()
-        end
         return
     end
 
@@ -190,9 +186,6 @@ function M.no_stream_decode(response, exit_code, data_file, provider, get_text_f
     local success, json = pcall(vim.json.decode, result)
     if not success then
         M.notify('Failed to parse ' .. provider .. ' API response as json', 'error', vim.log.levels.INFO)
-        if callback then
-            callback()
-        end
         return
     end
 
@@ -202,23 +195,18 @@ function M.no_stream_decode(response, exit_code, data_file, provider, get_text_f
 
     if not success or not result_str then
         M.notify(provider .. ' returns no text: ' .. vim.inspect(json), 'error', vim.log.levels.INFO)
-        if callback then
-            callback()
-        end
         return
     end
 
     return result_str
 end
 
-function M.stream_decode(response, exit_code, data_file, provider, get_text_fn, callback)
+function M.stream_decode(response, exit_code, data_file, provider, get_text_fn)
     os.remove(data_file)
 
     if not (exit_code == 28 or exit_code == 0) then
         M.notify(string.format('Request failed with exit code %d', exit_code), 'error', vim.log.levels.ERROR)
-        if callback then
-            callback()
-        end
+        return
     end
 
     local result = {}
@@ -248,7 +236,6 @@ function M.stream_decode(response, exit_code, data_file, provider, get_text_fn, 
 
     if not result_str then
         M.notify(provider .. ' returns no text on streaming: ' .. vim.inspect(responses), 'error', vim.log.levels.INFO)
-        callback()
     end
 
     return result_str

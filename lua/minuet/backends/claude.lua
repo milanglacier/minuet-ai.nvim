@@ -86,10 +86,14 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
             local items_raw
 
             if options.stream then
-                items_raw = utils.stream_decode(response, exit_code, data_file, 'Claude', get_text_fn_stream, callback)
+                items_raw = utils.stream_decode(response, exit_code, data_file, 'Claude', get_text_fn_stream)
             else
-                items_raw =
-                    utils.no_stream_decode(response, exit_code, data_file, 'Claude', get_text_fn_no_steam, callback)
+                items_raw = utils.no_stream_decode(response, exit_code, data_file, 'Claude', get_text_fn_no_steam)
+            end
+
+            if not items_raw then
+                callback()
+                return
             end
 
             local items = common.initial_process_completion_items(items_raw, 'claude')

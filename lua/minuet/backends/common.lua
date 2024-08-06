@@ -85,20 +85,13 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
             local items_raw
 
             if options.stream then
-                items_raw =
-                    utils.stream_decode(response, exit_code, data_file, options.name, get_text_fn_stream, callback)
+                items_raw = utils.stream_decode(response, exit_code, data_file, options.name, get_text_fn_stream)
             else
-                items_raw = utils.no_stream_decode(
-                    response,
-                    exit_code,
-                    data_file,
-                    options.name,
-                    get_text_fn_no_stream,
-                    callback
-                )
+                items_raw = utils.no_stream_decode(response, exit_code, data_file, options.name, get_text_fn_no_stream)
             end
 
             if not items_raw then
+                callback()
                 return
             end
 
@@ -166,23 +159,9 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
                 local result
 
                 if options.stream then
-                    result = utils.stream_decode(
-                        response,
-                        exit_code,
-                        data_file,
-                        options.name,
-                        get_text_fn,
-                        check_and_callback
-                    )
+                    result = utils.stream_decode(response, exit_code, data_file, options.name, get_text_fn)
                 else
-                    result = utils.no_stream_decode(
-                        response,
-                        exit_code,
-                        data_file,
-                        options.name,
-                        get_text_fn,
-                        check_and_callback
-                    )
+                    result = utils.no_stream_decode(response, exit_code, data_file, options.name, get_text_fn)
                 end
 
                 if result then
