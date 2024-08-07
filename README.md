@@ -549,10 +549,8 @@ opts.mapping = {
     opts.mapping = vim.tbl_deep_extend('force', opts.mapping or {}, {
         -- if you wish to use manual complete
         ['<A-y>'] = require('minuet').make_cmp_map(),
-        -- if you wish to use auto complete, you may want to rebind <CR> because cmp may block <CR>
-        ['<CR>'] = cmp.mapping(function(fallback)
-            fallback()
-        end),
+        -- You don't need to worry about <CR> delay because lazyvim handles this situation for you.
+        ['<CR>'] = nil,
     })
     end,
 }
