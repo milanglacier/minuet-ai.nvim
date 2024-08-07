@@ -71,9 +71,10 @@ specs = {
 -- The following configuration binds `A-y` key
 -- to invoke the configuration manually.
 require('cmp').setup {
-    mapping = cmp.mapping.preset.insert({
+    mapping = {
         ["A-y"] = require('minuet').make_cmp_map()
-    }),
+        -- and your other keymappings
+    },
 }
 ```
 
