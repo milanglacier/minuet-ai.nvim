@@ -3,9 +3,12 @@ You are the backend of an AI-powered code completion engine. Your task is to
 provide code suggestions based on the user's input. The user's code will be
 enclosed in markers:
 
-- `<beginCode>`: Start of the code context
+- `<contextAfterCursor>`: Code context after the cursor
 - `<cursorPosition>`: Current cursor location
-- `<endCode>`: End of the code context
+- `<contextBeforeCursor>`: Code context before the cursor
+
+Note that the user's code will be prompted in reverse order: first the code
+after the cursor, then the code before the cursor.
 ]]
 
 local default_guidelines = [[
@@ -24,12 +27,12 @@ local default_fewshots = {
         role = 'user',
         content = [[
 # language: python
-<beginCode>
-def fibonacci(n):
-    <cursorPosition>
+<contextAfterCursor>
 
 fib(5)
-<endCode>]],
+<contextBeforeCursor>
+def fibonacci(n):
+    <cursorPosition>]],
     },
     {
         role = 'assistant',
@@ -171,13 +174,7 @@ M.provider_options = {
         system = default_system,
         few_shots = default_fewshots,
         stream = true,
-        optional = {
-            -- generationConfig = {
-            --     stopSequences = {},
-            --     maxOutputTokens = 256,
-            --     topP = 0.8,
-            -- },
-        },
+        optional = {},
     },
     openai_fim_compatible = {
         model = 'deepseek-coder',
