@@ -35,18 +35,7 @@ end
 
 M.complete = function(context_before_cursor, context_after_cursor, callback)
     local options, data = make_request_data()
-    local language = utils.add_language_comment()
-    local tab = utils.add_tab_comment()
-
-    local context = language
-        .. '\n'
-        .. tab
-        .. '\n'
-        .. '<beginCode>'
-        .. context_before_cursor
-        .. '<cursorPosition>'
-        .. context_after_cursor
-        .. '<endCode>'
+    local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
 
     local messages = vim.deepcopy(options.few_shots)
     table.insert(messages, { role = 'user', content = context })

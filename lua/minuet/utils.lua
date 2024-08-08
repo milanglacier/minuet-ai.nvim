@@ -170,6 +170,23 @@ function M.get_context(cmp_context)
     }
 end
 
+function M.make_chat_llm_shot(context_before_cursor, context_after_cursor)
+    local language = M.add_language_comment()
+    local tab = M.add_tab_comment()
+
+    local context = language
+        .. '\n'
+        .. tab
+        .. '\n'
+        .. '<beginCode>'
+        .. context_before_cursor
+        .. '<cursorPosition>'
+        .. context_after_cursor
+        .. '<endCode>'
+
+    return context
+end
+
 function M.no_stream_decode(response, exit_code, data_file, provider, get_text_fn)
     os.remove(data_file)
 

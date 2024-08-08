@@ -27,18 +27,7 @@ function M.initial_process_completion_items(items_raw, provider)
 end
 
 function M.complete_openai_base(options, context_before_cursor, context_after_cursor, callback)
-    local language = utils.add_language_comment()
-    local tab = utils.add_tab_comment()
-
-    local context = language
-        .. '\n'
-        .. tab
-        .. '\n'
-        .. '<beginCode>'
-        .. context_before_cursor
-        .. '<cursorPosition>'
-        .. context_after_cursor
-        .. '<endCode>'
+    local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
 
     local messages = vim.deepcopy(options.few_shots)
     local system = utils.make_system_prompt(options.system, config.n_completions)
