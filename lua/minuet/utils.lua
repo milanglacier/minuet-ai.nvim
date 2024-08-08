@@ -178,11 +178,14 @@ function M.make_chat_llm_shot(context_before_cursor, context_after_cursor)
         .. '\n'
         .. tab
         .. '\n'
-        .. '<beginCode>'
+        .. '<contextAfterCursor>'
+        .. '\n'
+        .. context_after_cursor
+        .. '\n'
+        .. '<contextBeforeCursor>'
+        .. '\n'
         .. context_before_cursor
         .. '<cursorPosition>'
-        .. context_after_cursor
-        .. '<endCode>'
 
     return context
 end
