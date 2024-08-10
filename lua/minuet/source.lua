@@ -4,6 +4,10 @@ local utils = require 'minuet.utils'
 local cmp = require 'cmp'
 local lsp = require 'cmp.types.lsp'
 
+if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = 'CmpItemKindMinuet' })) then
+    vim.api.nvim_set_hl(0, 'CmpItemKindMinuet', { link = 'CmpItemKind' })
+end
+
 function M:is_available()
     local provider = require('minuet.backends.' .. config.provider)
     return provider.is_available()
@@ -80,6 +84,10 @@ function M:complete(ctx, callback)
                         value = '```' .. (vim.bo.ft or '') .. '\n' .. result .. '\n```',
                     },
                     insertTextMode = lsp.InsertTextMode.AdjustIndentation,
+                    cmp = {
+                        kind_hl_group = 'CmpItemKindMinuet',
+                        kind_text = config.provider_options[config.provider].name or config.provider,
+                    },
                 })
             end
             callback {
