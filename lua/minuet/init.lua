@@ -1,8 +1,11 @@
-local default_config = require 'minuet.config'
-
 local M = {}
 
 function M.setup(config)
+    M.presets = config.presets
+    config.presets = nil
+
+    local default_config = require 'minuet.config'
+
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
     require('cmp').register_source('minuet', require('minuet.source'):new())
 end
@@ -79,18 +82,28 @@ function M.change_provider(provider)
     vim.notify('Minuet Provider changed to: ' .. provider, vim.log.levels.INFO)
 end
 
-vim.api.nvim_create_user_command('MinuetChangeProvider', function(args)
-    M.change_provider(args.args)
+function M.change_preset(preset)
+    if not (M.presets or {})[preset] then
+        vim.notify('preset ' .. preset .. ' is not found.', vim.log.levels.ERROR)
+        return
+    end
+
+    M.config = vim.tbl_deep_extend('force', M.config, M.presets[preset])
+    vim.notify('Minuet preset changed to: ' .. preset, vim.log.levels.INFO)
+end
+
+vim.api.nvim_create_user_command('MinuetChangeProvider', function()
+    vim.deprecate('MinuetChangeProvider', 'MinuetChangePreset', '2024-09-08', 'Minuet')
+end, {})
+
+vim.api.nvim_create_user_command('MinuetChangePreset', function(args)
+    M.change_preset(args.args)
 end, {
     nargs = 1,
     complete = function()
-        local providers = {}
-        for k, _ in pairs(M.config.provider_options) do
-            table.insert(providers, k)
-        end
-        return providers
+        return vim.tbl_keys(M.presets or {})
     end,
-    desc = 'Change the provider of Minuet.',
+    desc = 'Change the preset of Minuet.',
 })
 
 vim.api.nvim_create_user_command('MinuetToggle', function()
