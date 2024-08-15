@@ -544,15 +544,23 @@ opts.mapping = {
         table.insert(opts.sources, 1, {
             name = 'minuet',
             group_index = 1,
-            priority = 100
+            priority = 100,
         })
 
-    opts.mapping = vim.tbl_deep_extend('force', opts.mapping or {}, {
-        -- if you wish to use manual complete
-        ['<A-y>'] = require('minuet').make_cmp_map(),
-        -- You don't need to worry about <CR> delay because lazyvim handles this situation for you.
-        ['<CR>'] = nil,
-    })
+        opts.performance = {
+            -- It is recommended to increase the timeout duration due to
+            -- the typically slower response speed of LLMs compared to
+            -- other completion sources. This is not needed when you only
+            -- need manual completion.
+            fetching_timeout = 2000,
+        }
+
+        opts.mapping = vim.tbl_deep_extend('force', opts.mapping or {}, {
+            -- if you wish to use manual complete
+            ['<A-y>'] = require('minuet').make_cmp_map(),
+            -- You don't need to worry about <CR> delay because lazyvim handles this situation for you.
+            ['<CR>'] = nil,
+        })
     end,
 }
 ```
