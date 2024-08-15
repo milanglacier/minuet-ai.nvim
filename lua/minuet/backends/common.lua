@@ -3,17 +3,19 @@ local utils = require 'minuet.utils'
 local job = require 'plenary.job'
 local config = require('minuet').config
 
+---@param items_raw string?
+---@param provider string
+---@return table<string>
 function M.initial_process_completion_items(items_raw, provider)
-    local success
-    success, items_raw = pcall(vim.split, items_raw, '<endCompletion>')
+    local success, items_table = pcall(vim.split, items_raw, '<endCompletion>')
     if not success then
         utils.notify('Failed to parse ' .. provider .. "'s content text", 'error', vim.log.levels.INFO)
-        return
+        return {}
     end
 
     local items = {}
 
-    for _, item in ipairs(items_raw) do
+    for _, item in ipairs(items_table) do
         if item:find '%S' then -- only include entries that contains non-whitespace
             -- replace the last \n charecter if it exists
             item = item:gsub('\n$', '')
@@ -86,6 +88,15 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
 
             local items = M.initial_process_completion_items(items_raw, options.name)
 
+            if config.after_cursor_filter_length > 0 then
+                local filter_sequence =
+                    utils.make_context_filter_sequence(context_after_cursor, config.after_cursor_filter_length)
+
+                items = vim.tbl_map(function(x)
+                    return utils.filter_text(x, filter_sequence)
+                end, items)
+            end
+
             callback(items)
         end),
     }):start()
@@ -120,6 +131,16 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
     local function check_and_callback()
         if request_complete >= n_completions and not has_called_back then
             has_called_back = true
+
+            if config.after_cursor_filter_length > 0 then
+                local filter_sequence =
+                    utils.make_context_filter_sequence(context_after_cursor, config.after_cursor_filter_length)
+
+                items = vim.tbl_map(function(x)
+                    return utils.filter_text(x, filter_sequence)
+                end, items)
+            end
+
             callback(items)
         end
     end

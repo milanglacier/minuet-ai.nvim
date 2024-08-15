@@ -110,6 +110,15 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
 
             local items = common.initial_process_completion_items(items_raw, 'gemini')
 
+            if config.after_cursor_filter_length > 0 then
+                local filter_sequence =
+                    utils.make_context_filter_sequence(context_after_cursor, config.after_cursor_filter_length)
+
+                items = vim.tbl_map(function(x)
+                    return utils.filter_text(x, filter_sequence)
+                end, items)
+            end
+
             callback(items)
         end),
     }):start()

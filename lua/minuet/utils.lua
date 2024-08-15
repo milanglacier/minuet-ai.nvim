@@ -170,6 +170,43 @@ function M.get_context(cmp_context)
     }
 end
 
+function M.make_context_filter_sequence(context, length)
+    if not context then
+        return
+    end
+
+    -- remove leading whitespaces
+    context = context:gsub('^%s+', '')
+
+    if vim.fn.strchars(context) < length then
+        return
+    end
+
+    context = vim.fn.strcharpart(context, 0, length)
+
+    return context
+end
+
+---remove the sequence and the rest part from text.
+---@param text string?
+---@param sequence string?
+---@return string?
+function M.filter_text(text, sequence)
+    if not sequence or not text then
+        return text
+    end
+
+    if sequence == '' then
+        return text
+    end
+    -- use plain match
+    local start = string.find(text, sequence, 1, true)
+    if not start then
+        return text
+    end
+    return string.sub(text, 1, start - 1)
+end
+
 function M.make_chat_llm_shot(context_before_cursor, context_after_cursor)
     local language = M.add_language_comment()
     local tab = M.add_tab_comment()
