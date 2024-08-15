@@ -76,7 +76,6 @@ function M:complete(ctx, callback)
 
             local items = {}
             for _, result in ipairs(data) do
-                result = result:gsub('^%s*', '')
                 table.insert(items, {
                     label = result,
                     documentation = {

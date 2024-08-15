@@ -126,6 +126,8 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
                 end, items)
             end
 
+            items = utils.remove_spaces(items)
+
             callback(items)
         end),
     }):start()

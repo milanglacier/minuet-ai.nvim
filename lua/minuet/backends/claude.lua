@@ -85,7 +85,7 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
                 return
             end
 
-            local items = common.initial_process_completion_items(items_raw, 'claude')
+            local items = common.parse_completion_items(items_raw, 'Claude')
 
             if config.after_cursor_filter_length > 0 then
                 local filter_sequence =
@@ -95,6 +95,8 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
                     return utils.filter_text(x, filter_sequence)
                 end, items)
             end
+
+            items = utils.remove_spaces(items)
 
             callback(items)
         end),

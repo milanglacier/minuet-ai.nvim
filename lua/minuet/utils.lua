@@ -184,6 +184,9 @@ function M.make_context_filter_sequence(context, length)
 
     context = vim.fn.strcharpart(context, 0, length)
 
+    -- remove trailing whitespaces
+    context = context:gsub('%s+$', '')
+
     return context
 end
 
@@ -205,6 +208,24 @@ function M.filter_text(text, sequence)
         return text
     end
     return string.sub(text, 1, start - 1)
+end
+
+--- Remove the trailing and leading spaces for each string in the table
+---@param items_table table[string]
+function M.remove_spaces(items_table)
+    local new = {}
+
+    for _, item in ipairs(items_table) do
+        if item:find '%S' then -- only include entries that contains non-whitespace
+            -- replace the trailing spaces
+            item = item:gsub('%s+$', '')
+            -- replace the leading spaces
+            item = item:gsub('^%s+', '')
+            table.insert(new, item)
+        end
+    end
+
+    return new
 end
 
 function M.make_chat_llm_shot(context_before_cursor, context_after_cursor)
