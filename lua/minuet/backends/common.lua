@@ -16,6 +16,20 @@ function M.parse_completion_items(items_raw, provider)
     return items_table
 end
 
+function M.filter_context_sequences_in_items(items, context)
+    if config.after_cursor_filter_length == 0 then
+        return items
+    end
+
+    local filter_sequence = utils.make_context_filter_sequence(context, config.after_cursor_filter_length)
+
+    items = vim.tbl_map(function(x)
+        return utils.filter_text(x, filter_sequence)
+    end, items)
+
+    return items
+end
+
 function M.complete_openai_base(options, context_before_cursor, context_after_cursor, callback)
     local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
 
@@ -76,14 +90,7 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
 
             local items = M.parse_completion_items(items_raw, options.name)
 
-            if config.after_cursor_filter_length > 0 then
-                local filter_sequence =
-                    utils.make_context_filter_sequence(context_after_cursor, config.after_cursor_filter_length)
-
-                items = vim.tbl_map(function(x)
-                    return utils.filter_text(x, filter_sequence)
-                end, items)
-            end
+            items = M.filter_context_sequences_in_items(items, context_after_cursor)
 
             items = utils.remove_spaces(items)
 
@@ -122,14 +129,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
         if request_complete >= n_completions and not has_called_back then
             has_called_back = true
 
-            if config.after_cursor_filter_length > 0 then
-                local filter_sequence =
-                    utils.make_context_filter_sequence(context_after_cursor, config.after_cursor_filter_length)
-
-                items = vim.tbl_map(function(x)
-                    return utils.filter_text(x, filter_sequence)
-                end, items)
-            end
+            items = M.filter_context_sequences_in_items(items, context_after_cursor)
 
             items = utils.remove_spaces(items)
 

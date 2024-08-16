@@ -1,6 +1,7 @@
 local config = require('minuet').config
 local utils = require 'minuet.utils'
 local job = require 'plenary.job'
+local common = require 'minuet.backends.common'
 
 local function make_request_data()
     local request_data = {
@@ -117,14 +118,7 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
                 end
             end
 
-            if config.after_cursor_filter_length > 0 then
-                local filter_sequence =
-                    utils.make_context_filter_sequence(context_after_cursor, config.after_cursor_filter_length)
-
-                items = vim.tbl_map(function(x)
-                    return utils.filter_text(x, filter_sequence)
-                end, items)
-            end
+            items = common.filter_context_sequences_in_items(items, context_after_cursor)
 
             items = utils.remove_spaces(items)
 
