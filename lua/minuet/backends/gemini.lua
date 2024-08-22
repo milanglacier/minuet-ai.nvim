@@ -22,7 +22,16 @@ local function make_request_data()
 
     local contents = {}
 
-    for _, shot in ipairs(options.few_shots) do
+    local few_shots = options.few_shots
+    if type(few_shots) == 'function' then
+        ---@diagnostic disable-next-line: cast-local-type
+        few_shots = few_shots()
+    end
+
+    ---@diagnostic disable-next-line: cast-local-type
+    few_shots = vim.deepcopy(few_shots)
+
+    for _, shot in ipairs(few_shots) do
         if shot.role == 'user' then
             table.insert(contents, {
                 role = 'user',

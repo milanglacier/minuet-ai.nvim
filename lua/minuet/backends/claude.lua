@@ -37,10 +37,17 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
     local options, data = make_request_data()
     local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
 
-    local messages = vim.deepcopy(options.few_shots)
-    table.insert(messages, { role = 'user', content = context })
+    local few_shots = options.few_shots
+    if type(few_shots) == 'function' then
+        ---@diagnostic disable-next-line: cast-local-type
+        few_shots = few_shots()
+    end
+    ---@diagnostic disable-next-line: cast-local-type
+    few_shots = vim.deepcopy(few_shots)
 
-    data.messages = messages
+    table.insert(few_shots, { role = 'user', content = context })
+
+    data.messages = few_shots
 
     local data_file = utils.make_tmp_file(data)
 

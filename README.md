@@ -172,6 +172,7 @@ default_config = {
         guidelines = '...',
         n_completion_template = '...',
     },
+    default_few_shots = { '...' },
 }
 ```
 
@@ -217,6 +218,18 @@ system = {
 Note that `n_completion_template` is a special placeholder as it contains one
 `%d` which will be encoded with `config.n_completions`, if you want to
 customize this template, make sure your prompt also contains only one `%d`.
+
+Similarly, `few_shots` can be table in the following form or a function that
+takes no argument and returns a table in the following form:
+
+```lua
+{
+    { role = "user", content = "something" },
+    { role = "assistant", content = "something" }
+    -- ...
+    -- You can pass as many turns as you want
+}
+```
 
 # Providers
 
