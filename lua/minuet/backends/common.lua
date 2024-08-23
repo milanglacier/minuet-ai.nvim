@@ -33,13 +33,7 @@ end
 function M.complete_openai_base(options, context_before_cursor, context_after_cursor, callback)
     local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
 
-    local few_shots = options.few_shots
-    if type(few_shots) == 'function' then
-        ---@diagnostic disable-next-line: cast-local-type
-        few_shots = few_shots()
-    end
-    ---@diagnostic disable-next-line: cast-local-type
-    few_shots = vim.deepcopy(few_shots)
+    local few_shots = vim.deepcopy(utils.get_or_eval_value(options.few_shots))
 
     local system = utils.make_system_prompt(options.system, config.n_completions)
 

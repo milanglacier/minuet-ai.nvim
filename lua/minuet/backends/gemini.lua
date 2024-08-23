@@ -22,14 +22,7 @@ local function make_request_data()
 
     local contents = {}
 
-    local few_shots = options.few_shots
-    if type(few_shots) == 'function' then
-        ---@diagnostic disable-next-line: cast-local-type
-        few_shots = few_shots()
-    end
-
-    ---@diagnostic disable-next-line: cast-local-type
-    few_shots = vim.deepcopy(few_shots)
+    local few_shots = utils.get_or_eval_value(options.few_shots)
 
     for _, shot in ipairs(few_shots) do
         if shot.role == 'user' then

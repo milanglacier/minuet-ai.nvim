@@ -71,6 +71,14 @@ function M.make_system_prompt(template, n_completion)
     return system_prompt
 end
 
+--- Return val if val is not a function, else call val and return the value
+function M.get_or_eval_value(val)
+    if type(val) ~= 'function' then
+        return val
+    end
+    return val()
+end
+
 function M.add_language_comment()
     if vim.bo.ft == nil or vim.bo.ft == '' then
         return ''
