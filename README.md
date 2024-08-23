@@ -202,10 +202,13 @@ system = {
 }
 ```
 
-You can adjust the `template` by encoding any placeholdes inside the three
-braces, the placeholders will be interpolated from the key/value in this table.
-The value can be a string or a function that takes no argument and returns a
-string.
+You can customize the `template` by encoding placeholders within triple braces.
+These placeholders will be interpolated using the corresponding key-value pairs
+from the table. The value can be either a string or a function that takes no
+arguments and returns a string.
+
+Here's a simplified example for illustrative purposes (not intended for actual
+configuration):
 
 ```lua
 system = {
@@ -219,7 +222,7 @@ Note that `n_completion_template` is a special placeholder as it contains one
 `%d` which will be encoded with `config.n_completions`, if you want to
 customize this template, make sure your prompt also contains only one `%d`.
 
-Similarly, `few_shots` can be table in the following form or a function that
+Similarly, `few_shots` can be a table in the following form or a function that
 takes no argument and returns a table in the following form:
 
 ```lua
@@ -230,6 +233,38 @@ takes no argument and returns a table in the following form:
     -- You can pass as many turns as you want
 }
 ```
+
+Below is an example to configure the prompt based on filetype:
+
+```lua
+require('minuet').setup {
+    provider_options = {
+        openai = {
+            system = {
+                prompt = function()
+                    if vim.bo.ft == 'tex' then
+                        return [[your prompt for completing prose.]]
+                    else
+                        return require('minuet.config').default_template.prompt
+                    end
+                end,
+            },
+            few_shots = function()
+                if vim.bo.ft == 'tex' then
+                    return {
+                        -- your few shots examples for prose
+                    }
+                else
+                    return require('minuet.config').default_few_shots
+                end
+            end,
+        },
+    },
+}
+```
+
+There's no need to replicate unchanged fields. The system will automatically
+merge modified fields with default values using the `tbl_deep_extend` function.
 
 # Providers
 
