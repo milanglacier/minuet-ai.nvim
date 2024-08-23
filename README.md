@@ -191,17 +191,6 @@ Minuet AI requires API keys to function. Set the following environment variables
 
 See [prompt](./prompt.md) for the default system prompt used by `minuet`.
 
-The default system prompt template is:
-
-```lua
-system = {
-    template = function() return default_config.default_template.template end,
-    prompt = function() return default_config.default_template.prompt end,
-    guidelines = function() return default_config.default_template.guidelines end,
-    n_completion_template = function() return default_config.default_template.n_completion_template end,
-}
-```
-
 You can customize the `template` by encoding placeholders within triple braces.
 These placeholders will be interpolated using the corresponding key-value pairs
 from the table. The value can be either a string or a function that takes no
