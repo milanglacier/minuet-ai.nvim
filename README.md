@@ -266,7 +266,7 @@ provider_options = {
     openai = {
         model = 'gpt-4o-mini',
         system = system,
-        few_shots = default_fewshots,
+        few_shots = default_few_shots,
         stream = true,
         optional = {
             -- pass any additional parameters you want to send to OpenAI request,
@@ -302,7 +302,7 @@ provider_options = {
         max_tokens = 512,
         model = 'claude-3-5-sonnet-20240620',
         system = system,
-        few_shots = default_fewshots,
+        few_shots = default_few_shots,
         stream = true,
         optional = {
             -- pass any additional parameters you want to send to claude request,
@@ -361,7 +361,7 @@ provider_options = {
     gemini = {
         model = 'gemini-1.5-flash-latest',
         system = system,
-        few_shots = default_fewshots,
+        few_shots = default_few_shots,
         stream = true,
         optional = {},
     },
@@ -412,7 +412,7 @@ provider_options = {
     openai_compatible = {
         model = 'llama-3.1-70b-versatile',
         system = default_system,
-        few_shots = default_fewshots,
+        few_shots = default_few_shots,
         end_point = 'https://api.groq.com/openai/v1/chat/completions',
         api_key = 'GROQ_API_KEY',
         name = 'Groq',

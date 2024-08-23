@@ -22,7 +22,7 @@ Guidelines:
    additional comments or markdown code block fences. Return the result directly.
 6. Keep each completion option concise, limiting it to a single line or a few lines.]]
 
-local default_fewshots = {
+local default_few_shots = {
     {
         role = 'user',
         content = [[
@@ -123,7 +123,7 @@ M.default_template = {
     n_completion_template = n_completion_template,
 }
 
-M.default_few_shots = default_fewshots
+M.default_few_shots = default_few_shots
 
 local function get_default_template_option(opt)
     return function()

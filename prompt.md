@@ -35,7 +35,7 @@ Guidelines:
 # Default Few Shots Examples
 
 ```lua
-local default_fewshots = {
+local default_few_shots = {
     {
         role = 'user',
         content = [[
