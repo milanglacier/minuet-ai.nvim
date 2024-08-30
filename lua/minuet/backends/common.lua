@@ -62,19 +62,26 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
         return json.choices[1].delta.content
     end
 
+    local args = {
+        options.end_point,
+        '-H',
+        'Content-Type: application/json',
+        '-H',
+        'Authorization: Bearer ' .. vim.env[options.api_key],
+        '--max-time',
+        tostring(config.request_timeout),
+        '-d',
+        '@' .. data_file,
+    }
+
+    if config.proxy then
+        table.insert(args, '--proxy')
+        table.insert(args, config.proxy)
+    end
+
     job:new({
         command = 'curl',
-        args = {
-            options.end_point,
-            '-H',
-            'Content-Type: application/json',
-            '-H',
-            'Authorization: Bearer ' .. vim.env[options.api_key],
-            '--max-time',
-            tostring(config.request_timeout),
-            '-d',
-            '@' .. data_file,
-        },
+        args = args,
         on_exit = vim.schedule_wrap(function(response, exit_code)
             local items_raw
 
@@ -139,22 +146,29 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
     end
 
     for _ = 1, n_completions do
+        local args = {
+            '-L',
+            options.end_point,
+            '-H',
+            'Content-Type: application/json',
+            '-H',
+            'Accept: application/json',
+            '-H',
+            'Authorization: Bearer ' .. vim.env[options.api_key],
+            '--max-time',
+            tostring(config.request_timeout),
+            '-d',
+            '@' .. data_file,
+        }
+
+        if config.proxy then
+            table.insert(args, '--proxy')
+            table.insert(args, config.proxy)
+        end
+
         job:new({
             command = 'curl',
-            args = {
-                '-L',
-                options.end_point,
-                '-H',
-                'Content-Type: application/json',
-                '-H',
-                'Accept: application/json',
-                '-H',
-                'Authorization: Bearer ' .. vim.env[options.api_key],
-                '--max-time',
-                tostring(config.request_timeout),
-                '-d',
-                '@' .. data_file,
-            },
+            args = args,
             on_exit = vim.schedule_wrap(function(response, exit_code)
                 -- Increment the request_send counter
                 request_complete = request_complete + 1

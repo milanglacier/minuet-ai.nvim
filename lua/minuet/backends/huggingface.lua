@@ -78,22 +78,29 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
         return
     end
 
+    local args = {
+        '-L',
+        options.end_point,
+        '-H',
+        'Content-Type: application/json',
+        '-H',
+        'Accept: application/json',
+        '-H',
+        'Authorization: Bearer ' .. vim.env.HF_API_KEY,
+        '--max-time',
+        tostring(config.request_timeout),
+        '-d',
+        '@' .. data_file,
+    }
+
+    if config.proxy then
+        table.insert(args, '--proxy')
+        table.insert(args, config.proxy)
+    end
+
     job:new({
         command = 'curl',
-        args = {
-            '-L',
-            options.end_point,
-            '-H',
-            'Content-Type: application/json',
-            '-H',
-            'Accept: application/json',
-            '-H',
-            'Authorization: Bearer ' .. vim.env.HF_API_KEY,
-            '--max-time',
-            tostring(config.request_timeout),
-            '-d',
-            '@' .. data_file,
-        },
+        args = args,
         on_exit = vim.schedule_wrap(function(response, exit_code)
             local json = utils.no_stream_decode(response, exit_code, data_file, 'huggingface', function(json)
                 return json
