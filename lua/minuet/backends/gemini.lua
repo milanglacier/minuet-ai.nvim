@@ -81,22 +81,29 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
         return json.candidates[1].content.parts[1].text
     end
 
+    local args = {
+        string.format(
+            'https://generativelanguage.googleapis.com/v1beta/models/%s:%skey=%s',
+            options.model,
+            options.stream and 'streamGenerateContent?alt=sse&' or 'generateContent?',
+            vim.env.GEMINI_API_KEY
+        ),
+        '-H',
+        'Content-Type: application/json',
+        '--max-time',
+        tostring(config.request_timeout),
+        '-d',
+        '@' .. data_file,
+    }
+
+    if config.proxy then
+        table.insert(args, '--proxy')
+        table.insert(args, config.proxy)
+    end
+
     job:new({
         command = 'curl',
-        args = {
-            string.format(
-                'https://generativelanguage.googleapis.com/v1beta/models/%s:%skey=%s',
-                options.model,
-                options.stream and 'streamGenerateContent?alt=sse&' or 'generateContent?',
-                vim.env.GEMINI_API_KEY
-            ),
-            '-H',
-            'Content-Type: application/json',
-            '--max-time',
-            tostring(config.request_timeout),
-            '-d',
-            '@' .. data_file,
-        },
+        args = args,
         on_exit = vim.schedule_wrap(function(response, exit_code)
             local items_raw
             if options.stream then

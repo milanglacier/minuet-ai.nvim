@@ -57,21 +57,28 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
         return json.delta.text
     end
 
+    local args = {
+        'https://api.anthropic.com/v1/messages',
+        '-H',
+        'Content-Type: application/json',
+        '-H',
+        'x-api-key: ' .. vim.env.ANTHROPIC_API_KEY,
+        '-H',
+        'anthropic-version: 2023-06-01',
+        '--max-time',
+        tostring(config.request_timeout),
+        '-d',
+        '@' .. data_file,
+    }
+
+    if config.proxy then
+        table.insert(args, '--proxy')
+        table.insert(args, config.proxy)
+    end
+
     job:new({
         command = 'curl',
-        args = {
-            'https://api.anthropic.com/v1/messages',
-            '-H',
-            'Content-Type: application/json',
-            '-H',
-            'x-api-key: ' .. vim.env.ANTHROPIC_API_KEY,
-            '-H',
-            'anthropic-version: 2023-06-01',
-            '--max-time',
-            tostring(config.request_timeout),
-            '-d',
-            '@' .. data_file,
-        },
+        args = args,
         on_exit = vim.schedule_wrap(function(response, exit_code)
             local items_raw
 
