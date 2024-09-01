@@ -72,7 +72,7 @@ specs = {
 -- to invoke the configuration manually.
 require('cmp').setup {
     mapping = {
-        ["A-y"] = require('minuet').make_cmp_map()
+        ["<A-y>"] = require('minuet').make_cmp_map()
         -- and your other keymappings
     },
 }
