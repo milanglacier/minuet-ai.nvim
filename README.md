@@ -78,9 +78,10 @@ require('cmp').setup {
 }
 ```
 
-Given the response speed and rate of LLM services, we recommend you invoke
-`minuet` completion manually. But you can also add `minuet` into source of
-`nvim-cmp`, in this case, completion from `minuet` will pop up automatically.
+Given the response speed and rate limits of LLM services, we recommend you
+either invoke `minuet` completion manually or use a cost-effective model for
+auto-completion. The author recommends `gemini-1.5-flash` for auto-completion.
+You need to add `minuet` into source of `nvim-cmp` for auto completion to work.
 
 ```lua
 require('cmp').setup {
