@@ -44,11 +44,6 @@ function M:complete(ctx, callback)
         return
     end
 
-    if config.throttle > 0 and self.is_in_throttle then
-        callback()
-        return
-    end
-
     local function _complete()
         if config.throttle > 0 then
             self.is_in_throttle = true
@@ -93,6 +88,17 @@ function M:complete(ctx, callback)
                 items = items,
             }
         end)
+    end
+
+    -- manual mode always complete immediately without debounce or throttle
+    if ctx.context.option.reason == 'manual' then
+        _complete()
+        return
+    end
+
+    if config.throttle > 0 and self.is_in_throttle then
+        callback()
+        return
     end
 
     if config.debounce > 0 then
