@@ -1,24 +1,29 @@
 local M = {}
 
 function M.setup(config)
-    M.presets = config.presets
+    M.presets = config.presets or {}
     config.presets = nil
 
     local default_config = require 'minuet.config'
 
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
+
+    M.presets.default = M.config
+
     require('cmp').register_source('minuet', require('minuet.source'):new())
 end
 
-function M.make_cmp_map()
-    local cmp = require 'cmp'
-    return cmp.mapping(cmp.mapping.complete {
-        config = {
-            sources = cmp.config.sources {
-                { name = 'minuet' },
+function M.make_cmp_map(preset)
+    return function()
+        local cmp = require 'cmp'
+        cmp.complete {
+            config = {
+                sources = cmp.config.sources {
+                    { name = 'minuet', option = { preset = preset } },
+                },
             },
-        },
-    })
+        }
+    end
 end
 
 function M.notify_breaking_change_only_once(message, filename, date)
@@ -83,7 +88,7 @@ function M.change_provider(provider)
 end
 
 function M.change_preset(preset)
-    if not (M.presets or {})[preset] then
+    if not M.presets[preset] then
         vim.notify('preset ' .. preset .. ' is not found.', vim.log.levels.ERROR)
         return
     end
@@ -101,7 +106,7 @@ vim.api.nvim_create_user_command('MinuetChangePreset', function(args)
 end, {
     nargs = 1,
     complete = function()
-        return vim.tbl_keys(M.presets or {})
+        return vim.tbl_keys(M.presets)
     end,
     desc = 'Change the preset of Minuet.',
 })
