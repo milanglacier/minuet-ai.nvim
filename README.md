@@ -237,7 +237,7 @@ require('minuet').setup {
                     if vim.bo.ft == 'tex' then
                         return [[your prompt for completing prose.]]
                     else
-                        return require('minuet.config').default_template.prompt
+                        return require('minuet.config').default_system.prompt
                     end
                 end,
             },
@@ -268,7 +268,7 @@ the following is the default configuration for OpenAI:
 provider_options = {
     openai = {
         model = 'gpt-4o-mini',
-        system = system,
+        system = default_system,
         few_shots = default_few_shots,
         stream = true,
         optional = {
@@ -304,7 +304,7 @@ provider_options = {
     claude = {
         max_tokens = 512,
         model = 'claude-3-5-sonnet-20240620',
-        system = system,
+        system = default_system,
         few_shots = default_few_shots,
         stream = true,
         optional = {
@@ -331,7 +331,7 @@ provider_options = {
     codestral = {
         model = 'codestral-latest',
         end_point = 'https://codestral.mistral.ai/v1/fim/completions',
-        api_key = 'CODESTRAL_API_KEY',
+        api_key = 'CODESTRA_API_KEY',
         stream = true,
         optional = {
             stop = nil, -- the identifier to stop the completion generation
@@ -363,7 +363,7 @@ The following config is the default.
 provider_options = {
     gemini = {
         model = 'gemini-1.5-flash-latest',
-        system = system,
+        system = default_system,
         few_shots = default_few_shots,
         stream = true,
         optional = {},

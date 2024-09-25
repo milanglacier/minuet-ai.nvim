@@ -117,7 +117,7 @@ local M = {
     proxy = nil,
 }
 
-M.default_template = {
+M.default_system = {
     template = default_system_template,
     prompt = default_prompt,
     guidelines = default_guidelines,
@@ -125,23 +125,6 @@ M.default_template = {
 }
 
 M.default_few_shots = default_few_shots
-
-local function get_default_template_option(opt)
-    return function()
-        return M.default_template[opt]
-    end
-end
-
-local function get_default_few_shots()
-    return M.default_few_shots
-end
-
-local default_system = {
-    template = get_default_template_option 'template',
-    prompt = get_default_template_option 'prompt',
-    guidelines = get_default_template_option 'guidelines',
-    n_completion_template = get_default_template_option 'n_completion_template',
-}
 
 M.provider_options = {
     codestral = {
@@ -156,8 +139,8 @@ M.provider_options = {
     },
     openai = {
         model = 'gpt-4o-mini',
-        system = default_system,
-        few_shots = get_default_few_shots,
+        system = M.default_system,
+        few_shots = M.default_few_shots,
         stream = true,
         optional = {
             stop = nil,
@@ -167,8 +150,8 @@ M.provider_options = {
     claude = {
         max_tokens = 512,
         model = 'claude-3-5-sonnet-20240620',
-        system = default_system,
-        few_shots = get_default_few_shots,
+        system = M.default_system,
+        few_shots = M.default_few_shots,
         stream = true,
         optional = {
             stop_sequences = nil,
@@ -176,8 +159,8 @@ M.provider_options = {
     },
     openai_compatible = {
         model = 'llama-3.1-70b-versatile',
-        system = default_system,
-        few_shots = get_default_few_shots,
+        system = M.default_system,
+        few_shots = M.default_few_shots,
         end_point = 'https://api.groq.com/openai/v1/chat/completions',
         api_key = 'GROQ_API_KEY',
         name = 'Groq',
@@ -189,8 +172,8 @@ M.provider_options = {
     },
     gemini = {
         model = 'gemini-1.5-flash-latest',
-        system = default_system,
-        few_shots = get_default_few_shots,
+        system = M.default_system,
+        few_shots = M.default_few_shots,
         stream = true,
         optional = {},
     },
