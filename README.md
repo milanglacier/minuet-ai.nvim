@@ -303,7 +303,7 @@ the following is the default configuration for Claude:
 provider_options = {
     claude = {
         max_tokens = 512,
-        model = 'claude-3-5-sonnet-20241022',
+        model = 'claude-3-5-haiku-20241022',
         system = default_system,
         few_shots = default_few_shots,
         stream = true,
