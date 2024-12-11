@@ -158,7 +158,7 @@ M.provider_options = {
         },
     },
     openai_compatible = {
-        model = 'llama-3.1-70b-versatile',
+        model = 'llama-3.3-70b-versatile',
         system = M.default_system,
         few_shots = M.default_few_shots,
         end_point = 'https://api.groq.com/openai/v1/chat/completions',
