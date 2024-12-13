@@ -413,7 +413,7 @@ The following config is the default.
 ```lua
 provider_options = {
     openai_compatible = {
-        model = 'llama-3.1-70b-versatile',
+        model = 'llama-3.3-70b-versatile',
         system = default_system,
         few_shots = default_few_shots,
         end_point = 'https://api.groq.com/openai/v1/chat/completions',
