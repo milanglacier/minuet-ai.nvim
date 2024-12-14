@@ -149,19 +149,19 @@ local function cleanup(ctx)
 end
 
 local function trigger(bufnr)
-    local config = require('minuet').config
-
     if bufnr ~= api.nvim_get_current_buf() or vim.fn.mode() ~= 'i' then
         return
     end
+
+    utils.notify('Minuet virtual text started', 'verbose')
+
+    local config = require('minuet').config
 
     local context = utils.get_context(utils.make_cmp_context())
 
     local provider = require('minuet.backends.' .. config.provider)
 
     provider.complete(context.lines_before, context.lines_after, function(data)
-        utils.notify('Minuet virtual text updated', 'verbose')
-
         data = utils.list_dedup(data or {})
 
         local ctx = get_ctx()
@@ -187,15 +187,14 @@ local function advance(count, ctx)
 end
 
 local function schedule()
-    local config = require('minuet').config
-
-    local bufnr = api.nvim_get_current_buf()
-
     if internal.is_on_throttle then
         return
     end
 
     stop_timer()
+
+    local config = require('minuet').config
+    local bufnr = api.nvim_get_current_buf()
 
     internal.timer = vim.defer_fn(function()
         if internal.is_on_throttle then
