@@ -692,7 +692,7 @@ opts.mapping = {
 # TODO
 
 1. Implement `RAG` on the codebase and encode the codebase information into the request to LLM.
-2. Virtual text UI support.
+2. **DONE** Virtual text UI support.
 
 # Contributing
 
