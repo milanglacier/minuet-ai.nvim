@@ -115,7 +115,10 @@ vim.api.nvim_create_user_command('MinuetToggleCmp', function()
 
     M.config.cmp.enable_auto_complete = not M.config.cmp.enable_auto_complete
 
-    vim.notify('Auto completion for minuet is ' .. (M.config.enabled and 'enabled' or 'disabled'), vim.log.levels.INFO)
+    vim.notify(
+        'Minuet Auto Completion for cmp: ' .. (M.config.cmp.enable_auto_complete and 'enabled' or 'disabled'),
+        vim.log.levels.INFO
+    )
 end, {
     desc = 'Toggle Minuet Auto Completion',
 })
