@@ -71,6 +71,21 @@ local M = {
     cmp = {
         enable_auto_complete = true,
     },
+    virtualtext = {
+        -- Specify the filetypes to enable automatic virtual text completion,
+        -- e.g., { 'python', 'lua' }. Note that you can still invoke manual
+        -- completion even if the filetype is not on your auto_trigger_ft list.
+        auto_trigger_ft = {},
+        keymap = {
+            accept = nil,
+            accept_line = nil,
+            -- Cycle to next completion item, or manually invoke completion
+            next = nil,
+            -- Cycle to prev completion item, or manually invoke completion
+            prev = nil,
+            dismiss = nil,
+        },
+    },
     provider = 'codestral',
     -- the maximum total characters of the context before and after the cursor
     -- 12,800 characters typically equate to approximately 4,000 tokens for

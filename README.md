@@ -15,7 +15,10 @@
   - [Huggingface](#huggingface)
 - [Commands](#commands)
   - [MinuetChangeProvider](#minuetchangeprovider)
-  - [MinuetToggle](#minuettoggle)
+  - [MinuetToggleCmp](#minuettogglecmp)
+  - [MinuetToggleVirtualText](#minuettogglevirtualtext)
+- [API](#api)
+  - [Virtual Text](#virtual-text)
 - [FAQ](#faq)
   - [Customize `cmp` ui](#customize-cmp-ui)
   - [Significant Input Delay When Moving to a New Line](#significant-input-delay-when-moving-to-a-new-line)
@@ -28,8 +31,8 @@
 
 Minuet AI: Dance with Intelligence in Your Code 💃.
 
-`Minuet-ai` integrates with `nvim-cmp`, brings the grace and harmony of a
-minuet to your coding process. Just as dancers move during a minuet.
+`Minuet-ai` brings the grace and harmony of a minuet to your coding process.
+Just as dancers move during a minuet.
 
 # Features
 
@@ -38,14 +41,17 @@ minuet to your coding process. Just as dancers move during a minuet.
   Huggingface, and OpenAI-compatible services)
 - Customizable configuration options
 - Streaming support to enable completion delivery even with slower LLMs
+- Support both `nvim-cmp` or `virtual text` frontend completion.
 
-![example](./assets/example.png)
+![example-cmp](./assets/example-cmp.png)
+
+![example-virtual-text](./assets/example-virtual-text.png)
 
 # Requirements
 
 - Neovim 0.10+.
 - [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
-- [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
+- optional: [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
 - An API key for at least one of the supported AI providers
 
 # Installation
@@ -63,6 +69,8 @@ specs = {
         end
     },
     { 'nvim-lua/plenary.nvim' },
+    -- optional, if you are using virtual-text frontend, nvim-cmp is not
+    -- required.
     { 'hrsh7th/nvim-cmp' },
 }
 
@@ -101,6 +109,24 @@ require('cmp').setup {
 }
 ```
 
+If you want to use the `virtual-text` frontend:
+
+```lua
+require('minuet').setup {
+    virtualtext = {
+        keymap = {
+            accept = '<A-A>',
+            accept_line = '<A-a>',
+            -- Cycle to prev completion item, or manually invoke completion
+            prev = '<A-[>',
+            -- Cycle to next completion item, or manually invoke completion
+            next = '<A-]>',
+            dismiss = '<A-e>',
+        },
+    },
+}
+```
+
 If you are using a distribution like `lazyvim`, see the FAQ section to see how
 to configure `minuet` with `lazyvim`, note that the author does not use
 `lazyvim`, the FAQ section does not guarantee to work. PRs are welcome to fix
@@ -119,6 +145,21 @@ default_config = {
     -- enabled when invoked manually.
     cmp = {
         enable_auto_complete = true,
+    },
+    virtualtext = {
+        -- Specify the filetypes to enable automatic virtual text completion,
+        -- e.g., { 'python', 'lua' }. Note that you can still invoke manual
+        -- completion even if the filetype is not on your auto_trigger_ft list.
+        auto_trigger_ft = {},
+        keymap = {
+            accept = nil,
+            accept_line = nil,
+            -- Cycle to next completion item, or manually invoke completion
+            next = nil,
+            -- Cycle to prev completion item, or manually invoke completion
+            prev = nil,
+            dismiss = nil,
+        },
     },
     provider = 'codestral',
     -- the maximum total characters of the context before and after the cursor
@@ -517,12 +558,38 @@ provider_options = {
 
 This command allows you to change the provider after `Minuet` has been setup.
 
-## MinuetToggle
+## MinuetToggleCmp
 
-Enable or disable auto-completion. Note that you still need to add Minuet to
-your cmp sources. This command controls whether cmp will attempt to invoke
-minuet when minuet is included in cmp sources. This command has no effect on
-manual completion; Minuet will always be enabled when invoked manually.
+Enable or disable auto-completion for `nvim-cmp`. Note that you still need to
+add Minuet to your cmp sources. This command controls whether cmp will attempt
+to invoke minuet when minuet is included in cmp sources. This command has no
+effect on manual completion; Minuet will always be enabled when invoked
+manually.
+
+## MinuetToggleVirtualText
+
+Toggle the automatic display of `virtual-text` completion in the current buffer
+on or off.
+
+# API
+
+## Virtual Text
+
+`minuet-ai.nvim` provides the following function so that you can customize your keymap:
+
+```lua
+{
+    -- accept whole completion
+    require('minuet.virtualtext').action.accept,
+    -- accept by line
+    function() require('minuet.virtualtext').action.accept(true) end,
+    require('minuet.virtualtext').action.next,
+    require('minuet.virtualtext').action.prev,
+    require('minuet.virtualtext').action.dismiss,
+    -- whether the virtual text is visible in current buffer
+    require('minuet.virtualtext').action.is_visible,
+}
+```
 
 # FAQ
 

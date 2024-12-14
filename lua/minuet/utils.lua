@@ -136,7 +136,7 @@ function M.make_cmp_context()
     self.cursor.row = cursor[1]
     self.cursor.col = cursor[2] + 1
     self.cursor.line = self.cursor.row - 1
-    self.cursor.character = require('cmp.utils.misc').to_utfindex(self.cursor_line, self.cursor.col)
+    -- self.cursor.character = require('cmp.utils.misc').to_utfindex(self.cursor_line, self.cursor.col)
     self.cursor_before_line = string.sub(self.cursor_line, 1, self.cursor.col - 1)
     self.cursor_after_line = string.sub(self.cursor_line, self.cursor.col)
     self.aborted = false
