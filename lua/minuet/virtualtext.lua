@@ -11,8 +11,6 @@ if vim.tbl_isempty(api.nvim_get_hl(M.ns_id, { name = 'MinuetVirtualText' })) the
 end
 
 local internal = {
-    setup_done = false,
-
     augroup = M.augroup,
     ns_id = M.ns_id,
     extmark_id = 1,
