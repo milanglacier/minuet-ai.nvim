@@ -144,8 +144,8 @@ end
 local function cleanup(ctx)
     ctx = ctx or get_ctx()
     stop_timer()
-    update_preview(ctx)
     reset_ctx(ctx)
+    update_preview(ctx)
 end
 
 local function trigger(bufnr)
@@ -268,7 +268,6 @@ end
 function action.dismiss()
     local ctx = get_ctx()
     cleanup(ctx)
-    update_preview(ctx)
 end
 
 function action.is_visible()
