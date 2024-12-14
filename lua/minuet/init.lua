@@ -4,10 +4,17 @@ local M = {}
 
 function M.setup(config)
     if config.enabled ~= nil then
-        vim.notify 'The "enabled" option has been replaced by "cmp.enable_auto_complete". Please update your configuration accordingly.'
+        vim.deprecate('enabled', 'cmp.enable_auto_complete', 'next release', 'minuet-ai.nvim')
     end
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
-    require('cmp').register_source('minuet', require('minuet.cmp'):new())
+
+    local has_cmp = pcall(require, 'cmp')
+
+    if has_cmp then
+        require('cmp').register_source('minuet', require('minuet.cmp'):new())
+    end
+
+    require('minuet.virtualtext').setup()
 end
 
 function M.make_cmp_map()
@@ -97,6 +104,10 @@ end, {
 })
 
 vim.api.nvim_create_user_command('MinuetToggle', function()
+    vim.deprecate('MinuetToggle', 'MinuetToggleCmp', 'next release', 'minuet-ai.nvim')
+end, {})
+
+vim.api.nvim_create_user_command('MinuetToggleCmp', function()
     if not M.config then
         vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
         return
