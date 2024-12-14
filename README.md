@@ -41,7 +41,7 @@ Just as dancers move during a minuet.
   Huggingface, and OpenAI-compatible services)
 - Customizable configuration options
 - Streaming support to enable completion delivery even with slower LLMs
-- Support both `nvim-cmp` or `virtual text` frontend completion.
+- Support `nvim-cmp` or `virtual text` frontend
 
 ![example-cmp](./assets/example-cmp.png)
 
@@ -575,7 +575,7 @@ on or off.
 
 ## Virtual Text
 
-`minuet-ai.nvim` provides the following function so that you can customize your keymap:
+`minuet-ai.nvim` offers the following functions to customize your key mappings:
 
 ```lua
 {
