@@ -260,8 +260,13 @@ function action.accept(accept_line)
 
     vim.schedule_wrap(function()
         api.nvim_buf_set_text(0, line, col, line, col, suggestions)
-        -- move to eol. \15 is Ctrl-o
-        api.nvim_feedkeys('\15$', 'n', false)
+        if #suggestions == 1 then
+            -- move to eol. \15 is Ctrl-o
+            api.nvim_feedkeys('\15$', 'n', false)
+        else
+            vim.cmd('normal! ' .. #suggestions - 1 .. 'j')
+            api.nvim_feedkeys('\15$', 'n', false)
+        end
     end)()
 end
 
