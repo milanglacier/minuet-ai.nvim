@@ -43,7 +43,11 @@ Just as dancers move during a minuet.
 - Streaming support to enable completion delivery even with slower LLMs
 - Support `nvim-cmp` or `virtual text` frontend
 
+**With nvim-cmp frontend**:
+
 ![example-cmp](./assets/example-cmp.png)
+
+**With virtual text frontend**:
 
 ![example-virtual-text](./assets/example-virtual-text.png)
 
