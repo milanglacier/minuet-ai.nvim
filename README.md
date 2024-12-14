@@ -700,5 +700,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 # Acknowledgement
 
-- [cmp-ai](https://github.com/tzachar/cmp-ai): A large piece of the codebase are based on this plugin.
+- [cmp-ai](https://github.com/tzachar/cmp-ai): Reference for the integration with `nvim-cmp`.
 - [continue.dev](https://www.continue.dev): not a neovim plugin, but I find a lot LLM models from here.
+- [copilot.lua](https://github.com/zbirenbaum/copilot.lua): Reference for the virtual text frontend.

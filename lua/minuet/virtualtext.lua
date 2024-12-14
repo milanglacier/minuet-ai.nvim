@@ -1,4 +1,4 @@
--- referenced from copilot.lua
+-- referenced from copilot.lua https://github.com/zbirenbaum/copilot.lua
 local M = {}
 local utils = require 'minuet.utils'
 local api = vim.api
