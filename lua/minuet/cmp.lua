@@ -39,7 +39,7 @@ end
 
 function M:complete(ctx, callback)
     -- we want to always invoke completion when invoked manually
-    if not config.enabled and ctx.context.option.reason ~= 'manual' then
+    if not config.cmp.enable_auto_complete and ctx.context.option.reason ~= 'manual' then
         callback()
         return
     end

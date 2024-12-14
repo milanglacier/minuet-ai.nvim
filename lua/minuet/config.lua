@@ -68,7 +68,9 @@ local M = {
     -- setting has no effect on manual completion; Minuet will always be
     -- enabled when invoked manually. You can use the command `MinuetToggle` to
     -- toggle this option.
-    enabled = true,
+    cmp = {
+        enable_auto_complete = true,
+    },
     provider = 'codestral',
     -- the maximum total characters of the context before and after the cursor
     -- 12,800 characters typically equate to approximately 4,000 tokens for

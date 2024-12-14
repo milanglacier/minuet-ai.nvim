@@ -3,6 +3,9 @@ local default_config = require 'minuet.config'
 local M = {}
 
 function M.setup(config)
+    if config.enabled ~= nil then
+        vim.notify 'The "enabled" option has been replaced by "cmp.enable_auto_complete". Please update your configuration accordingly.'
+    end
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
     require('cmp').register_source('minuet', require('minuet.cmp'):new())
 end
@@ -99,7 +102,7 @@ vim.api.nvim_create_user_command('MinuetToggle', function()
         return
     end
 
-    M.config.enabled = not M.config.enabled
+    M.config.cmp.enable_auto_complete = not M.config.cmp.enable_auto_complete
 
     vim.notify('Auto completion for minuet is ' .. (M.config.enabled and 'enabled' or 'disabled'), vim.log.levels.INFO)
 end, {
