@@ -6,7 +6,7 @@ local api = vim.api
 M.ns_id = api.nvim_create_namespace 'minuet.virtualtext'
 M.augroup = api.nvim_create_augroup('MinuetVirtualText', { clear = true })
 
-if vim.tbl_isempty(api.nvim_get_hl(M.ns_id, { name = 'MinuetVirtualText' })) then
+if vim.tbl_isempty(api.nvim_get_hl(0, { name = 'MinuetVirtualText' })) then
     api.nvim_set_hl(0, 'MinuetVirtualText', { link = 'Comment' })
 end
 
