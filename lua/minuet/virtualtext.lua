@@ -149,7 +149,7 @@ local function cleanup(ctx)
 end
 
 local function trigger(bufnr)
-    if bufnr ~= api.nvim_get_current_buf() or vim.fn.mode() ~= 'i' then
+    if bufnr ~= api.nvim_get_current_buf() or vim.fn.mode() ~= 'i' or completion_menu_visible() then
         return
     end
 
