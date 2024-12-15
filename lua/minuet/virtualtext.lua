@@ -269,6 +269,10 @@ function action.accept(accept_line)
     end)()
 end
 
+function action.accept_line()
+    action.accept(true)
+end
+
 function action.dismiss()
     local ctx = get_ctx()
     cleanup(ctx)
@@ -398,9 +402,7 @@ local function set_keymaps(keymap)
     end
 
     if keymap.accept_line then
-        vim.keymap.set('i', keymap.accept_line, function()
-            action.accept(true)
-        end, {
+        vim.keymap.set('i', keymap.accept_line, action.accept_line, {
             desc = '[minuet.virtualtext] accept suggestion (line)',
             silent = true,
         })

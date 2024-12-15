@@ -586,7 +586,7 @@ on or off.
     -- accept whole completion
     require('minuet.virtualtext').action.accept,
     -- accept by line
-    function() require('minuet.virtualtext').action.accept(true) end,
+    require('minuet.virtualtext').action.accept_line,
     require('minuet.virtualtext').action.next,
     require('minuet.virtualtext').action.prev,
     require('minuet.virtualtext').action.dismiss,
