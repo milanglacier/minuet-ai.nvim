@@ -237,6 +237,13 @@ Minuet AI requires API keys to function. Set the following environment variables
 - `HF_API_KEY` for Huggingface
 - Custom environment variable for OpenAI-compatible services (as specified in your configuration)
 
+**Note:** Provide the name of the environment variable to Minuet, not the
+actual value. For instance, pass `OPENAI_API_KEY` to Minuet, not the value
+itself (e.g., `sk-xxxx`).
+
+If using Ollama, you nend to assign an arbitrary, non-null environment variable
+as a placeholder for it to function.
+
 # System Prompt
 
 See [prompt](./prompt.md) for the default system prompt used by `minuet`.
