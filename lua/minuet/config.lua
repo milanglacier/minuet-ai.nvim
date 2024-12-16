@@ -20,7 +20,8 @@ Guidelines:
 4. Return completions separated by the marker <endCompletion>.
 5. The returned message will be further parsed and processed. DO NOT include
    additional comments or markdown code block fences. Return the result directly.
-6. Keep each completion option concise, limiting it to a single line or a few lines.]]
+6. Keep each completion option concise, limiting it to a single line or a few lines.
+7. Create entirely new code completion that DO NOT REPEAT OR COPY any user's existing code around <cursorPosition>.]]
 
 local default_few_shots = {
     {
@@ -56,7 +57,7 @@ def fibonacci(n):
     },
 }
 
-local n_completion_template = '7. Provide at most %d completion items.'
+local n_completion_template = '8. Provide at most %d completion items.'
 
 -- use {{{ and }}} to wrap placeholders, which will be further processesed in other function
 local default_system_template = '{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}'

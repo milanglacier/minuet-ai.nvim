@@ -23,14 +23,17 @@ Guidelines:
 2. Make sure you have maintained the user's existing whitespace and indentation.
    This is REALLY IMPORTANT!
 3. Provide multiple completion options when possible.
-4. Return completions separated by the marker <endCompletion>.
+4. Return completions separated by the marker `<endCompletion>`.
 5. The returned message will be further parsed and processed. DO NOT include
    additional comments or markdown code block fences. Return the result directly.
 6. Keep each completion option concise, limiting it to a single line or a few lines.
+7. Create entirely new code completion that DO NOT REPEAT OR COPY any user's
+   existing code around `<cursorPosition>`.
+
 
 # Default `n_completions` template
 
-7. Provide at most %d completion items.
+8. Provide at most %d completion items.
 
 # Default Few Shots Examples
 
