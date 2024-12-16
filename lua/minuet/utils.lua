@@ -192,6 +192,8 @@ function M.make_context_filter_sequence(context, length)
 
     -- remove leading whitespaces
     context = context:gsub('^%s+', '')
+    -- remove leading whitespaces in each line
+    context = context:gsub('\n%s+', '\n')
 
     if vim.fn.strchars(context) < length then
         return
