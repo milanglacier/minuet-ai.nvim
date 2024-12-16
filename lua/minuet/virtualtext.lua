@@ -56,6 +56,7 @@ local function get_ctx(bufnr)
 end
 
 ---@alias minuet_suggestions_context { suggestions?: string[], choice?: integer, shown_choices?: table<string, true> }
+---@param ctx? minuet_suggestions_context
 local function reset_ctx(ctx)
     ctx.suggestions = nil
     ctx.choice = nil
@@ -73,6 +74,7 @@ local function clear_preview()
     api.nvim_buf_del_extmark(0, internal.ns_id, internal.extmark_id)
 end
 
+---@param ctx? minuet_suggestions_context
 local function get_current_suggestion(ctx)
     ctx = ctx or get_ctx()
 
@@ -93,6 +95,7 @@ local function get_current_suggestion(ctx)
     return nil
 end
 
+---@param ctx? minuet_suggestions_context
 local function update_preview(ctx)
     ctx = ctx or get_ctx()
 
@@ -141,11 +144,12 @@ local function update_preview(ctx)
     end
 end
 
+---@param ctx? minuet_suggestions_context
 local function cleanup(ctx)
     ctx = ctx or get_ctx()
     stop_timer()
     reset_ctx(ctx)
-    update_preview(ctx)
+    clear_preview()
 end
 
 local function trigger(bufnr)
@@ -317,7 +321,12 @@ function autocmd.on_buf_enter()
 end
 
 function autocmd.on_cursor_moved_i()
-    clear_preview()
+    local ctx = get_ctx()
+    -- we don't cleanup immediately if the completion has arrived but not
+    -- display yet.
+    if ctx.shown_choices and next(ctx.shown_choices) then
+        cleanup(ctx)
+    end
     if should_auto_trigger() then
         schedule()
     end
@@ -328,10 +337,7 @@ function autocmd.on_cursor_hold_i()
 end
 
 function autocmd.on_text_changed_p()
-    clear_preview()
-    if should_auto_trigger() then
-        schedule()
-    end
+    action.on_cursor_moved_i()
 end
 
 function autocmd.on_complete_changed()
