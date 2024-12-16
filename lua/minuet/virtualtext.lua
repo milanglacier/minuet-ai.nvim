@@ -27,6 +27,10 @@ end
 local function completion_menu_visible()
     local has_cmp = pcall(require, 'cmp')
     local cmp_visible = false
+
+    local has_blink = pcall(require, 'blink-cmp')
+    local blink_visible = false
+
     if has_cmp then
         local ok, _cmp_visible = pcall(function()
             return require('cmp').core.view:visible()
@@ -37,7 +41,17 @@ local function completion_menu_visible()
         end
     end
 
-    return vim.fn.pumvisible() == 1 or cmp_visible
+    if has_blink then
+        local ok, _blink_visible = pcall(function()
+            return require('blink-cmp').is_visible()
+        end)
+
+        if ok then
+            blink_visible = _blink_visible
+        end
+    end
+
+    return vim.fn.pumvisible() == 1 or cmp_visible or blink_visible
 end
 
 ---@param bufnr? integer
