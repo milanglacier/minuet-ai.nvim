@@ -42,6 +42,21 @@ function M:get_completions(ctx, callback)
                 return
             end
 
+            -- HACK: workaround to address an undesired behavior: When using
+            -- completion with the cursor positioned mid-word, the partial word
+            -- under the cursor is erased.
+            -- Example: Current cursor position:
+            -- he|
+            -- (| represents the cursor)
+            -- If the completion item is "llo" and selected, "he" will be
+            -- removed from the buffer. To resolve this, we will determine
+            -- whether to prepend the last word to the completion items,
+            -- avoiding the overwriting issue.
+
+            data = vim.tbl_map(function(item)
+                return utils.prepend_to_complete_word(item, context.lines_before)
+            end, data)
+
             if config.add_single_line_entry then
                 data = utils.add_single_line_entry(data)
             end

@@ -257,6 +257,27 @@ function M.remove_spaces(items_table)
     return new
 end
 
+--- If the last word of b is not a substring of the first word of a,
+--- And it there are no trailing spaces for b and no leading spaces for a,
+--- prepend the last word of b to a.
+---@param a string?
+---@param b string?
+---@return string?
+function M.prepend_to_complete_word(a, b)
+    if not a or not b then
+        return a
+    end
+
+    local last_word_b = b:match '[%w_-]+$'
+    local first_word_a = a:match '^[%w_-]+'
+
+    if last_word_b and first_word_a and not first_word_a:find(last_word_b, 1, true) then
+        a = last_word_b .. a
+    end
+
+    return a
+end
+
 function M.make_chat_llm_shot(context_before_cursor, context_after_cursor)
     local language = M.add_language_comment()
     local tab = M.add_tab_comment()
