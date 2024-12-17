@@ -127,11 +127,26 @@ function M.add_tab_comment()
     return ''
 end
 
--- emulate the cmp context, use as testing purpose
-function M.make_cmp_context()
+-- Copied from blink.cmp.Context. Because we might use nvim-cmp instead of
+-- blink-cmp, so blink might not be installed, so we create another class here
+-- and use it instead.
+
+--- @class blinkCmpContext
+--- @field line string
+--- @field cursor number[]
+
+---@param blink_context blinkCmpContext?
+function M.make_cmp_context(blink_context)
     local self = {}
-    local cursor = vim.api.nvim_win_get_cursor(0)
-    self.cursor_line = vim.api.nvim_get_current_line()
+    local cursor
+    if blink_context then
+        cursor = blink_context.cursor
+        self.cursor_line = blink_context.line
+    else
+        cursor = vim.api.nvim_win_get_cursor(0)
+        self.cursor_line = vim.api.nvim_get_current_line()
+    end
+
     self.cursor = {}
     self.cursor.row = cursor[1]
     self.cursor.col = cursor[2] + 1
@@ -139,7 +154,6 @@ function M.make_cmp_context()
     -- self.cursor.character = require('cmp.utils.misc').to_utfindex(self.cursor_line, self.cursor.col)
     self.cursor_before_line = string.sub(self.cursor_line, 1, self.cursor.col - 1)
     self.cursor_after_line = string.sub(self.cursor_line, self.cursor.col)
-    self.aborted = false
     return self
 end
 

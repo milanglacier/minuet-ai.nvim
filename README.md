@@ -41,9 +41,9 @@ Just as dancers move during a minuet.
   Huggingface, and OpenAI-compatible services)
 - Customizable configuration options
 - Streaming support to enable completion delivery even with slower LLMs
-- Support `nvim-cmp` or `virtual text` frontend
+- Support `nvim-cmp`, `blink-cmp`, `virtual text` frontend
 
-**With nvim-cmp frontend**:
+**With nvim-cmp / blink-cmp frontend**:
 
 ![example-cmp](./assets/example-cmp.png)
 
@@ -56,6 +56,7 @@ Just as dancers move during a minuet.
 - Neovim 0.10+.
 - [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
 - optional: [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
+- optional: [blink.cmp](https://github.com/Saghen/blink.cmp)
 - An API key for at least one of the supported AI providers
 
 # Installation
@@ -73,9 +74,38 @@ specs = {
         end
     },
     { 'nvim-lua/plenary.nvim' },
-    -- optional, if you are using virtual-text frontend, nvim-cmp is not
-    -- required.
+    -- optional, if you are using virtual-text frontend,
+    -- nvim-cmp is not required.
     { 'hrsh7th/nvim-cmp' },
+    -- optional, if you are using virtual-text frontend,
+    -- blink is not required.
+    { 'Saghen/blink.cmp' },
+}
+
+```
+
+Given the response speed and rate limits of LLM services, we recommend you
+either invoke `minuet` completion manually or use a cost-effective model for
+auto-completion. The author recommends `gemini-1.5-flash` for auto-completion.
+
+**Setting up with nvim-cmp**:
+
+```lua
+require('cmp').setup {
+    sources = {
+        {
+             -- Include minuet as a source to enable autocompletion
+            { name = 'minuet' },
+            -- and your other sources
+        }
+    },
+    performance = {
+        -- It is recommended to increase the timeout duration due to
+        -- the typically slower response speed of LLMs compared to
+        -- other completion sources. This is not needed when you only
+        -- need manual completion.
+        fetching_timeout = 2000,
+    },
 }
 
 
@@ -90,34 +120,12 @@ require('cmp').setup {
 }
 ```
 
-Given the response speed and rate limits of LLM services, we recommend you
-either invoke `minuet` completion manually or use a cost-effective model for
-auto-completion. The author recommends `gemini-1.5-flash` for auto-completion.
-You need to add `minuet` into source of `nvim-cmp` for auto completion to work.
-
-```lua
-require('cmp').setup {
-    sources = {
-        {
-            { name = 'minuet' },
-            -- and your other sources
-        }
-    },
-    performance = {
-        -- It is recommended to increase the timeout duration due to
-        -- the typically slower response speed of LLMs compared to
-        -- other completion sources. This is not needed when you only
-        -- need manual completion.
-        fetching_timeout = 2000,
-    },
-}
-```
-
-If you want to use the `virtual-text` frontend:
+**Setting up with virtual text**:
 
 ```lua
 require('minuet').setup {
     virtualtext = {
+        auto_trigger_ft = {},
         keymap = {
             accept = '<A-A>',
             accept_line = '<A-a>',
@@ -126,6 +134,33 @@ require('minuet').setup {
             -- Cycle to next completion item, or manually invoke completion
             next = '<A-]>',
             dismiss = '<A-e>',
+        },
+    },
+}
+```
+
+**Setting up with blink-cmp**:
+
+```lua
+require('blink-cmp').setup {
+    keymap = {
+        -- Manually invoke minuet completion
+        ['<A-y>'] = {
+            function(cmp)
+                cmp.show { providers = { 'minuet' } }
+            end,
+        },
+    },
+    sources = {
+         -- Enable minuet for autocomplete
+        default = { 'lsp', 'path', 'buffer', 'snippets', 'minuet' },
+        -- For manual completion only, remove 'minuet' from default
+        providers = {
+            minuet = {
+                name = 'minuet',
+                module = 'minuet.blink',
+                score_offset = 8, -- Gives minuet higher priority among suggestions
+            },
         },
     },
 }
