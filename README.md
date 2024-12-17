@@ -276,7 +276,7 @@ Minuet AI requires API keys to function. Set the following environment variables
 actual value. For instance, pass `OPENAI_API_KEY` to Minuet, not the value
 itself (e.g., `sk-xxxx`).
 
-If using Ollama, you nend to assign an arbitrary, non-null environment variable
+If using Ollama, you need to assign an arbitrary, non-null environment variable
 as a placeholder for it to function.
 
 # System Prompt
@@ -357,8 +357,8 @@ the following is the default configuration for OpenAI:
 provider_options = {
     openai = {
         model = 'gpt-4o-mini',
-        system = default_system,
-        few_shots = default_few_shots,
+        system = "see [System Prompt] section for the default value",
+        few_shots = "see [System Prompt] section for the default value",
         stream = true,
         optional = {
             -- pass any additional parameters you want to send to OpenAI request,
@@ -393,8 +393,8 @@ provider_options = {
     claude = {
         max_tokens = 512,
         model = 'claude-3-5-haiku-20241022',
-        system = default_system,
-        few_shots = default_few_shots,
+        system = "see [System Prompt] section for the default value",
+        few_shots = "see [System Prompt] section for the default value",
         stream = true,
         optional = {
             -- pass any additional parameters you want to send to claude request,
@@ -452,8 +452,8 @@ The following config is the default.
 provider_options = {
     gemini = {
         model = 'gemini-1.5-flash-latest',
-        system = default_system,
-        few_shots = default_few_shots,
+        system = "see [System Prompt] section for the default value",
+        few_shots = "see [System Prompt] section for the default value",
         stream = true,
         optional = {},
     },
@@ -503,8 +503,8 @@ The following config is the default.
 provider_options = {
     openai_compatible = {
         model = 'llama-3.3-70b-versatile',
-        system = default_system,
-        few_shots = default_few_shots,
+        system = "see [System Prompt] section for the default value",
+        few_shots = "see [System Prompt] section for the default value",
         end_point = 'https://api.groq.com/openai/v1/chat/completions',
         api_key = 'GROQ_API_KEY',
         name = 'Groq',
