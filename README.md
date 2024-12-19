@@ -693,6 +693,8 @@ opts.mapping = {
 
 ## Integration with `lazyvim`
 
+**With nvim-cmp**:
+
 ```lua
 {
     'milanglacier/minuet-ai.nvim',
@@ -702,9 +704,9 @@ opts.mapping = {
         }
     end
 },
-{ 'nvim-lua/plenary.nvim' },
 {
     'nvim-cmp',
+    optional = true,
     opts = function(_, opts)
         -- if you wish to use autocomplete
         table.insert(opts.sources, 1, {
@@ -724,10 +726,46 @@ opts.mapping = {
         opts.mapping = vim.tbl_deep_extend('force', opts.mapping or {}, {
             -- if you wish to use manual complete
             ['<A-y>'] = require('minuet').make_cmp_map(),
-            -- You don't need to worry about <CR> delay because lazyvim handles this situation for you.
-            ['<CR>'] = nil,
         })
     end,
+}
+```
+
+**With blink-cmp**:
+
+```lua
+{
+    'milanglacier/minuet-ai.nvim',
+    config = function()
+        require('minuet').setup {
+            -- Your configuration options here
+        }
+    end,
+},
+{
+    'saghen/blink.cmp',
+    optional = true,
+    opts = {
+        keymap = {
+            ['<A-y>'] = {
+                function(cmp)
+                    cmp.show { providers = { 'minuet' } }
+                end,
+            },
+        },
+        sources = {
+            -- if you want to use auto-complete
+            default =  { 'minuet' },
+            providers = {
+                minuet = {
+                    name = 'minuet',
+                    module = 'minuet.blink',
+                    kind = 'minuet',
+                    score_offset = 100,
+                },
+            },
+        },
+    },
 }
 ```
 
