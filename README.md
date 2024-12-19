@@ -760,7 +760,6 @@ opts.mapping = {
                 minuet = {
                     name = 'minuet',
                     module = 'minuet.blink',
-                    kind = 'minuet',
                     score_offset = 100,
                 },
             },
