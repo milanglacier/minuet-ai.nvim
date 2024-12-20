@@ -78,11 +78,7 @@ specs = {
     -- required.
     { 'hrsh7th/nvim-cmp' },
     -- optional, if you are using virtual-text frontend, blink is not required.
-    -- NOTE: you must use the nightly version of blink. The latest tagged
-    -- release (v0.7.6, as of writing) does not support minuet yet. If
-    -- you are using lazyvim, set vim.g.lazyvim_blink_main = true in
-    -- `config/options.lua`
-    { 'Saghen/blink.cmp', version = nil },
+    { 'Saghen/blink.cmp' },
 }
 ```
 
