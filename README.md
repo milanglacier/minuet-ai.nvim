@@ -71,17 +71,19 @@ specs = {
             require('minuet').setup {
                 -- Your configuration options here
             }
-        end
+        end,
     },
     { 'nvim-lua/plenary.nvim' },
-    -- optional, if you are using virtual-text frontend,
-    -- nvim-cmp is not required.
+    -- optional, if you are using virtual-text frontend, nvim-cmp is not
+    -- required.
     { 'hrsh7th/nvim-cmp' },
-    -- optional, if you are using virtual-text frontend,
-    -- blink is not required.
-    { 'Saghen/blink.cmp' },
+    -- optional, if you are using virtual-text frontend, blink is not required.
+    -- NOTE: you must use the nightly version of blink. The latest tagged
+    -- release (v0.7.6, as of writing) does not support minuet yet. If
+    -- you are using lazyvim, set vim.g.lazyvim_blink_main = true in
+    -- `config/options.lua`
+    { 'Saghen/blink.cmp', version = nil },
 }
-
 ```
 
 Given the response speed and rate limits of LLM services, we recommend you
@@ -145,13 +147,6 @@ require('minuet').setup {
 require('blink-cmp').setup {
     keymap = {
         -- Manually invoke minuet completion.
-        --
-        -- To enable manual completion, you must use the nightly version of
-        -- `blink-cmp`. The latest tagged release (v0.7.6, at the time of
-        -- writing) does not yet support this feature. Additionally, you need
-        -- to set the `min_keyword_length` option in `blink-cmp` to 0 to get
-        -- manual completion work until the issue tracked at
-        -- https://github.com/Saghen/blink.cmp/issues/647 is resolved.
         ['<A-y>'] = {
             function(cmp)
                 cmp.show { providers = { 'minuet' } }
@@ -741,6 +736,9 @@ opts.mapping = {
 **With blink-cmp**:
 
 ```lua
+-- set the following line in your config/options.lua
+vim.g.lazyvim_blink_main = true
+
 {
     'milanglacier/minuet-ai.nvim',
     config = function()
