@@ -107,20 +107,25 @@ vim.api.nvim_create_user_command('MinuetToggle', function()
     vim.deprecate('MinuetToggle', 'MinuetToggleCmp', 'next release', 'minuet-ai.nvim')
 end, {})
 
-vim.api.nvim_create_user_command('MinuetToggleCmp', function()
-    if not M.config then
-        vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
-        return
-    end
+for cmd_name, complete_frontend in pairs { Blink = 'blink', Cmp = 'cmp' } do
+    vim.api.nvim_create_user_command('MinuetToggle' .. cmd_name, function()
+        if not M.config then
+            vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
+            return
+        end
 
-    M.config.cmp.enable_auto_complete = not M.config.cmp.enable_auto_complete
+        M.config[complete_frontend].enable_auto_complete = not M.config[complete_frontend].enable_auto_complete
 
-    vim.notify(
-        'Minuet Auto Completion for cmp: ' .. (M.config.cmp.enable_auto_complete and 'enabled' or 'disabled'),
-        vim.log.levels.INFO
-    )
-end, {
-    desc = 'Toggle Minuet Auto Completion',
-})
+        vim.notify(
+            'Minuet Auto Completion for '
+                .. cmd_name
+                .. ': '
+                .. (M.config[complete_frontend].enable_auto_complete and 'enabled' or 'disabled'),
+            vim.log.levels.INFO
+        )
+    end, {
+        desc = 'Toggle Minuet Auto Completion',
+    })
+end
 
 return M

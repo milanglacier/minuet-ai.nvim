@@ -23,6 +23,12 @@ function M.new()
 end
 
 function M:get_completions(ctx, callback)
+    -- we want to always invoke completion when invoked manually
+    if not config.blink.enable_auto_complete and ctx.trigger.kind ~= 'manual' then
+        callback()
+        return
+    end
+
     local function _complete()
         if config.throttle > 0 then
             self.is_in_throttle = true
@@ -82,6 +88,11 @@ function M:get_completions(ctx, callback)
                 items = items,
             }
         end)
+    end
+
+    if ctx.trigger.kind == 'manual' then
+        _complete()
+        return
     end
 
     if config.throttle > 0 and self.is_in_throttle then

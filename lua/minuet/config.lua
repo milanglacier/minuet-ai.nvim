@@ -64,12 +64,15 @@ local default_system_template = '{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion
 
 local M = {
     -- Enable or disable auto-completion. Note that you still need to add
-    -- Minuet to your cmp sources. This option controls whether cmp will
-    -- attempt to invoke minuet when minuet is included in cmp sources. This
-    -- setting has no effect on manual completion; Minuet will always be
-    -- enabled when invoked manually. You can use the command `MinuetToggle` to
-    -- toggle this option.
+    -- Minuet to your cmp/blink sources. This option controls whether cmp/blink
+    -- will attempt to invoke minuet when minuet is included in cmp/blink
+    -- sources. This setting has no effect on manual completion; Minuet will
+    -- always be enabled when invoked manually. You can use the command
+    -- `MinuetToggleCmp/Blink` to toggle this option.
     cmp = {
+        enable_auto_complete = true,
+    },
+    blink = {
         enable_auto_complete = true,
     },
     virtualtext = {

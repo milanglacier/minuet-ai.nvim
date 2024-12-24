@@ -176,11 +176,15 @@ Minuet AI comes with the following defaults:
 ```lua
 default_config = {
     -- Enable or disable auto-completion. Note that you still need to add
-    -- Minuet to your cmp sources. This option controls whether cmp will
-    -- attempt to invoke minuet when minuet is included in cmp sources. This
-    -- setting has no effect on manual completion; Minuet will always be
-    -- enabled when invoked manually.
+    -- Minuet to your cmp/blink sources. This option controls whether cmp/blink
+    -- will attempt to invoke minuet when minuet is included in cmp/blink
+    -- sources. This setting has no effect on manual completion; Minuet will
+    -- always be enabled when invoked manually. You can use the command
+    -- `MinuetToggle` to toggle this option.
     cmp = {
+        enable_auto_complete = true,
+    },
+    blink = {
         enable_auto_complete = true,
     },
     virtualtext = {
@@ -602,13 +606,13 @@ provider_options = {
 
 This command allows you to change the provider after `Minuet` has been setup.
 
-## MinuetToggleCmp
+## MinuetToggleCmp / MinuetToggleBlink
 
-Enable or disable auto-completion for `nvim-cmp`. Note that you still need to
-add Minuet to your cmp sources. This command controls whether cmp will attempt
-to invoke minuet when minuet is included in cmp sources. This command has no
-effect on manual completion; Minuet will always be enabled when invoked
-manually.
+Enable or disable auto-completion for `nvim-cmp` or `blink.cmp`. Note that you
+still need to add Minuet to your sources. This command controls whether
+cmp/blink will attempt to invoke minuet when minuet is included in sources.
+This command has no effect on manual completion; Minuet will always be enabled
+when invoked manually.
 
 ## MinuetToggleVirtualText
 
