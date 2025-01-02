@@ -456,6 +456,7 @@ end, { desc = '[minuet.virtualtext] toggle virtual text' })
 
 function M.setup()
     local config = require('minuet').config
+    api.nvim_clear_autocmds { group = M.augroup }
 
     if #config.virtualtext.auto_trigger_ft > 0 then
         api.nvim_create_autocmd('FileType', {
