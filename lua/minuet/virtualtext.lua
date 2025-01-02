@@ -351,7 +351,7 @@ function autocmd.on_cursor_hold_i()
 end
 
 function autocmd.on_text_changed_p()
-    action.on_cursor_moved_i()
+    autocmd.on_cursor_moved_i()
 end
 
 function autocmd.on_complete_changed()
