@@ -14,15 +14,15 @@
   - [OpenAI-FIM-compatible](#openai-fim-compatible)
   - [Huggingface](#huggingface)
 - [Commands](#commands)
-  - [MinuetChangeProvider](#minuetchangeprovider)
-  - [MinuetToggleCmp](#minuettogglecmp)
-  - [MinuetToggleVirtualText](#minuettogglevirtualtext)
+  - [`Minuet change_provider`](#-minuet-change-provider-)
+  - [`Minuet blink`, `Minuet cmp`](#-minuet-blink----minuet-cmp-)
+  - [`Minuet virtualtext`](#-minuet-virtualtext-)
 - [API](#api)
   - [Virtual Text](#virtual-text)
 - [FAQ](#faq)
-  - [Customize `cmp` ui](#customize-cmp-ui)
+  - [Customize `cmp` ui](#customize--cmp--ui)
   - [Significant Input Delay When Moving to a New Line](#significant-input-delay-when-moving-to-a-new-line)
-  - [Integration with `lazyvim`](#integration-with-lazyvim)
+  - [Integration with `lazyvim`](#integration-with--lazyvim-)
 - [TODO](#todo)
 - [Contributing](#contributing)
 - [Acknowledgement](#acknowledgement)
@@ -143,11 +143,7 @@ require('minuet').setup {
 require('blink-cmp').setup {
     keymap = {
         -- Manually invoke minuet completion.
-        ['<A-y>'] = {
-            function(cmp)
-                cmp.show { providers = { 'minuet' } }
-            end,
-        },
+        ['<A-y>'] = require('minuet').make_blink_map(),
     },
     sources = {
          -- Enable minuet for autocomplete
@@ -602,22 +598,29 @@ provider_options = {
 
 # Commands
 
-## MinuetChangeProvider
+## `Minuet change_provider`
 
 This command allows you to change the provider after `Minuet` has been setup.
 
-## MinuetToggleCmp / MinuetToggleBlink
+Example usage: `Minuet change_provider claude`
 
-Enable or disable auto-completion for `nvim-cmp` or `blink.cmp`. Note that you
-still need to add Minuet to your sources. This command controls whether
-cmp/blink will attempt to invoke minuet when minuet is included in sources.
-This command has no effect on manual completion; Minuet will always be enabled
-when invoked manually.
+## `Minuet blink`, `Minuet cmp`
 
-## MinuetToggleVirtualText
+Enable or disable autocompletion for `nvim-cmp` or `blink.cmp`. While Minuet
+must be added to your cmp/blink sources, this command only controls whether
+Minuet is triggered during autocompletion. The command does not affect manual
+completion behavior - Minuet remains active and available when manually
+invoked.
 
-Toggle the automatic display of `virtual-text` completion in the current buffer
-on or off.
+Example usage: `Minuet blink toggle`, `Minuet blink enable`, `Minuet blink disable`
+
+## `Minuet virtualtext`
+
+Enable or disable the automatic display of `virtual-text` completion in the
+**current buffer**.
+
+Example usage: `Minuet virtualtext toggle`, `Minuet virtualtext enable`,
+`Minuet virtualtext disable`.
 
 # API
 

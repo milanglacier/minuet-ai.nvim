@@ -300,10 +300,20 @@ function action.is_visible()
     return not not api.nvim_buf_get_extmark_by_id(0, internal.ns_id, internal.extmark_id, { details = false })[1]
 end
 
+function action.disable_auto_trigger()
+    vim.b.minuet_virtual_text_auto_trigger = false
+    vim.notify('Minuet Virtual Text auto trigger disabled', vim.log.levels.INFO)
+end
+
+function action.enable_auto_trigger()
+    vim.b.minuet_virtual_text_auto_trigger = true
+    vim.notify('Minuet Virtual Text auto trigger enabled', vim.log.levels.INFO)
+end
+
 function action.toggle_auto_trigger()
     vim.b.minuet_virtual_text_auto_trigger = not should_auto_trigger()
     vim.notify(
-        'Minuet Virtual Text will ' .. (should_auto_trigger() and 'auto' or 'not auto') .. ' trigger',
+        'Minuet Virtual Text auto trigger ' .. (should_auto_trigger() and 'enabled' or 'disabled'),
         vim.log.levels.INFO
     )
 end
@@ -451,7 +461,7 @@ local function set_keymaps(keymap)
 end
 
 api.nvim_create_user_command('MinuetToggleVirtualText', function()
-    M.action.toggle_auto_trigger()
+    vim.deprecate('MinuetToggleVirtualText', '`Minuet virtualtext toggle`', 'next release', 'minuet-ai.nvim', false)
 end, { desc = '[minuet.virtualtext] toggle virtual text' })
 
 function M.setup()

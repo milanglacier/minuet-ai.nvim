@@ -4,7 +4,7 @@ local M = {}
 
 function M.setup(config)
     if config.enabled ~= nil then
-        vim.deprecate('enabled', 'cmp.enable_auto_complete', 'next release', 'minuet-ai.nvim')
+        vim.deprecate('enabled', 'cmp.enable_auto_complete', 'next release', 'minuet-ai.nvim', false)
     end
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
 
@@ -26,6 +26,14 @@ function M.make_cmp_map()
             },
         },
     })
+end
+
+function M.make_blink_map()
+    return {
+        function(cmp)
+            cmp.show { providers = { 'minuet' } }
+        end,
+    }
 end
 
 function M.notify_breaking_change_only_once(message, filename, date)
@@ -89,43 +97,102 @@ function M.change_provider(provider)
     vim.notify('Minuet Provider changed to: ' .. provider, vim.log.levels.INFO)
 end
 
-vim.api.nvim_create_user_command('MinuetChangeProvider', function(args)
-    M.change_provider(args.args)
+vim.api.nvim_create_user_command('MinuetChangeProvider', function(_)
+    vim.deprecate('MinuetChangeProvider', '`Minuet change_provider`', 'next release', 'minuet-ai.nvim', false)
 end, {
     nargs = 1,
     complete = function()
-        local providers = {}
-        for k, _ in pairs(M.config.provider_options) do
-            table.insert(providers, k)
-        end
-        return providers
+        vim.deprecate('MinuetChangeProvider', '`Minuet change_provider`', 'next release', 'minuet-ai.nvim', false)
     end,
     desc = 'Change the provider of Minuet.',
 })
 
 vim.api.nvim_create_user_command('MinuetToggle', function()
-    vim.deprecate('MinuetToggle', 'MinuetToggleCmp', 'next release', 'minuet-ai.nvim')
+    vim.deprecate('MinuetToggle', '`Minuet cmp toggle`', 'next release', 'minuet-ai.nvim', false)
 end, {})
 
 for cmd_name, complete_frontend in pairs { Blink = 'blink', Cmp = 'cmp' } do
     vim.api.nvim_create_user_command('MinuetToggle' .. cmd_name, function()
-        if not M.config then
-            vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
-            return
-        end
-
-        M.config[complete_frontend].enable_auto_complete = not M.config[complete_frontend].enable_auto_complete
-
-        vim.notify(
-            'Minuet Auto Completion for '
-                .. cmd_name
-                .. ': '
-                .. (M.config[complete_frontend].enable_auto_complete and 'enabled' or 'disabled'),
-            vim.log.levels.INFO
+        vim.deprecate(
+            'MinuetToggle' .. cmd_name,
+            '`Minuet ' .. complete_frontend .. ' toggle`',
+            'next release',
+            'minuet-ai.nvim',
+            false
         )
     end, {
         desc = 'Toggle Minuet Auto Completion',
     })
 end
+
+vim.api.nvim_create_user_command('Minuet', function(args)
+    if not M.config then
+        vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
+        return
+    end
+
+    local fargs = args.fargs
+
+    local actions = {}
+
+    for _, complete_frontend in ipairs { 'blink', 'cmp' } do
+        actions[complete_frontend] = {
+            enable = function()
+                M.config[complete_frontend].enable_auto_complete = true
+                vim.notify('Minuet ' .. complete_frontend .. ' enabled', vim.log.levels.INFO)
+            end,
+            disable = function()
+                M.config[complete_frontend].enable_auto_complete = false
+                vim.notify('Minuet ' .. complete_frontend .. ' disabled', vim.log.levels.INFO)
+            end,
+            toggle = function()
+                M.config[complete_frontend].enable_auto_complete = not M.config[complete_frontend].enable_auto_complete
+                vim.notify('Minuet ' .. complete_frontend .. ' toggled', vim.log.levels.INFO)
+            end,
+        }
+    end
+
+    actions.virtualtext = {
+        enable = require('minuet.virtualtext').action.enable_auto_trigger,
+        disable = require('minuet.virtualtext').action.disable_auto_trigger,
+        toggle = require('minuet.virtualtext').action.toggle_auto_trigger,
+    }
+
+    actions.change_provider = setmetatable({}, {
+        __index = function(_, key)
+            return function()
+                M.change_provider(key)
+            end
+        end,
+    })
+
+    actions[fargs[1]][fargs[2]]()
+end, {
+    nargs = '+',
+    complete = function(_, cmdline, _)
+        cmdline = cmdline or ''
+
+        if cmdline:find 'cmp' or cmdline:find 'blink' or cmdline:find 'virtualtext' then
+            return {
+                'enable',
+                'disable',
+                'toggle',
+            }
+        end
+
+        if cmdline:find 'change_provider' then
+            if not M.config then
+                return
+            end
+            local providers = {}
+            for k, _ in pairs(M.config.provider_options) do
+                table.insert(providers, k)
+            end
+            return providers
+        end
+
+        return { 'cmp', 'virtualtext', 'blink', 'change_provider' }
+    end,
+})
 
 return M
