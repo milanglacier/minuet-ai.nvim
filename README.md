@@ -188,6 +188,10 @@ default_config = {
         -- e.g., { 'python', 'lua' }. Note that you can still invoke manual
         -- completion even if the filetype is not on your auto_trigger_ft list.
         auto_trigger_ft = {},
+        -- specify file types where automatic virtual text completion should be
+        -- disabled. This option is useful when auto-completion is enabled for
+        -- all file types i.e., when auto_trigger_ft = { '*' }
+        auto_trigger_ignore_ft = {},
         keymap = {
             accept = nil,
             accept_line = nil,

@@ -471,8 +471,10 @@ function M.setup()
     if #config.virtualtext.auto_trigger_ft > 0 then
         api.nvim_create_autocmd('FileType', {
             pattern = config.virtualtext.auto_trigger_ft,
-            callback = function(args)
-                vim.b[args.buf].minuet_virtual_text_auto_trigger = true
+            callback = function()
+                if not vim.tbl_contains(config.virtualtext.auto_trigger_ignore_ft, vim.bo.ft) then
+                    vim.b.minuet_virtual_text_auto_trigger = true
+                end
             end,
             group = M.augroup,
             desc = 'minuet virtual text filetype auto trigger',
