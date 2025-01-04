@@ -3,9 +3,6 @@ local default_config = require 'minuet.config'
 local M = {}
 
 function M.setup(config)
-    if config.enabled ~= nil then
-        vim.deprecate('enabled', 'cmp.enable_auto_complete', 'next release', 'minuet-ai.nvim', false)
-    end
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
 
     local has_cmp = pcall(require, 'cmp')
@@ -37,48 +34,7 @@ function M.make_blink_map()
     }
 end
 
-function M.notify_breaking_change_only_once(message, filename, date)
-    ---@diagnostic disable-next-line
-    local file = vim.fs.joinpath(vim.fn.stdpath 'cache', 'minuet-' .. filename .. '-' .. date)
 
-    if vim.fn.filereadable(file) == 1 then
-        return
-    end
-
-    vim.notify(
-        'Please confirm that you have fully read the documentation (yes/no).'
-            .. '\nThis notification will only appear once after you choose "yes".\n'
-            .. message
-            .. ' as of '
-            .. date,
-        vim.log.levels.WARN
-    )
-
-    vim.defer_fn(function()
-        vim.ui.select({
-            1,
-            2,
-        }, {
-            prompt = message,
-            format_item = function(item)
-                local format = {
-                    'Yes, I have understand what is happening here.\nNotification will not be sent again.',
-                    'No, Please send the notification again after relaunch.',
-                }
-                return format[item]
-            end,
-        }, function(choice)
-            if choice == 1 then
-                local f = io.open(file, 'w')
-                if not f then
-                    vim.notify('Cannot open temporary message file: ' .. file, vim.log.levels.ERROR)
-                    return
-                end
-                f:close()
-            end
-        end)
-    end, 500)
-end
 
 function M.change_provider(provider)
     if not M.config then
