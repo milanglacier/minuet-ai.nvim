@@ -15,6 +15,7 @@ function M.setup(config)
     end
 
     require('minuet.virtualtext').setup()
+    require 'minuet.deprecate'
 end
 
 function M.make_cmp_map()
@@ -95,34 +96,6 @@ function M.change_provider(provider)
 
     M.config.provider = provider
     vim.notify('Minuet Provider changed to: ' .. provider, vim.log.levels.INFO)
-end
-
-vim.api.nvim_create_user_command('MinuetChangeProvider', function(_)
-    vim.deprecate('MinuetChangeProvider', '`Minuet change_provider`', 'next release', 'minuet-ai.nvim', false)
-end, {
-    nargs = 1,
-    complete = function()
-        vim.deprecate('MinuetChangeProvider', '`Minuet change_provider`', 'next release', 'minuet-ai.nvim', false)
-    end,
-    desc = 'Change the provider of Minuet.',
-})
-
-vim.api.nvim_create_user_command('MinuetToggle', function()
-    vim.deprecate('MinuetToggle', '`Minuet cmp toggle`', 'next release', 'minuet-ai.nvim', false)
-end, {})
-
-for cmd_name, complete_frontend in pairs { Blink = 'blink', Cmp = 'cmp' } do
-    vim.api.nvim_create_user_command('MinuetToggle' .. cmd_name, function()
-        vim.deprecate(
-            'MinuetToggle' .. cmd_name,
-            '`Minuet ' .. complete_frontend .. ' toggle`',
-            'next release',
-            'minuet-ai.nvim',
-            false
-        )
-    end, {
-        desc = 'Toggle Minuet Auto Completion',
-    })
 end
 
 vim.api.nvim_create_user_command('Minuet', function(args)

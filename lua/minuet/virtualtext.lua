@@ -460,10 +460,6 @@ local function set_keymaps(keymap)
     end
 end
 
-api.nvim_create_user_command('MinuetToggleVirtualText', function()
-    vim.deprecate('MinuetToggleVirtualText', '`Minuet virtualtext toggle`', 'next release', 'minuet-ai.nvim', false)
-end, { desc = '[minuet.virtualtext] toggle virtual text' })
-
 function M.setup()
     local config = require('minuet').config
     api.nvim_clear_autocmds { group = M.augroup }
