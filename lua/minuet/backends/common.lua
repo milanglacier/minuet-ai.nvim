@@ -2,6 +2,9 @@ local M = {}
 local utils = require 'minuet.utils'
 local job = require 'plenary.job'
 local config = require('minuet').config
+local uv = vim.loop
+
+M.current_jobs = {}
 
 ---@param items_raw string?
 ---@param provider string
@@ -108,6 +111,15 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
 end
 
 function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor, context_after_cursor, callback)
+    -- Terminate all current jobs before starting new ones
+    for _, job_to_kill in ipairs(M.current_jobs) do
+        utils.notify('Canceling completion job ' .. job_to_kill.pid, 'verbose')
+        ---@diagnostic disable-next-line: undefined-field
+        uv.kill(job_to_kill.pid, 15) -- 15 - term signal
+    end
+
+    M.current_jobs = {}
+
     local data = {}
 
     data.model = options.model
@@ -166,19 +178,28 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
             table.insert(args, config.proxy)
         end
 
-        job:new({
+        local new_job = job:new({
             command = 'curl',
             args = args,
-            on_exit = vim.schedule_wrap(function(response, exit_code)
+            on_exit = vim.schedule_wrap(function(exited_job, exit_code)
+                -- Find exited_job in current_jobs and remove it
+                for i, j in ipairs(M.current_jobs) do
+                    if j.pid == exited_job.pid then
+                        table.remove(M.current_jobs, i)
+                        utils.notify('Removed job from current_jobs ' .. j.pid, 'verbose')
+                        break
+                    end
+                end
+
                 -- Increment the request_send counter
                 request_complete = request_complete + 1
 
                 local result
 
                 if options.stream then
-                    result = utils.stream_decode(response, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.stream_decode(exited_job, exit_code, data_file, options.name, get_text_fn)
                 else
-                    result = utils.no_stream_decode(response, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.no_stream_decode(exited_job, exit_code, data_file, options.name, get_text_fn)
                 end
 
                 if result then
@@ -187,7 +208,12 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
 
                 check_and_callback()
             end),
-        }):start()
+        })
+
+        utils.notify('Starting completion job', 'verbose')
+        table.insert(M.current_jobs, new_job)
+        new_job:start()
     end
 end
+
 return M
