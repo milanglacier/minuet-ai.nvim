@@ -203,7 +203,7 @@ M.provider_options = {
         optional = {},
     },
     openai_fim_compatible = {
-        model = 'deepseek-coder',
+        model = 'deepseek-chat',
         end_point = 'https://api.deepseek.com/beta/completions',
         api_key = 'DEEPSEEK_API_KEY',
         name = 'Deepseek',
