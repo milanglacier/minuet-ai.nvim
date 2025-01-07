@@ -184,7 +184,9 @@ local function trigger(bufnr)
 
         local ctx = get_ctx()
         ctx.suggestions = data
-        ctx.choice = 1
+        if not ctx.choice then
+            ctx.choice = 1
+        end
         ctx.shown_choices = {}
 
         update_preview()
