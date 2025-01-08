@@ -114,7 +114,6 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
     -- Terminate all current jobs before starting new ones
     for _, job_to_kill in ipairs(M.current_jobs) do
         utils.notify('Canceling completion job ' .. job_to_kill.pid, 'verbose')
-        ---@diagnostic disable-next-line: undefined-field
         uv.kill(job_to_kill.pid, 15) -- 15 - term signal
     end
 
