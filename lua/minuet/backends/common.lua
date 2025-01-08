@@ -4,23 +4,41 @@ local job = require 'plenary.job'
 local config = require('minuet').config
 local uv = vim.uv or vim.loop
 
+-- currently running completion jobs, basically forked curl processes
 M.current_jobs = {}
 
----@param pid number
-function M.remove_job_by_pid(pid)
+---@param job_to_register Job
+function M.register_job(job_to_register)
+    table.insert(M.current_jobs, job_to_register)
+    utils.notify('Registered completion job', 'verbose')
+end
+
+---@param job_to_remove Job
+function M.remove_job(job_to_remove)
     for i, j in ipairs(M.current_jobs) do
-        if j.pid == pid then
+        if j.pid == job_to_remove.pid then
             table.remove(M.current_jobs, i)
-            utils.notify('Removed job from current_jobs ' .. pid, 'verbose')
+            utils.notify('Removed completion job ' .. job_to_remove.pid .. ' from current_jobs', 'verbose')
             break
         end
     end
 end
 
+---@param pid number
+local function terminate_job(pid)
+    if not uv.kill(pid, 15) then -- SIGTERM
+        utils.notify('Failed to terminate completion job ' .. pid, 'warning')
+        return false
+    end
+
+    return true
+end
+
 function M.terminate_all_jobs()
     for _, job_to_kill in ipairs(M.current_jobs) do
-        utils.notify('Canceling completion job ' .. job_to_kill.pid, 'verbose')
-        uv.kill(job_to_kill.pid, 15) -- SIGTERM
+        if terminate_job(job_to_kill.pid) then
+            utils.notify('Canceled completion job ' .. job_to_kill.pid, 'verbose')
+        end
     end
 
     M.current_jobs = {}
@@ -108,7 +126,7 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
         command = 'curl',
         args = args,
         on_exit = vim.schedule_wrap(function(exited_job, exit_code)
-            M.remove_job_by_pid(exited_job.pid)
+            M.remove_job(exited_job)
 
             local items_raw
 
@@ -134,8 +152,7 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
         end),
     }
 
-    utils.notify('Starting completion job', 'verbose')
-    table.insert(M.current_jobs, new_job)
+    M.register_job(new_job)
     new_job:start()
 end
 
@@ -190,7 +207,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
             command = 'curl',
             args = args,
             on_exit = vim.schedule_wrap(function(exited_job, exit_code)
-                M.remove_job_by_pid(exited_job.pid)
+                M.remove_job(exited_job)
 
                 local result
 
@@ -210,8 +227,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
             end),
         }
 
-        utils.notify('Starting completion job', 'verbose')
-        table.insert(M.current_jobs, new_job)
+        M.register_job(new_job)
         new_job:start()
     end
 end
