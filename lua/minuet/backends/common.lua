@@ -2,7 +2,7 @@ local M = {}
 local utils = require 'minuet.utils'
 local job = require 'plenary.job'
 local config = require('minuet').config
-local uv = vim.loop
+local uv = vim.uv or vim.loop
 
 M.current_jobs = {}
 
