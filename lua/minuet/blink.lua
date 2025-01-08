@@ -30,6 +30,11 @@ function M:get_completions(ctx, callback)
     end
 
     local function _complete()
+        -- NOTE: blink will accumulate completion items during multiple
+        -- callbacks, So for each back we must ensure we only deliver new
+        -- arrived completion items to avoid duplicated completion items.
+        local delivered_completion_items = {}
+
         if config.throttle > 0 then
             self.is_in_throttle = true
             vim.defer_fn(function()
@@ -69,8 +74,17 @@ function M:get_completions(ctx, callback)
 
             data = utils.list_dedup(data)
 
+            local new_data = {}
+
+            for _, item in ipairs(data) do
+                if not delivered_completion_items[item] then
+                    table.insert(new_data, item)
+                    delivered_completion_items[item] = true
+                end
+            end
+
             local items = {}
-            for _, result in ipairs(data) do
+            for _, result in ipairs(new_data) do
                 table.insert(items, {
                     label = result,
                     documentation = {

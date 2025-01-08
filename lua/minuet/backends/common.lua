@@ -140,21 +140,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
     end
 
     local items = {}
-    local request_complete = 0
     local n_completions = config.n_completions
-    local has_called_back = false
-
-    local function check_and_callback()
-        if request_complete >= n_completions and not has_called_back then
-            has_called_back = true
-
-            items = M.filter_context_sequences_in_items(items, context_after_cursor)
-
-            items = utils.remove_spaces(items)
-
-            callback(items)
-        end
-    end
 
     for _ = 1, n_completions do
         local args = {
@@ -190,9 +176,6 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
                     end
                 end
 
-                -- Increment the request_send counter
-                request_complete = request_complete + 1
-
                 local result
 
                 if options.stream then
@@ -205,7 +188,9 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
                     table.insert(items, result)
                 end
 
-                check_and_callback()
+                items = M.filter_context_sequences_in_items(items, context_after_cursor)
+                items = utils.remove_spaces(items)
+                callback(items)
             end),
         })
 
