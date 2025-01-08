@@ -363,7 +363,7 @@ function M.stream_decode(response, exit_code, data_file, provider, get_text_fn)
     local result_str = #result > 0 and table.concat(result) or nil
 
     if not result_str then
-        M.notify(provider .. ' returns no text on streaming: ' .. vim.inspect(responses), 'error', vim.log.levels.INFO)
+        M.notify(provider .. ' returns no text on streaming: ' .. vim.inspect(responses), 'verbose', vim.log.levels.INFO)
     end
 
     return result_str
