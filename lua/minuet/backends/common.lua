@@ -6,6 +6,26 @@ local uv = vim.uv or vim.loop
 
 M.current_jobs = {}
 
+---@param pid number
+function M.remove_job_by_pid(pid)
+    for i, j in ipairs(M.current_jobs) do
+        if j.pid == pid then
+            table.remove(M.current_jobs, i)
+            utils.notify('Removed job from current_jobs ' .. pid, 'verbose')
+            break
+        end
+    end
+end
+
+function M.terminate_all_jobs()
+    for _, job_to_kill in ipairs(M.current_jobs) do
+        utils.notify('Canceling completion job ' .. job_to_kill.pid, 'verbose')
+        uv.kill(job_to_kill.pid, 15) -- SIGTERM
+    end
+
+    M.current_jobs = {}
+end
+
 ---@param items_raw string?
 ---@param provider string
 ---@return table<string>
@@ -34,6 +54,8 @@ function M.filter_context_sequences_in_items(items, context)
 end
 
 function M.complete_openai_base(options, context_before_cursor, context_after_cursor, callback)
+    M.terminate_all_jobs()
+
     local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
 
     local few_shots = vim.deepcopy(utils.get_or_eval_value(options.few_shots))
@@ -82,16 +104,19 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
         table.insert(args, config.proxy)
     end
 
-    job:new({
+    local new_job = job:new {
         command = 'curl',
         args = args,
-        on_exit = vim.schedule_wrap(function(response, exit_code)
+        on_exit = vim.schedule_wrap(function(exited_job, exit_code)
+            M.remove_job_by_pid(exited_job.pid)
+
             local items_raw
 
             if options.stream then
-                items_raw = utils.stream_decode(response, exit_code, data_file, options.name, get_text_fn_stream)
+                items_raw = utils.stream_decode(exited_job, exit_code, data_file, options.name, get_text_fn_stream)
             else
-                items_raw = utils.no_stream_decode(response, exit_code, data_file, options.name, get_text_fn_no_stream)
+                items_raw =
+                    utils.no_stream_decode(exited_job, exit_code, data_file, options.name, get_text_fn_no_stream)
             end
 
             if not items_raw then
@@ -107,17 +132,15 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
 
             callback(items)
         end),
-    }):start()
+    }
+
+    utils.notify('Starting completion job', 'verbose')
+    table.insert(M.current_jobs, new_job)
+    new_job:start()
 end
 
 function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor, context_after_cursor, callback)
-    -- Terminate all current jobs before starting new ones
-    for _, job_to_kill in ipairs(M.current_jobs) do
-        utils.notify('Canceling completion job ' .. job_to_kill.pid, 'verbose')
-        uv.kill(job_to_kill.pid, 15) -- 15 - term signal
-    end
-
-    M.current_jobs = {}
+    M.terminate_all_jobs()
 
     local data = {}
 
@@ -163,18 +186,11 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
             table.insert(args, config.proxy)
         end
 
-        local new_job = job:new({
+        local new_job = job:new {
             command = 'curl',
             args = args,
             on_exit = vim.schedule_wrap(function(exited_job, exit_code)
-                -- Find exited_job in current_jobs and remove it
-                for i, j in ipairs(M.current_jobs) do
-                    if j.pid == exited_job.pid then
-                        table.remove(M.current_jobs, i)
-                        utils.notify('Removed job from current_jobs ' .. j.pid, 'verbose')
-                        break
-                    end
-                end
+                M.remove_job_by_pid(exited_job.pid)
 
                 local result
 
@@ -192,7 +208,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
                 items = utils.remove_spaces(items)
                 callback(items)
             end),
-        })
+        }
 
         utils.notify('Starting completion job', 'verbose')
         table.insert(M.current_jobs, new_job)
