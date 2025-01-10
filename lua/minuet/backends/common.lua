@@ -10,7 +10,7 @@ M.current_jobs = {}
 ---@param job Job
 function M.register_job(job)
     table.insert(M.current_jobs, job)
-    utils.notify('Registered completion job', 'verbose')
+    utils.notify('Registered completion job', 'debug')
 end
 
 ---@param job Job
@@ -18,7 +18,7 @@ function M.remove_job(job)
     for i, j in ipairs(M.current_jobs) do
         if j.pid == job.pid then
             table.remove(M.current_jobs, i)
-            utils.notify('Removed completion job ' .. job.pid .. ' from current_jobs', 'verbose')
+            utils.notify('Completion job ' .. job.pid .. ' finished and removed from current_jobs', 'debug')
             break
         end
     end
@@ -27,18 +27,18 @@ end
 ---@param pid number
 local function terminate_job(pid)
     if not uv.kill(pid, 15) then -- SIGTERM
-        utils.notify('Failed to terminate completion job ' .. pid, 'warning')
+        utils.notify('Failed to terminate completion job ' .. pid, 'warn', vim.log.levels.WARN)
         return false
     end
+
+    utils.notify('Terminate completion job ' .. pid, 'debug')
 
     return true
 end
 
 function M.terminate_all_jobs()
-    for _, job_to_kill in ipairs(M.current_jobs) do
-        if terminate_job(job_to_kill.pid) then
-            utils.notify('Canceled completion job ' .. job_to_kill.pid, 'verbose')
-        end
+    for _, job in ipairs(M.current_jobs) do
+        terminate_job(job.pid)
     end
 
     M.current_jobs = {}
