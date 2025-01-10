@@ -1,7 +1,7 @@
 local config = require('minuet').config
 local utils = require 'minuet.utils'
 local common = require 'minuet.backends.common'
-local job = require 'plenary.job'
+local Job = require 'plenary.job'
 
 local M = {}
 
@@ -59,6 +59,8 @@ local function make_request_data()
 end
 
 function M.complete(context_before_cursor, context_after_cursor, callback)
+    common.terminate_all_jobs()
+
     local options, data = make_request_data()
 
     local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
@@ -101,15 +103,17 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
         table.insert(args, config.proxy)
     end
 
-    job:new({
+    local new_job = Job:new {
         command = 'curl',
         args = args,
-        on_exit = vim.schedule_wrap(function(response, exit_code)
+        on_exit = vim.schedule_wrap(function(job, exit_code)
+            common.remove_job(job)
+
             local items_raw
             if options.stream then
-                items_raw = utils.stream_decode(response, exit_code, data_file, 'Gemini', get_text_fn)
+                items_raw = utils.stream_decode(job, exit_code, data_file, 'Gemini', get_text_fn)
             else
-                items_raw = utils.no_stream_decode(response, exit_code, data_file, 'Gemini', get_text_fn)
+                items_raw = utils.no_stream_decode(job, exit_code, data_file, 'Gemini', get_text_fn)
             end
 
             if not items_raw then
@@ -125,7 +129,10 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
 
             callback(items)
         end),
-    }):start()
+    }
+
+    common.register_job(new_job)
+    new_job:start()
 end
 
 return M

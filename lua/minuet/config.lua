@@ -107,11 +107,13 @@ local M = {
     throttle = 1000, -- only send the request every x milliseconds, use 0 to disable throttle.
     -- debounce the request in x milliseconds, set to 0 to disable debounce
     debounce = 400,
-    -- show notification when request is sent or request fails. options:
-    -- false to disable notification. Note that you should use false, not "false".
-    -- "verbose" for all notifications.
-    -- "warn" for warnings and above.
-    -- "error" just errors.
+    -- Control notification display for request status
+    -- Notification options:
+    -- false: Disable all notifications (use boolean false, not string "false")
+    -- "debug": Display all notifications (comprehensive debugging)
+    -- "verbose": Display most notifications
+    -- "warn": Display warnings and errors only
+    -- "error": Display errors only
     notify = 'verbose',
     -- The request timeout, measured in seconds. When streaming is enabled
     -- (stream = true), setting a shorter request_timeout allows for faster

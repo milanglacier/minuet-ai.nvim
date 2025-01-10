@@ -1,7 +1,48 @@
 local M = {}
 local utils = require 'minuet.utils'
-local job = require 'plenary.job'
+local Job = require 'plenary.job'
 local config = require('minuet').config
+local uv = vim.uv or vim.loop
+
+-- currently running completion jobs, basically forked curl processes
+M.current_jobs = {}
+
+---@param job Job
+function M.register_job(job)
+    table.insert(M.current_jobs, job)
+    utils.notify('Registered completion job', 'debug')
+end
+
+---@param job Job
+function M.remove_job(job)
+    for i, j in ipairs(M.current_jobs) do
+        if j.pid == job.pid then
+            table.remove(M.current_jobs, i)
+            utils.notify('Completion job ' .. job.pid .. ' finished and removed from current_jobs', 'debug')
+            break
+        end
+    end
+end
+
+---@param pid number
+local function terminate_job(pid)
+    if not uv.kill(pid, 15) then -- SIGTERM
+        utils.notify('Failed to terminate completion job ' .. pid, 'warn', vim.log.levels.WARN)
+        return false
+    end
+
+    utils.notify('Terminate completion job ' .. pid, 'debug')
+
+    return true
+end
+
+function M.terminate_all_jobs()
+    for _, job in ipairs(M.current_jobs) do
+        terminate_job(job.pid)
+    end
+
+    M.current_jobs = {}
+end
 
 ---@param items_raw string?
 ---@param provider string
@@ -31,6 +72,8 @@ function M.filter_context_sequences_in_items(items, context)
 end
 
 function M.complete_openai_base(options, context_before_cursor, context_after_cursor, callback)
+    M.terminate_all_jobs()
+
     local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
 
     local few_shots = vim.deepcopy(utils.get_or_eval_value(options.few_shots))
@@ -79,16 +122,18 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
         table.insert(args, config.proxy)
     end
 
-    job:new({
+    local new_job = Job:new {
         command = 'curl',
         args = args,
-        on_exit = vim.schedule_wrap(function(response, exit_code)
+        on_exit = vim.schedule_wrap(function(job, exit_code)
+            M.remove_job(job)
+
             local items_raw
 
             if options.stream then
-                items_raw = utils.stream_decode(response, exit_code, data_file, options.name, get_text_fn_stream)
+                items_raw = utils.stream_decode(job, exit_code, data_file, options.name, get_text_fn_stream)
             else
-                items_raw = utils.no_stream_decode(response, exit_code, data_file, options.name, get_text_fn_no_stream)
+                items_raw = utils.no_stream_decode(job, exit_code, data_file, options.name, get_text_fn_no_stream)
             end
 
             if not items_raw then
@@ -104,10 +149,15 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
 
             callback(items)
         end),
-    }):start()
+    }
+
+    M.register_job(new_job)
+    new_job:start()
 end
 
 function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor, context_after_cursor, callback)
+    M.terminate_all_jobs()
+
     local data = {}
 
     data.model = options.model
@@ -152,16 +202,18 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
             table.insert(args, config.proxy)
         end
 
-        job:new({
+        local new_job = Job:new {
             command = 'curl',
             args = args,
-            on_exit = vim.schedule_wrap(function(response, exit_code)
+            on_exit = vim.schedule_wrap(function(job, exit_code)
+                M.remove_job(job)
+
                 local result
 
                 if options.stream then
-                    result = utils.stream_decode(response, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.stream_decode(job, exit_code, data_file, options.name, get_text_fn)
                 else
-                    result = utils.no_stream_decode(response, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.no_stream_decode(job, exit_code, data_file, options.name, get_text_fn)
                 end
 
                 if result then
@@ -172,7 +224,10 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
                 items = utils.remove_spaces(items)
                 callback(items)
             end),
-        }):start()
+        }
+
+        M.register_job(new_job)
+        new_job:start()
     end
 end
 

@@ -3,9 +3,10 @@ local config = require('minuet').config
 
 function M.notify(msg, minuet_level, vim_level, opts)
     local notify_levels = {
-        verbose = 0,
-        warn = 1,
-        error = 2,
+        debug = 0,
+        verbose = 1,
+        warn = 2,
+        error = 3,
     }
 
     if config.notify and notify_levels[minuet_level] >= notify_levels[config.notify] then
@@ -322,7 +323,7 @@ function M.no_stream_decode(response, exit_code, data_file, provider, get_text_f
     success, result_str = pcall(get_text_fn, json)
 
     if not success or not result_str then
-        M.notify(provider .. ' returns no text: ' .. vim.inspect(json), 'error', vim.log.levels.INFO)
+        M.notify(provider .. ' returns no text: ' .. vim.inspect(json), 'verbose', vim.log.levels.INFO)
         return
     end
 
@@ -363,7 +364,12 @@ function M.stream_decode(response, exit_code, data_file, provider, get_text_fn)
     local result_str = #result > 0 and table.concat(result) or nil
 
     if not result_str then
-        M.notify(provider .. ' returns no text on streaming: ' .. vim.inspect(responses), 'verbose', vim.log.levels.INFO)
+        M.notify(
+            provider .. ' returns no text on streaming: ' .. vim.inspect(responses),
+            'verbose',
+            vim.log.levels.INFO
+        )
+        return
     end
 
     return result_str

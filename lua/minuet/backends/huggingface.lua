@@ -1,6 +1,6 @@
 local config = require('minuet').config
 local utils = require 'minuet.utils'
-local job = require 'plenary.job'
+local Job = require 'plenary.job'
 local common = require 'minuet.backends.common'
 
 local function make_request_data()
@@ -36,6 +36,8 @@ if not M.is_available() then
 end
 
 M.complete_completion = function(context_before_cursor, context_after_cursor, callback)
+    common.terminate_all_jobs()
+
     local options, data = make_request_data()
     local language = utils.add_language_comment()
     local tab = utils.add_tab_comment()
@@ -98,11 +100,13 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
         table.insert(args, config.proxy)
     end
 
-    job:new({
+    local new_job = Job:new {
         command = 'curl',
         args = args,
-        on_exit = vim.schedule_wrap(function(response, exit_code)
-            local json = utils.no_stream_decode(response, exit_code, data_file, 'huggingface', function(json)
+        on_exit = vim.schedule_wrap(function(job, exit_code)
+            common.remove_job(job)
+
+            local json = utils.no_stream_decode(job, exit_code, data_file, 'huggingface', function(json)
                 return json
             end)
 
@@ -131,7 +135,10 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
 
             callback(items)
         end),
-    }):start()
+    }
+
+    common.register_job(new_job)
+    new_job:start()
 end
 
 M.complete = function(context_before_cursor, context_after_cursor, callback)
