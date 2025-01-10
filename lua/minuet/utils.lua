@@ -322,7 +322,7 @@ function M.no_stream_decode(response, exit_code, data_file, provider, get_text_f
     success, result_str = pcall(get_text_fn, json)
 
     if not success or not result_str then
-        M.notify(provider .. ' returns no text: ' .. vim.inspect(json), 'error', vim.log.levels.INFO)
+        M.notify(provider .. ' returns no text: ' .. vim.inspect(json), 'verbose', vim.log.levels.INFO)
         return
     end
 
@@ -364,6 +364,7 @@ function M.stream_decode(response, exit_code, data_file, provider, get_text_fn)
 
     if not result_str then
         M.notify(provider .. ' returns no text on streaming: ' .. vim.inspect(responses), 'verbose', vim.log.levels.INFO)
+        return
     end
 
     return result_str

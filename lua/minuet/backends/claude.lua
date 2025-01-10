@@ -34,6 +34,8 @@ local function make_request_data()
 end
 
 M.complete = function(context_before_cursor, context_after_cursor, callback)
+    common.terminate_all_jobs()
+
     local options, data = make_request_data()
     local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
 
@@ -76,16 +78,18 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
         table.insert(args, config.proxy)
     end
 
-    job:new({
+    local new_job = job:new({
         command = 'curl',
         args = args,
-        on_exit = vim.schedule_wrap(function(response, exit_code)
+        on_exit = vim.schedule_wrap(function(exited_job, exit_code)
+            common.remove_job(exited_job)
+
             local items_raw
 
             if options.stream then
-                items_raw = utils.stream_decode(response, exit_code, data_file, 'Claude', get_text_fn_stream)
+                items_raw = utils.stream_decode(exited_job, exit_code, data_file, 'Claude', get_text_fn_stream)
             else
-                items_raw = utils.no_stream_decode(response, exit_code, data_file, 'Claude', get_text_fn_no_steam)
+                items_raw = utils.no_stream_decode(exited_job, exit_code, data_file, 'Claude', get_text_fn_no_steam)
             end
 
             if not items_raw then
@@ -101,7 +105,10 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
 
             callback(items)
         end),
-    }):start()
+    })
+
+    common.register_job(new_job)
+    new_job:start()
 end
 
 return M
