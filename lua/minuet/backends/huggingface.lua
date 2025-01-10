@@ -1,6 +1,6 @@
 local config = require('minuet').config
 local utils = require 'minuet.utils'
-local job = require 'plenary.job'
+local Job = require 'plenary.job'
 local common = require 'minuet.backends.common'
 
 local function make_request_data()
@@ -100,13 +100,13 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
         table.insert(args, config.proxy)
     end
 
-    local new_job = job:new {
+    local new_job = Job:new {
         command = 'curl',
         args = args,
-        on_exit = vim.schedule_wrap(function(exited_job, exit_code)
-            common.remove_job(exited_job)
+        on_exit = vim.schedule_wrap(function(job, exit_code)
+            common.remove_job(job)
 
-            local json = utils.no_stream_decode(exited_job, exit_code, data_file, 'huggingface', function(json)
+            local json = utils.no_stream_decode(job, exit_code, data_file, 'huggingface', function(json)
                 return json
             end)
 

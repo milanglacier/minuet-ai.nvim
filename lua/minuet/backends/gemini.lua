@@ -1,7 +1,7 @@
 local config = require('minuet').config
 local utils = require 'minuet.utils'
 local common = require 'minuet.backends.common'
-local job = require 'plenary.job'
+local Job = require 'plenary.job'
 
 local M = {}
 
@@ -103,17 +103,17 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
         table.insert(args, config.proxy)
     end
 
-    local new_job = job:new {
+    local new_job = Job:new {
         command = 'curl',
         args = args,
-        on_exit = vim.schedule_wrap(function(exited_job, exit_code)
-            common.remove_job(exited_job)
+        on_exit = vim.schedule_wrap(function(job, exit_code)
+            common.remove_job(job)
 
             local items_raw
             if options.stream then
-                items_raw = utils.stream_decode(exited_job, exit_code, data_file, 'Gemini', get_text_fn)
+                items_raw = utils.stream_decode(job, exit_code, data_file, 'Gemini', get_text_fn)
             else
-                items_raw = utils.no_stream_decode(exited_job, exit_code, data_file, 'Gemini', get_text_fn)
+                items_raw = utils.no_stream_decode(job, exit_code, data_file, 'Gemini', get_text_fn)
             end
 
             if not items_raw then

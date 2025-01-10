@@ -1,24 +1,24 @@
 local M = {}
 local utils = require 'minuet.utils'
-local job = require 'plenary.job'
+local Job = require 'plenary.job'
 local config = require('minuet').config
 local uv = vim.uv or vim.loop
 
 -- currently running completion jobs, basically forked curl processes
 M.current_jobs = {}
 
----@param job_to_register Job
-function M.register_job(job_to_register)
-    table.insert(M.current_jobs, job_to_register)
+---@param job Job
+function M.register_job(job)
+    table.insert(M.current_jobs, job)
     utils.notify('Registered completion job', 'verbose')
 end
 
----@param job_to_remove Job
-function M.remove_job(job_to_remove)
+---@param job Job
+function M.remove_job(job)
     for i, j in ipairs(M.current_jobs) do
-        if j.pid == job_to_remove.pid then
+        if j.pid == job.pid then
             table.remove(M.current_jobs, i)
-            utils.notify('Removed completion job ' .. job_to_remove.pid .. ' from current_jobs', 'verbose')
+            utils.notify('Removed completion job ' .. job.pid .. ' from current_jobs', 'verbose')
             break
         end
     end
@@ -122,19 +122,18 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
         table.insert(args, config.proxy)
     end
 
-    local new_job = job:new {
+    local new_job = Job:new {
         command = 'curl',
         args = args,
-        on_exit = vim.schedule_wrap(function(exited_job, exit_code)
-            M.remove_job(exited_job)
+        on_exit = vim.schedule_wrap(function(job, exit_code)
+            M.remove_job(job)
 
             local items_raw
 
             if options.stream then
-                items_raw = utils.stream_decode(exited_job, exit_code, data_file, options.name, get_text_fn_stream)
+                items_raw = utils.stream_decode(job, exit_code, data_file, options.name, get_text_fn_stream)
             else
-                items_raw =
-                    utils.no_stream_decode(exited_job, exit_code, data_file, options.name, get_text_fn_no_stream)
+                items_raw = utils.no_stream_decode(job, exit_code, data_file, options.name, get_text_fn_no_stream)
             end
 
             if not items_raw then
@@ -203,18 +202,18 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
             table.insert(args, config.proxy)
         end
 
-        local new_job = job:new {
+        local new_job = Job:new {
             command = 'curl',
             args = args,
-            on_exit = vim.schedule_wrap(function(exited_job, exit_code)
-                M.remove_job(exited_job)
+            on_exit = vim.schedule_wrap(function(job, exit_code)
+                M.remove_job(job)
 
                 local result
 
                 if options.stream then
-                    result = utils.stream_decode(exited_job, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.stream_decode(job, exit_code, data_file, options.name, get_text_fn)
                 else
-                    result = utils.no_stream_decode(exited_job, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.no_stream_decode(job, exit_code, data_file, options.name, get_text_fn)
                 end
 
                 if result then
