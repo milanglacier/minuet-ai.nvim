@@ -285,71 +285,12 @@ as a placeholder for it to function.
 
 # System Prompt
 
-See [prompt](./prompt.md) for the default system prompt used by `minuet`.
+See [prompt](./prompt.md) for the default system prompt used by `minuet` and
+instructions on customization.
 
-You can customize the `template` by encoding placeholders within triple braces.
-These placeholders will be interpolated using the corresponding key-value pairs
-from the table. The value can be either a string or a function that takes no
-arguments and returns a string.
-
-Here's a simplified example for illustrative purposes (not intended for actual
-configuration):
-
-```lua
-system = {
-    template = '{{{assistant}}}\n{{{role}}}'
-    assistant = function() return 'you are a helpful assistant' end,
-    role = "you are also a code expert.",
-}
-```
-
-Note that `n_completion_template` is a special placeholder as it contains one
-`%d` which will be encoded with `config.n_completions`, if you want to
-customize this template, make sure your prompt also contains only one `%d`.
-
-Similarly, `few_shots` can be a table in the following form or a function that
-takes no argument and returns a table in the following form:
-
-```lua
-{
-    { role = "user", content = "something" },
-    { role = "assistant", content = "something" }
-    -- ...
-    -- You can pass as many turns as you want
-}
-```
-
-Below is an example to configure the prompt based on filetype:
-
-```lua
-require('minuet').setup {
-    provider_options = {
-        openai = {
-            system = {
-                prompt = function()
-                    if vim.bo.ft == 'tex' then
-                        return [[your prompt for completing prose.]]
-                    else
-                        return require('minuet.config').default_system.prompt
-                    end
-                end,
-            },
-            few_shots = function()
-                if vim.bo.ft == 'tex' then
-                    return {
-                        -- your few shots examples for prose
-                    }
-                else
-                    return require('minuet.config').default_few_shots
-                end
-            end,
-        },
-    },
-}
-```
-
-There's no need to replicate unchanged fields. The system will automatically
-merge modified fields with default values using the `tbl_deep_extend` function.
+Please note that the System Prompt only applies to chat-based LLMs (OpenAI,
+OpenAI-Compatible, Claude, and Gemini). It does not apply to Codestral and
+OpenAI-FIM-compatible models.
 
 # Providers
 
