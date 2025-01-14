@@ -36,7 +36,9 @@ Just as dancers move during a minuet.
 
 # Features
 
-- AI-powered code completion
+- AI-powered code completion with dual modes:
+  - A specialized prompt designed to optimize chat-based LLMs for code completion tasks.
+  - Fill-in-the-middle (FIM) method implemented through the completion API.
 - Support for multiple AI providers (OpenAI, Claude, Gemini, Codestral,
   Huggingface, and OpenAI-compatible services)
 - Customizable configuration options
@@ -83,8 +85,8 @@ specs = {
 ```
 
 Given the response speed and rate limits of LLM services, we recommend you
-either invoke `minuet` completion manually or use a cost-effective model for
-auto-completion. The author recommends `gemini-1.5-flash` for auto-completion.
+either invoke `minuet` completion manually or use a cost-effective model like
+`gemini-flash` or `codestral` for auto-completion.
 
 **Setting up with nvim-cmp**:
 
@@ -160,10 +162,94 @@ require('blink-cmp').setup {
 }
 ```
 
-If you are using a distribution like `lazyvim`, see the FAQ section to see how
-to configure `minuet` with `lazyvim`, note that the author does not use
-`lazyvim`, the FAQ section does not guarantee to work. PRs are welcome to fix
-the problem if it exists.
+**LLM Provider Examples**:
+
+Fireworks (`llama-3.3-70b`):
+
+<details>
+
+```lua
+require('minuet').setup {
+    provider = 'openai_compatible',
+    provider_options = {
+        openai_compatible = {
+            api_key = 'FIREWORKS_API_KEY',
+            end_point = 'https://api.fireworks.ai/inference/v1/chat/completions',
+            model = 'accounts/fireworks/models/llama-v3p3-70b-instruct',
+            name = 'Fireworks',
+            optional = {
+                max_tokens = 256,
+                top_p = 0.9,
+            },
+        },
+    },
+}
+```
+
+</details>
+
+Deepseek:
+
+<details>
+
+```lua
+-- you can use deepseek with both openai_fim_compatible or openai_compatible provider
+require('minuet').setup {
+    provider = 'openai_fim_compatible',
+    provider_options = {
+        openai_fim_compatible = {
+            api_key = 'DEEPSEEK_API_KEY',
+            name = 'deepseek',
+            optional = {
+                max_tokens = 256,
+                top_p = 0.9,
+            },
+        },
+    },
+}
+
+
+-- or
+require('minuet').setup {
+    provider = 'openai_compatible',
+    provider_options = {
+        openai_compatible = {
+            api_key = 'DEEPSEEK_API_KEY',
+            name = 'deepseek',
+            optional = {
+                max_tokens = 256,
+                top_p = 0.9,
+            },
+        },
+    },
+}
+```
+
+</details>
+
+Ollama:
+
+<details>
+
+```lua
+require('minuet').setup {
+    provider = 'openai_fim_compatible',
+    provider_options = {
+        openai_fim_compatible = {
+            api_key = 'TERM',
+            name = 'Ollama',
+            end_point = 'http://localhost:11434/v1/completions',
+            model = 'qwen2.5-coder:14b',
+            optional = {
+                max_tokens = 256,
+                top_p = 0.9,
+            },
+        },
+    },
+}
+```
+
+</details>
 
 # Configuration
 
