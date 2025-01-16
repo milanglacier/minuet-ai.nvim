@@ -277,14 +277,18 @@ function action.accept(accept_line)
     local cursor = api.nvim_win_get_cursor(0)
     local line, col = cursor[1] - 1, cursor[2]
 
+    local ctrl_o = api.nvim_replace_termcodes('<C-o>', true, false, true)
+    local down_key = api.nvim_replace_termcodes('<down>', true, false, true)
+
     vim.schedule_wrap(function()
         api.nvim_buf_set_text(0, line, col, line, col, suggestions)
         if #suggestions == 1 then
             -- move to eol. \15 is Ctrl-o
-            api.nvim_feedkeys('\15$', 'n', false)
+            api.nvim_feedkeys(ctrl_o .. '$', 'n', false)
         else
-            vim.cmd('normal! ' .. #suggestions - 1 .. 'j')
-            api.nvim_feedkeys('\15$', 'n', false)
+            -- move cursor to the end of inserted text
+            api.nvim_feedkeys(string.rep(down_key, #suggestions - 1), 'n', false)
+            api.nvim_feedkeys(ctrl_o .. '$', 'n', false)
         end
     end)()
 end
