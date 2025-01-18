@@ -114,7 +114,7 @@ local M = {
     -- "verbose": Display most notifications
     -- "warn": Display warnings and errors only
     -- "error": Display errors only
-    notify = 'verbose',
+    notify = 'warn',
     -- The request timeout, measured in seconds. When streaming is enabled
     -- (stream = true), setting a shorter request_timeout allows for faster
     -- retrieval of completion items, albeit potentially incomplete.
