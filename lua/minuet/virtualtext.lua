@@ -256,7 +256,11 @@ action.prev = function()
     advance(-1, ctx)
 end
 
-function action.accept(accept_line)
+---@param n_lines? integer Number of lines to accept from the suggestion. If nil, accepts all lines.
+---Accepts the current suggestion by inserting it at the cursor position.
+---If n_lines is provided, only the first n_lines of the suggestion are inserted.
+---After insertion, moves the cursor to the end of the inserted text.
+function action.accept(n_lines)
     local ctx = get_ctx()
 
     local suggestion = get_current_suggestion(ctx)
@@ -266,8 +270,9 @@ function action.accept(accept_line)
 
     local suggestions = vim.split(suggestion, '\n')
 
-    if accept_line then
-        suggestions = { suggestions[1] }
+    if n_lines then
+        n_lines = math.min(n_lines, #suggestions)
+        suggestions = vim.list_slice(suggestions, 1, n_lines)
     end
 
     reset_ctx(ctx)
@@ -293,8 +298,28 @@ function action.accept(accept_line)
     end)()
 end
 
+function action.accept_n_lines()
+    local cursor_pos = vim.api.nvim_win_get_cursor(0)
+    local n = vim.fn.input 'accept n lines: '
+
+    -- FIXME: vim.fn.input may change cursor position, we need to restore the
+    -- cursor position after the user input.
+
+    vim.api.nvim_win_set_cursor(0, cursor_pos)
+
+    n = tonumber(n)
+    if not n then
+        return
+    end
+    if n > 0 then
+        action.accept(n)
+    else
+        vim.notify('Invalid number of lines', vim.log.levels.ERROR)
+    end
+end
+
 function action.accept_line()
-    action.accept(true)
+    action.accept(1)
 end
 
 function action.dismiss()
@@ -440,6 +465,13 @@ local function set_keymaps(keymap)
     if keymap.accept_line then
         vim.keymap.set('i', keymap.accept_line, action.accept_line, {
             desc = '[minuet.virtualtext] accept suggestion (line)',
+            silent = true,
+        })
+    end
+
+    if keymap.accept_n_lines then
+        vim.keymap.set('i', keymap.accept_n_lines, action.accept_n_lines, {
+            desc = '[minuet.virtualtext] accept suggestion (n lines)',
             silent = true,
         })
     end

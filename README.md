@@ -127,8 +127,12 @@ require('minuet').setup {
     virtualtext = {
         auto_trigger_ft = {},
         keymap = {
+            -- accept whole completion
             accept = '<A-A>',
+            -- accept one line
             accept_line = '<A-a>',
+            -- accept n lines (prompts for number)
+            accept_n_lines = '<A-z>',
             -- Cycle to prev completion item, or manually invoke completion
             prev = '<A-[>',
             -- Cycle to next completion item, or manually invoke completion
@@ -281,6 +285,7 @@ default_config = {
         keymap = {
             accept = nil,
             accept_line = nil,
+            accept_n_lines = nil,
             -- Cycle to next completion item, or manually invoke completion
             next = nil,
             -- Cycle to prev completion item, or manually invoke completion
@@ -667,6 +672,8 @@ Example usage: `Minuet virtualtext toggle`, `Minuet virtualtext enable`,
     require('minuet.virtualtext').action.accept,
     -- accept by line
     require('minuet.virtualtext').action.accept_line,
+    -- accept n lines (prompts for number)
+    require('minuet.virtualtext').action.accept_n_lines,
     require('minuet.virtualtext').action.next,
     require('minuet.virtualtext').action.prev,
     require('minuet.virtualtext').action.dismiss,

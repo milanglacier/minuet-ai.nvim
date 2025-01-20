@@ -87,6 +87,8 @@ local M = {
         keymap = {
             accept = nil,
             accept_line = nil,
+            -- accept n lines (prompts for number)
+            accept_n_lines = nil,
             -- Cycle to next completion item, or manually invoke completion
             next = nil,
             -- Cycle to prev completion item, or manually invoke completion
