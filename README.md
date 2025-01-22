@@ -88,7 +88,32 @@ Given the response speed and rate limits of LLM services, we recommend you
 either invoke `minuet` completion manually or use a cost-effective model like
 `gemini-flash` or `codestral` for auto-completion.
 
+**Setting up with virtual text**:
+
+```lua
+require('minuet').setup {
+    virtualtext = {
+        auto_trigger_ft = {},
+        keymap = {
+            -- accept whole completion
+            accept = '<A-A>',
+            -- accept one line
+            accept_line = '<A-a>',
+            -- accept n lines (prompts for number)
+            accept_n_lines = '<A-z>',
+            -- Cycle to prev completion item, or manually invoke completion
+            prev = '<A-[>',
+            -- Cycle to next completion item, or manually invoke completion
+            next = '<A-]>',
+            dismiss = '<A-e>',
+        },
+    },
+}
+```
+
 **Setting up with nvim-cmp**:
+
+<details>
 
 ```lua
 require('cmp').setup {
@@ -120,30 +145,11 @@ require('cmp').setup {
 }
 ```
 
-**Setting up with virtual text**:
-
-```lua
-require('minuet').setup {
-    virtualtext = {
-        auto_trigger_ft = {},
-        keymap = {
-            -- accept whole completion
-            accept = '<A-A>',
-            -- accept one line
-            accept_line = '<A-a>',
-            -- accept n lines (prompts for number)
-            accept_n_lines = '<A-z>',
-            -- Cycle to prev completion item, or manually invoke completion
-            prev = '<A-[>',
-            -- Cycle to next completion item, or manually invoke completion
-            next = '<A-]>',
-            dismiss = '<A-e>',
-        },
-    },
-}
-```
+</details>
 
 **Setting up with blink-cmp**:
+
+<details>
 
 ```lua
 require('blink-cmp').setup {
@@ -165,6 +171,8 @@ require('blink-cmp').setup {
     },
 }
 ```
+
+</details>
 
 **LLM Provider Examples**:
 
@@ -387,6 +395,8 @@ OpenAI-FIM-compatible models.
 
 ## OpenAI
 
+<details>
+
 the following is the default configuration for OpenAI:
 
 ```lua
@@ -420,7 +430,11 @@ provider_options = {
 }
 ```
 
+</details>
+
 ## Claude
+
+<details>
 
 the following is the default configuration for Claude:
 
@@ -441,7 +455,11 @@ provider_options = {
 }
 ```
 
+</details>
+
 ## Codestral
+
+<details>
 
 Codestral is a text completion model, not a chat model, so the system prompt
 and few shot examples does not apply. Note that you should use the
@@ -480,7 +498,11 @@ provider_options = {
 }
 ```
 
+</details>
+
 ## Gemini
+
+<details>
 
 The following config is the default.
 
@@ -522,12 +544,16 @@ provider_options = {
 }
 ```
 
+</details>
+
 ## OpenAI-compatible
 
 Use any providers compatible with OpenAI's chat completion API.
 
 For example, you can set the `end_point` to
 `http://localhost:11434/v1/chat/completions` to use `ollama`.
+
+<details>
 
 Note that not all openAI compatible services has streaming support, you should
 change `stream=false` to disable streaming in case your services do not support
@@ -553,6 +579,8 @@ provider_options = {
 }
 ```
 
+</details>
+
 ## OpenAI-FIM-compatible
 
 Use any provider compatible with OpenAI's completion API. This request uses the
@@ -561,6 +589,8 @@ examples are not applicable.
 
 For example, you can set the `end_point` to
 `http://localhost:11434/v1/completions` to use `ollama`.
+
+<details>
 
 Refer to the [Completions
 Legacy](https://platform.openai.com/docs/api-reference/completions) section of
@@ -600,7 +630,11 @@ provider_options = {
 }
 ```
 
+</details>
+
 ## Huggingface
+
+<details>
 
 Currently only text completion model in huggingface is supported, so the system
 prompt and few shot examples does not apply.
@@ -633,6 +667,8 @@ provider_options = {
     },
 }
 ```
+
+</details>
 
 # Commands
 
@@ -755,6 +791,8 @@ opts.mapping = {
 
 ## Integration with `lazyvim`
 
+<details>
+
 **With nvim-cmp**:
 
 ```lua
@@ -833,10 +871,11 @@ vim.g.lazyvim_blink_main = true
 }
 ```
 
+</details>
+
 # TODO
 
 1. Implement `RAG` on the codebase and encode the codebase information into the request to LLM.
-2. **DONE** Virtual text UI support.
 
 # Contributing
 
