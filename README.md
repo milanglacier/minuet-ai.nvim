@@ -14,15 +14,15 @@
   - [OpenAI-FIM-compatible](#openai-fim-compatible)
   - [Huggingface](#huggingface)
 - [Commands](#commands)
-  - [`Minuet change_provider`](#-minuet-change-provider-)
-  - [`Minuet blink`, `Minuet cmp`](#-minuet-blink----minuet-cmp-)
-  - [`Minuet virtualtext`](#-minuet-virtualtext-)
+  - [`Minuet change_provider`, `Minuet change_model`](#minuet-change_provider-minuet-change_model)
+  - [`Minuet blink`, `Minuet cmp`](#minuet-blink-minuet-cmp)
+  - [`Minuet virtualtext`](#minuet-virtualtext)
 - [API](#api)
   - [Virtual Text](#virtual-text)
 - [FAQ](#faq)
-  - [Customize `cmp` ui](#customize--cmp--ui)
+  - [Customize `cmp` ui](#customize-cmp-ui)
   - [Significant Input Delay When Moving to a New Line](#significant-input-delay-when-moving-to-a-new-line)
-  - [Integration with `lazyvim`](#integration-with--lazyvim-)
+  - [Integration with `lazyvim`](#integration-with-lazyvim)
 - [TODO](#todo)
 - [Contributing](#contributing)
 - [Acknowledgement](#acknowledgement)
@@ -636,11 +636,28 @@ provider_options = {
 
 # Commands
 
-## `Minuet change_provider`
+## `Minuet change_provider`, `Minuet change_model`
 
-This command allows you to change the provider after `Minuet` has been setup.
+The `change_provider` command allows you to change the provider after `Minuet`
+has been setup.
 
 Example usage: `Minuet change_provider claude`
+
+The `change_model` command allows you to change both the provider and model in
+one command. The format is `provider:model`.
+
+Example usage: `Minuet change_model gemini:gemini-1.5-pro-latest`
+
+Note: For `openai_compatible` and `openai_fim_compatible` providers, the model
+completions in cmdline are determined by the `name` field in your
+configuration. For example, if you configured:
+
+```lua
+provider_options.openai_compatible.name = 'Fireworks'
+```
+
+When entering `Minuet change_model openai_compatible:` in the cmdline,
+you'll see model completions specific to the Fireworks provider.
 
 ## `Minuet blink`, `Minuet cmp`
 
