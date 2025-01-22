@@ -79,6 +79,7 @@ end
 
 local function stop_timer()
     if internal.timer and not internal.timer:is_closing() then
+        internal.timer:stop()
         internal.timer:close()
         internal.timer = nil
     end
