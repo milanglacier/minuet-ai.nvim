@@ -17,6 +17,10 @@ if not M.is_available() then
     utils.notify('Gemini API key is not set', 'error', vim.log.levels.ERROR)
 end
 
+function M.get_text_fn(json)
+    return json.candidates[1].content.parts[1].text
+end
+
 local function make_request_data()
     local options = vim.deepcopy(config.provider_options.gemini)
 
@@ -79,10 +83,6 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
         return
     end
 
-    local function get_text_fn(json)
-        return json.candidates[1].content.parts[1].text
-    end
-
     local args = {
         string.format(
             'https://generativelanguage.googleapis.com/v1beta/models/%s:%skey=%s',
@@ -111,9 +111,9 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
 
             local items_raw
             if options.stream then
-                items_raw = utils.stream_decode(job, exit_code, data_file, 'Gemini', get_text_fn)
+                items_raw = utils.stream_decode(job, exit_code, data_file, 'Gemini', M.get_text_fn)
             else
-                items_raw = utils.no_stream_decode(job, exit_code, data_file, 'Gemini', get_text_fn)
+                items_raw = utils.no_stream_decode(job, exit_code, data_file, 'Gemini', M.get_text_fn)
             end
 
             if not items_raw then

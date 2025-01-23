@@ -33,6 +33,14 @@ local function make_request_data()
     return options, request_data
 end
 
+function M.get_text_fn_no_steam(json)
+    return json.content[1].text
+end
+
+function M.get_text_fn_stream(json)
+    return json.delta.text
+end
+
 M.complete = function(context_before_cursor, context_after_cursor, callback)
     common.terminate_all_jobs()
 
@@ -49,14 +57,6 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
 
     if data_file == nil then
         return
-    end
-
-    local function get_text_fn_no_steam(json)
-        return json.content[1].text
-    end
-
-    local function get_text_fn_stream(json)
-        return json.delta.text
     end
 
     local args = {
@@ -87,9 +87,9 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
             local items_raw
 
             if options.stream then
-                items_raw = utils.stream_decode(job, exit_code, data_file, 'Claude', get_text_fn_stream)
+                items_raw = utils.stream_decode(job, exit_code, data_file, 'Claude', M.get_text_fn_stream)
             else
-                items_raw = utils.no_stream_decode(job, exit_code, data_file, 'Claude', get_text_fn_no_steam)
+                items_raw = utils.no_stream_decode(job, exit_code, data_file, 'Claude', M.get_text_fn_no_steam)
             end
 
             if not items_raw then

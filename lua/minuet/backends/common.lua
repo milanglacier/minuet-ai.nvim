@@ -71,6 +71,14 @@ function M.filter_context_sequences_in_items(items, context)
     return items
 end
 
+function M.openai_get_text_fn_no_stream(json)
+    return json.choices[1].message.content
+end
+
+function M.openai_get_text_fn_stream(json)
+    return json.choices[1].delta.content
+end
+
 function M.complete_openai_base(options, context_before_cursor, context_after_cursor, callback)
     M.terminate_all_jobs()
 
@@ -95,14 +103,6 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
 
     if data_file == nil then
         return
-    end
-
-    local function get_text_fn_no_stream(json)
-        return json.choices[1].message.content
-    end
-
-    local function get_text_fn_stream(json)
-        return json.choices[1].delta.content
     end
 
     local args = {
@@ -131,9 +131,10 @@ function M.complete_openai_base(options, context_before_cursor, context_after_cu
             local items_raw
 
             if options.stream then
-                items_raw = utils.stream_decode(job, exit_code, data_file, options.name, get_text_fn_stream)
+                items_raw = utils.stream_decode(job, exit_code, data_file, options.name, M.openai_get_text_fn_stream)
             else
-                items_raw = utils.no_stream_decode(job, exit_code, data_file, options.name, get_text_fn_no_stream)
+                items_raw =
+                    utils.no_stream_decode(job, exit_code, data_file, options.name, M.openai_get_text_fn_no_stream)
             end
 
             if not items_raw then
