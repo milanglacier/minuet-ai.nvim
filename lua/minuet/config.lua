@@ -98,9 +98,9 @@ local M = {
     },
     provider = 'codestral',
     -- the maximum total characters of the context before and after the cursor
-    -- 12,800 characters typically equate to approximately 4,000 tokens for
+    -- 16000 characters typically equate to approximately 4,000 tokens for
     -- LLMs.
-    context_window = 12800,
+    context_window = 16000,
     -- when the total characters exceed the context window, the ratio of
     -- context before cursor and after cursor, the larger the ratio the more
     -- context before cursor will be used. This option should be between 0 and
