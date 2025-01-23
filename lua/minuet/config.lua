@@ -267,6 +267,20 @@ M.provider_options = {
             max_tokens = nil,
         },
     },
+    llamacpp = {
+        endpoint = 'http://127.0.0.1:8012/infill',
+        api_key = '',
+        n_predict = 256,
+        t_max_prompt_ms = 500,
+        t_max_predict_ms = 500,
+        show_info = true,
+        max_line_suffix = 8,
+        max_cache_keys = 250,
+        ring_n_chunks = 16,
+        ring_chunk_size = 64,
+        ring_scope = 1024,
+        ring_update_ms = 1000,
+    },
     huggingface = {
         end_point = 'https://api-inference.huggingface.co/models/bigcode/starcoder2-3b',
         type = 'completion', -- chat or completion
