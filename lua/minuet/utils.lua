@@ -281,16 +281,38 @@ end
 
 function M.make_chat_llm_shot(context_before_cursor, context_after_cursor, template)
     local input = template.template
+    local parts = {}
+    local last_pos = 1
 
+    -- Store the template value before clearing it
     template.template = nil
 
-    for k, v in pairs(template) do
-        input = input:gsub('{{{' .. k .. '}}}', v(context_before_cursor, context_after_cursor):gsub('%%', '%%%%'))
+    while true do
+        local start_pos, end_pos = input:find('{{{.-}}}', last_pos)
+        if not start_pos then
+            -- Add the remaining part of the string
+            table.insert(parts, input:sub(last_pos))
+            break
+        end
+
+        -- Add the text before the placeholder
+        table.insert(parts, input:sub(last_pos, start_pos - 1))
+
+        -- Extract placeholder key
+        local key = input:sub(start_pos + 3, end_pos - 3)
+
+        -- Get the replacement value if it exists
+        if template[key] then
+            local value = template[key](context_before_cursor, context_after_cursor)
+            table.insert(parts, value)
+        end
+
+        last_pos = end_pos + 1
     end
 
-    input = input:gsub('{{{.*}}}', '')
+    local result = table.concat(parts)
 
-    return input
+    return result
 end
 
 function M.no_stream_decode(response, exit_code, data_file, provider, get_text_fn)
