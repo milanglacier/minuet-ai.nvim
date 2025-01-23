@@ -74,7 +74,7 @@ end
 function M.complete_openai_base(options, context_before_cursor, context_after_cursor, callback)
     M.terminate_all_jobs()
 
-    local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
+    local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor, options.chat_input)
 
     local few_shots = vim.deepcopy(utils.get_or_eval_value(options.few_shots))
 

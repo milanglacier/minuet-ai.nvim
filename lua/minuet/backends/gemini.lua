@@ -63,7 +63,7 @@ function M.complete(context_before_cursor, context_after_cursor, callback)
 
     local options, data = make_request_data()
 
-    local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
+    local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor, options.chat_input)
 
     table.insert(data.contents, {
         role = 'user',

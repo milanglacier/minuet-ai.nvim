@@ -279,24 +279,18 @@ function M.prepend_to_complete_word(a, b)
     return a
 end
 
-function M.make_chat_llm_shot(context_before_cursor, context_after_cursor)
-    local language = M.add_language_comment()
-    local tab = M.add_tab_comment()
+function M.make_chat_llm_shot(context_before_cursor, context_after_cursor, template)
+    local input = template.template
 
-    local context = language
-        .. '\n'
-        .. tab
-        .. '\n'
-        .. '<contextAfterCursor>'
-        .. '\n'
-        .. context_after_cursor
-        .. '\n'
-        .. '<contextBeforeCursor>'
-        .. '\n'
-        .. context_before_cursor
-        .. '<cursorPosition>'
+    template.template = nil
 
-    return context
+    for k, v in pairs(template) do
+        input = input:gsub('{{{' .. k .. '}}}', v(context_before_cursor, context_after_cursor):gsub('%%', '%%%%'))
+    end
+
+    input = input:gsub('{{{.*}}}', '')
+
+    return input
 end
 
 function M.no_stream_decode(response, exit_code, data_file, provider, get_text_fn)

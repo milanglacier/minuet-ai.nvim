@@ -75,6 +75,24 @@ local default_fim_suffix = function(_, context_after_cursor)
     return context_after_cursor
 end
 
+local default_chat_input = {
+    template = '{{{language}}}\n{{{tab}}}\n<contextAfterCursor>\n{{{context_after_cursor}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>',
+    language = function(_, _)
+        local utils = require 'minuet.utils'
+        return utils.add_language_comment()
+    end,
+    tab = function(_, _)
+        local utils = require 'minuet.utils'
+        return utils.add_tab_comment()
+    end,
+    context_before_cursor = function(context_before_cursor, _)
+        return context_before_cursor
+    end,
+    context_after_cursor = function(_, context_after_cursor)
+        return context_after_cursor
+    end,
+}
+
 local M = {
     -- Enable or disable auto-completion. Note that you still need to add
     -- Minuet to your cmp/blink sources. This option controls whether cmp/blink
@@ -166,6 +184,8 @@ M.default_system = {
     n_completion_template = n_completion_template,
 }
 
+M.default_chat_input = default_chat_input
+
 M.default_few_shots = default_few_shots
 
 M.default_fim_template = {
@@ -192,6 +212,7 @@ M.provider_options = {
         model = 'gpt-4o-mini',
         system = M.default_system,
         few_shots = M.default_few_shots,
+        chat_input = M.default_chat_input,
         stream = true,
         optional = {
             stop = nil,
@@ -202,6 +223,7 @@ M.provider_options = {
         max_tokens = 512,
         model = 'claude-3-5-haiku-20241022',
         system = M.default_system,
+        chat_input = M.default_chat_input,
         few_shots = M.default_few_shots,
         stream = true,
         optional = {
@@ -211,6 +233,7 @@ M.provider_options = {
     openai_compatible = {
         model = 'llama-3.3-70b-versatile',
         system = M.default_system,
+        chat_input = M.default_chat_input,
         few_shots = M.default_few_shots,
         end_point = 'https://api.groq.com/openai/v1/chat/completions',
         api_key = 'GROQ_API_KEY',
@@ -224,6 +247,7 @@ M.provider_options = {
     gemini = {
         model = 'gemini-1.5-flash-latest',
         system = M.default_system,
+        chat_input = M.default_chat_input,
         few_shots = M.default_few_shots,
         stream = true,
         optional = {},

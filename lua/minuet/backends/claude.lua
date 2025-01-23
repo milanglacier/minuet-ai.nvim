@@ -37,7 +37,7 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
     common.terminate_all_jobs()
 
     local options, data = make_request_data()
-    local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor)
+    local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor, options.chat_input)
 
     local few_shots = vim.deepcopy(utils.get_or_eval_value(options.few_shots))
 
