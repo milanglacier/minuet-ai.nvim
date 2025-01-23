@@ -168,6 +168,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
 
     data.prompt = options.template.prompt(context_before_cursor, context_after_cursor)
     data.suffix = options.template.suffix and options.template.suffix(context_before_cursor, context_after_cursor)
+        or nil
 
     local data_file = utils.make_tmp_file(data)
 
