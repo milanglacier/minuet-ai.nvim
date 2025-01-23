@@ -48,11 +48,15 @@ end
 ---@param provider string
 ---@return table<string>
 function M.parse_completion_items(items_raw, provider)
-    local success, items_table = pcall(vim.split, items_raw, '<endCompletion>')
+    local success, items_table = pcall(vim.split, items_raw, '<completion>')
     if not success then
         utils.notify('Failed to parse ' .. provider .. "'s content text", 'error', vim.log.levels.INFO)
         return {}
     end
+
+    items_table = vim.tbl_map(function(x)
+        return x:gsub('</completi.*', '')
+    end, items_table)
 
     return items_table
 end

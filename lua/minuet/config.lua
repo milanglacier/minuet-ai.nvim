@@ -3,25 +3,26 @@ You are the backend of an AI-powered code completion engine. Your task is to
 provide code suggestions based on the user's input. The user's code will be
 enclosed in markers:
 
-- `<contextAfterCursor>`: Code context after the cursor
-- `<cursorPosition>`: Current cursor location
-- `<contextBeforeCursor>`: Code context before the cursor
+- `<contextAfterCursor>`, `</contextAfterCursor>`: Represents the code context following the cursor.
+- `<contextBeforeCursor>`, `</contextBeforeCursor>`: Represents the code context preceding the cursor.
+- `<cursorPosition/>`: Represents the cursor position.
 
-Note that the user's code will be prompted in reverse order: first the code
-after the cursor, then the code before the cursor.
+Please note, the user's code will be presented in reverse order: the
+portion of code following the cursor will be shown first, followed by
+the code preceding the cursor.
 ]]
 
 local default_guidelines = [[
 Guidelines:
-1. Offer completions after the `<cursorPosition>` marker.
+1. Offer completions after the `<cursorPosition/>` marker.
 2. Make sure you have maintained the user's existing whitespace and indentation.
    This is REALLY IMPORTANT!
 3. Provide multiple completion options when possible.
-4. Return completions separated by the marker <endCompletion>.
+4. Return completions separated by the marker <completion> and </completion>.
 5. The returned message will be further parsed and processed. DO NOT include
    additional comments or markdown code block fences. Return the result directly.
 6. Keep each completion option concise, limiting it to a single line or a few lines.
-7. Create entirely new code completion that DO NOT REPEAT OR COPY any user's existing code around <cursorPosition>.]]
+7. Create entirely new code completion that DO NOT REPEAT OR COPY any user's existing code around <cursorPosition/>.]]
 
 local default_few_shots = {
     {
@@ -31,28 +32,22 @@ local default_few_shots = {
 <contextAfterCursor>
 
 fib(5)
+</contextAfterCursor>
 <contextBeforeCursor>
 def fibonacci(n):
-    <cursorPosition>]],
+    </contextBeforeCursor><cursorPosition/>]],
     },
     {
         role = 'assistant',
-        content = [[
-    '''
-    Recursive Fibonacci implementation
-    '''
-    if n < 2:
+        content = [[<completion>if n < 2:
         return n
     return fib(n - 1) + fib(n - 2)
-<endCompletion>
-    '''
-    Iterative Fibonacci implementation
-    '''
-    a, b = 0, 1
+</completion>
+<completion>a, b = 0, 1
     for _ in range(n):
         a, b = b, a + b
     return a
-<endCompletion>
+</completion>
 ]],
     },
 }

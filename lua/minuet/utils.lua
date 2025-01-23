@@ -291,10 +291,13 @@ function M.make_chat_llm_shot(context_before_cursor, context_after_cursor)
         .. '\n'
         .. context_after_cursor
         .. '\n'
+        .. '</contextAfterCursor>'
+        .. '\n'
         .. '<contextBeforeCursor>'
         .. '\n'
         .. context_before_cursor
-        .. '<cursorPosition>'
+        .. '</contextBeforeCursor>'
+        .. '<cursorPosition/>'
 
     return context
 end
