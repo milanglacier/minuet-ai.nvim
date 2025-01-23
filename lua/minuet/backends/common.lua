@@ -165,12 +165,8 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
 
     data = vim.tbl_deep_extend('force', data, options.optional or {})
 
-    local language = utils.add_language_comment()
-    local tab = utils.add_tab_comment()
-    context_before_cursor = language .. '\n' .. tab .. '\n' .. context_before_cursor
-
-    data.prompt = context_before_cursor
-    data.suffix = context_after_cursor
+    data.prompt = options.template.prompt(context_before_cursor, context_after_cursor)
+    data.suffix = options.template.suffix(context_before_cursor, context_after_cursor)
 
     local data_file = utils.make_tmp_file(data)
 

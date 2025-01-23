@@ -62,6 +62,19 @@ local n_completion_template = '8. Provide at most %d completion items.'
 -- use {{{ and }}} to wrap placeholders, which will be further processesed in other function
 local default_system_template = '{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}'
 
+local default_fim_prompt = function(context_before_cursor, _)
+    local utils = require 'minuet.utils'
+    local language = utils.add_language_comment()
+    local tab = utils.add_tab_comment()
+    context_before_cursor = language .. '\n' .. tab .. '\n' .. context_before_cursor
+
+    return context_before_cursor
+end
+
+local default_fim_suffix = function(_, context_after_cursor)
+    return context_after_cursor
+end
+
 local M = {
     -- Enable or disable auto-completion. Note that you still need to add
     -- Minuet to your cmp/blink sources. This option controls whether cmp/blink
@@ -155,12 +168,21 @@ M.default_system = {
 
 M.default_few_shots = default_few_shots
 
+M.default_fim_template = {
+    default_prompt = default_fim_prompt,
+    default_suffix = default_fim_suffix,
+}
+
 M.provider_options = {
     codestral = {
         model = 'codestral-latest',
         end_point = 'https://codestral.mistral.ai/v1/fim/completions',
         api_key = 'CODESTRAL_API_KEY',
         stream = true,
+        template = {
+            prompt = M.default_fim_template.default_prompt,
+            suffix = M.default_fim_template.default_suffix,
+        },
         optional = {
             stop = nil, -- the identifier to stop the completion generation
             max_tokens = nil,
@@ -212,6 +234,10 @@ M.provider_options = {
         api_key = 'DEEPSEEK_API_KEY',
         name = 'Deepseek',
         stream = true,
+        template = {
+            prompt = M.default_fim_template.default_prompt,
+            suffix = M.default_fim_template.default_suffix,
+        },
         optional = {
             stop = nil,
             max_tokens = nil,

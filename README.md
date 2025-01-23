@@ -4,7 +4,7 @@
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [API Keys](#api-keys)
-- [System Prompt](#system-prompt)
+- [Prompt](#prompt)
 - [Providers](#providers)
   - [OpenAI](#openai)
   - [Claude](#claude)
@@ -353,12 +353,16 @@ default_config = {
     provider_options = {
         -- see the documentation in each provider in the following part.
     },
-    -- see the documentation in the `System Prompt` section
+    -- see the documentation in the `Prompt` section
     default_template = {
         template = '...',
         prompt = '...',
         guidelines = '...',
         n_completion_template = '...',
+    },
+    default_fim_template = {
+        default_prompt = '...',
+        default_suffix = '...',
     },
     default_few_shots = { '...' },
 }
@@ -382,14 +386,16 @@ itself (e.g., `sk-xxxx`).
 If using Ollama, you need to assign an arbitrary, non-null environment variable
 as a placeholder for it to function.
 
-# System Prompt
+# Prompt
 
-See [prompt](./prompt.md) for the default system prompt used by `minuet` and
+See [prompt](./prompt.md) for the default prompt used by `minuet` and
 instructions on customization.
 
-Please note that the System Prompt only applies to chat-based LLMs (OpenAI,
-OpenAI-Compatible, Claude, and Gemini). It does not apply to Codestral and
-OpenAI-FIM-compatible models.
+Note that `minuet` employs two distinct prompt systems:
+
+1. A system designed for chat-based LLMs (OpenAI, OpenAI-Compatible, Claude,
+   and Gemini)
+2. A separate system designed for Codestral and OpenAI-FIM-compatible models
 
 # Providers
 
@@ -476,6 +482,10 @@ provider_options = {
         end_point = 'https://codestral.mistral.ai/v1/fim/completions',
         api_key = 'CODESTRAL_API_KEY',
         stream = true,
+        template = {
+            prompt = "See [Prompt Section for default value]",
+            suffix = "See [Prompt Section for default value]",
+        },
         optional = {
             stop = nil, -- the identifier to stop the completion generation
             max_tokens = nil,
@@ -608,6 +618,10 @@ provider_options = {
         api_key = 'DEEPSEEK_API_KEY',
         name = 'Deepseek',
         stream = true,
+        template = {
+            prompt = "See [Prompt Section for default value]",
+            suffix = "See [Prompt Section for default value]",
+        },
         optional = {
             stop = nil,
             max_tokens = nil,
