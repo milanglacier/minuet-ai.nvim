@@ -166,7 +166,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor,
     data = vim.tbl_deep_extend('force', data, options.optional or {})
 
     data.prompt = options.template.prompt(context_before_cursor, context_after_cursor)
-    data.suffix = options.template.suffix(context_before_cursor, context_after_cursor)
+    data.suffix = options.template.suffix and options.template.suffix(context_before_cursor, context_after_cursor)
 
     local data_file = utils.make_tmp_file(data)
 
