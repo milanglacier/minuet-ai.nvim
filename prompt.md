@@ -23,6 +23,12 @@ Both functions can be customized to provide additional context to the LLM. The
 `suffix` function can be disabled by setting `suffix = false`, which will
 result in only the `prompt` being included in the request.
 
+Note: for Ollama users: Do not include special tokens (e.g., `<|fim_begin|>`)
+within the prompt or suffix functions, as these will be automatically populated
+by Ollama. If your use case requires special tokens not covered by Ollama's
+default template, first set `suffix = false` and then incorporate the special
+tokens within the prompt function.
+
 # Chat LLM Prompt Structure
 
 ## Default Template
