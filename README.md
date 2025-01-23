@@ -411,6 +411,7 @@ provider_options = {
         model = 'gpt-4o-mini',
         system = "see [System Prompt] section for the default value",
         few_shots = "see [System Prompt] section for the default value",
+        chat_input = "See [Prompt Section for default value]",
         stream = true,
         optional = {
             -- pass any additional parameters you want to send to OpenAI request,
@@ -451,6 +452,7 @@ provider_options = {
         model = 'claude-3-5-haiku-20241022',
         system = "see [System Prompt] section for the default value",
         few_shots = "see [System Prompt] section for the default value",
+        chat_input = "See [Prompt Section for default value]",
         stream = true,
         optional = {
             -- pass any additional parameters you want to send to claude request,
@@ -522,6 +524,7 @@ provider_options = {
         model = 'gemini-1.5-flash-latest',
         system = "see [System Prompt] section for the default value",
         few_shots = "see [System Prompt] section for the default value",
+        chat_input = "See [Prompt Section for default value]",
         stream = true,
         optional = {},
     },
@@ -577,6 +580,7 @@ provider_options = {
         model = 'llama-3.3-70b-versatile',
         system = "see [System Prompt] section for the default value",
         few_shots = "see [System Prompt] section for the default value",
+        chat_input = "See [Prompt Section for default value]",
         end_point = 'https://api.groq.com/openai/v1/chat/completions',
         api_key = 'GROQ_API_KEY',
         name = 'Groq',

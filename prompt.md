@@ -1,8 +1,35 @@
-# Default Template
+# FIM LLM Prompt Structure
+
+The prompt sent to the FIM LLM follows this structure:
+
+```lua
+provider_options = {
+    openai_fim_compatible = {
+        template = {
+            prompt = function(context_before_cursor, context_after_cursor) end,
+            suffix = function(context_before_cursor, context_after_cursor) end,
+        }
+    }
+}
+```
+
+The template contains two main functions:
+
+- `prompt`: return language and the indentation style, followed by the
+  `context_before_cursor` verbatim.
+- `suffix`: return `context_after_cursor` verbatim.
+
+Both functions can be customized to provide additional context to the LLM. The
+`suffix` function can be disabled by setting `suffix = false`, which will
+result in only the `prompt` being included in the request.
+
+# Chat LLM Prompt Structure
+
+## Default Template
 
 `{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}`
 
-# Default Prompt
+## Default Prompt
 
 You are the backend of an AI-powered code completion engine. Your task is to
 provide code suggestions based on the user's input. The user's code will be
@@ -15,7 +42,7 @@ enclosed in markers:
 Note that the user's code will be prompted in reverse order: first the code
 after the cursor, then the code before the cursor.
 
-# Default Guidelines
+## Default Guidelines
 
 Guidelines:
 
@@ -30,11 +57,11 @@ Guidelines:
 7. Create entirely new code completion that DO NOT REPEAT OR COPY any user's
    existing code around `<cursorPosition>`.
 
-# Default `n_completions` template
+## Default `n_completions` template
 
 8. Provide at most %d completion items.
 
-# Default Few Shots Examples
+## Default Few Shots Examples
 
 ```lua
 local default_few_shots = {
@@ -72,7 +99,28 @@ def fibonacci(n):
 }
 ```
 
-# Customization
+## Default Chat Input Example
+
+The chat input represents the final prompt delivered to the LLM for completion.
+Its template follows a structured format similar to the system prompt and can
+be customized as follows:
+
+The chat input template follows a structure similar to the system prompt and
+can be customized using the following format:
+
+`{{{language}}}\n{{{tab}}}\n<contextAfterCursor>\n{{{context_after_cursor}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>`
+
+Components:
+
+- `language`: The programming language user is working on
+- `tab`: The user's indentation style used by the user
+- `context_before_cursor` and `context_after_cursor`: Represent the text
+  content before and after the cursor position
+
+Each subcomponent must be defined by a function that takes two parameters
+(`context_before_cursor`, `context_after_cursor`) and returns a string value.
+
+## Customization
 
 You can customize the `template` by encoding placeholders within triple braces.
 These placeholders will be interpolated using the corresponding key-value pairs
