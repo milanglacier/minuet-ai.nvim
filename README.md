@@ -226,6 +226,7 @@ require('minuet').setup {
     provider = 'openai_compatible',
     provider_options = {
         openai_compatible = {
+            end_point = 'https://api.deepseek.com/v1/chat/completions',
             api_key = 'DEEPSEEK_API_KEY',
             name = 'deepseek',
             optional = {
@@ -246,6 +247,7 @@ Ollama:
 ```lua
 require('minuet').setup {
     provider = 'openai_fim_compatible',
+    n_completions = 1, -- recommend for local model for resource saving
     provider_options = {
         openai_fim_compatible = {
             api_key = 'TERM',
@@ -328,14 +330,16 @@ default_config = {
     -- Conversely, with streaming disabled (stream = false), a timeout
     -- occurring before the LLM returns results will yield no completion items.
     request_timeout = 3,
-    -- if completion item has multiple lines, create another completion item only containing its first line.
+    -- If completion item has multiple lines, create another completion item
+    -- only containing its first line. This option only has impact for cmp and
+    -- blink. For virtualtext, no single line entry will be added.
     add_single_line_entry = true,
-    -- The number of completion items (encoded as part of the prompt for the
-    -- chat LLM) requested from the language model. It's important to note that
-    -- when 'add_single_line_entry' is set to true, the actual number of
-    -- returned items may exceed this value. Additionally, the LLM cannot
-    -- guarantee the exact number of completion items specified, as this
-    -- parameter serves only as a prompt guideline.
+    -- The number of completion items encoded as part of the prompt for the
+    -- chat LLM. For FIM model, this is the number of requests to send. It's
+    -- important to note that when 'add_single_line_entry' is set to true, the
+    -- actual number of returned items may exceed this value. Additionally, the
+    -- LLM cannot guarantee the exact number of completion items specified, as
+    -- this parameter serves only as a prompt guideline.
     n_completions = 3,
     -- Defines the length of non-whitespace context after the cursor used to
     -- filter completion text. Set to 0 to disable filtering.
@@ -613,6 +617,17 @@ the OpenAI documentation for details.
 Note that not all openAI compatible services has streaming support, you should
 change `stream=false` to disable streaming in case your services do not support
 it.
+
+Please note that not all OpenAI-compatible services support streaming. If your
+service does not support streaming, you should set `stream=false` to disable
+it.
+
+Additionally, for Ollama users, it is essential to verify whether the model's
+template supports FIM completion. For example, [qwen2.5-coder's
+template](https://ollama.com/library/qwen2.5-coder/blobs/e94a8ecb9327) is a
+supported model. However if may come as a surprise to some users that,
+`deepseek-coder` does not support the FIM template, and you should use
+`deepseek-coder-v2` instead.
 
 ```lua
 provider_options = {

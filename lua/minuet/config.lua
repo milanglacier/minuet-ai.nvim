@@ -154,14 +154,16 @@ local M = {
     -- Conversely, with streaming disabled (stream = false), a timeout
     -- occurring before the LLM returns results will yield no completion items.
     request_timeout = 3,
-    -- if completion item has multiple lines, create another completion item only containing its first line.
+    -- If completion item has multiple lines, create another completion item
+    -- only containing its first line. This option only has impact for cmp and
+    -- blink. For virtualtext, no single line entry will be added.
     add_single_line_entry = true,
-    -- The number of completion items (encoded as part of the prompt for the
-    -- chat LLM) requested from the language model. It's important to note that
-    -- when 'add_single_line_entry' is set to true, the actual number of
-    -- returned items may exceed this value. Additionally, the LLM cannot
-    -- guarantee the exact number of completion items specified, as this
-    -- parameter serves only as a prompt guideline.
+    -- The number of completion items encoded as part of the prompt for the
+    -- chat LLM. For FIM model, this is the number of requests to send. It's
+    -- important to note that when 'add_single_line_entry' is set to true, the
+    -- actual number of returned items may exceed this value. Additionally, the
+    -- chat LLM cannot guarantee the exact number of completion items
+    -- specified, as this parameter serves only as a prompt guideline.
     n_completions = 3,
     -- Defines the length of non-whitespace context after the cursor used to
     -- filter completion text. Set to 0 to disable filtering.
