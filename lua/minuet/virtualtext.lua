@@ -2,6 +2,7 @@
 local M = {}
 local utils = require 'minuet.utils'
 local api = vim.api
+local uv = vim.uv or vim.loop
 
 M.ns_id = api.nvim_create_namespace 'minuet.virtualtext'
 M.augroup = api.nvim_create_augroup('MinuetVirtualText', { clear = true })
@@ -18,6 +19,7 @@ local internal = {
     timer = nil,
     context = {},
     is_on_throttle = false,
+    current_completion_timestamp = 0,
 }
 
 local function should_auto_trigger()
@@ -179,10 +181,16 @@ local function trigger(bufnr)
     local context = utils.get_context(utils.make_cmp_context())
 
     local provider = require('minuet.backends.' .. config.provider)
+    local timestamp = uv.now()
+    internal.current_completion_timestamp = timestamp
 
     provider.complete(context, function(data)
-        data = utils.list_dedup(data or {})
+        if timestamp ~= internal.current_completion_timestamp then
+            utils.notify('Completion items arrived, but too late, aborted', 'debug', 'info')
+            return
+        end
 
+        data = utils.list_dedup(data or {})
         local ctx = get_ctx()
         ctx.suggestions = data
         if not ctx.choice then
@@ -235,6 +243,7 @@ local action = {}
 
 action.next = function()
     local ctx = get_ctx()
+    vim.notify(vim.inspect(ctx))
 
     -- no suggestion request yet
     if not ctx.suggestions then
