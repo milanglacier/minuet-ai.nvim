@@ -15,9 +15,9 @@ provider_options = {
 
 The template contains two main functions:
 
-- `prompt`: return language and the indentation style, followed by the
-  `context_before_cursor` verbatim.
-- `suffix`: return `context_after_cursor` verbatim.
+- `prompt`: the default is to return language and the indentation style,
+  followed by the `context_before_cursor` verbatim.
+- `suffix`: the default is to return `context_after_cursor` verbatim.
 
 Both functions can be customized to provide additional context to the LLM. The
 `suffix` function can be disabled by setting `suffix = false`, which will
