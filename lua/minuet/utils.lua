@@ -172,16 +172,23 @@ function M.get_context(cmp_context)
     local n_chars_before = vim.fn.strchars(lines_before)
     local n_chars_after = vim.fn.strchars(lines_after)
 
+    local opts = {
+        is_incomplete_before = false,
+        is_incomplete_after = false,
+    }
+
     if n_chars_before + n_chars_after > config.context_window then
         -- use some heuristic to decide the context length of before cursor and after cursor
         if n_chars_before < config.context_window * config.context_ratio then
             -- If the context length before cursor does not exceed the maximum
             -- size, we include the full content before the cursor.
             lines_after = vim.fn.strcharpart(lines_after, 0, config.context_window - n_chars_before)
+            opts.is_incomplete_after = true
         elseif n_chars_after < config.context_window * (1 - config.context_ratio) then
             -- if the context length after cursor does not exceed the maximum
             -- size, we include the full content after the cursor.
             lines_before = vim.fn.strcharpart(lines_before, n_chars_before + n_chars_after - config.context_window)
+            opts.is_incomplete_before = true
         else
             -- at the middle of the file, use the context_ratio to determine the allocation
             lines_after =
@@ -191,12 +198,16 @@ function M.get_context(cmp_context)
                 lines_before,
                 n_chars_before - math.floor(config.context_window * config.context_ratio)
             )
+
+            opts.is_incomplete_before = true
+            opts.is_incomplete_after = true
         end
     end
 
     return {
         lines_before = lines_before,
         lines_after = lines_after,
+        opts = opts,
     }
 end
 
@@ -279,10 +290,13 @@ function M.prepend_to_complete_word(a, b)
     return a
 end
 
-function M.make_chat_llm_shot(context_before_cursor, context_after_cursor, template)
+function M.make_chat_llm_shot(context, template)
     local input = template.template
     local parts = {}
     local last_pos = 1
+    local context_before_cursor = context.lines_before
+    local context_after_cursor = context.lines_after
+    local opts = context.opts
 
     -- Store the template value before clearing it
     template.template = nil
@@ -303,7 +317,7 @@ function M.make_chat_llm_shot(context_before_cursor, context_after_cursor, templ
 
         -- Get the replacement value if it exists
         if template[key] then
-            local value = template[key](context_before_cursor, context_after_cursor)
+            local value = template[key](context_before_cursor, context_after_cursor, opts)
             table.insert(parts, value)
         end
 

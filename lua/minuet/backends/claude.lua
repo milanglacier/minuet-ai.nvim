@@ -41,15 +41,15 @@ function M.get_text_fn_stream(json)
     return json.delta.text
 end
 
-M.complete = function(context_before_cursor, context_after_cursor, callback)
+M.complete = function(context, callback)
     common.terminate_all_jobs()
 
     local options, data = make_request_data()
-    local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor, options.chat_input)
+    local ctx = utils.make_chat_llm_shot(context, options.chat_input)
 
     local few_shots = vim.deepcopy(utils.get_or_eval_value(options.few_shots))
 
-    table.insert(few_shots, { role = 'user', content = context })
+    table.insert(few_shots, { role = 'user', content = ctx })
 
     data.messages = few_shots
 

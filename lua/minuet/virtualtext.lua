@@ -180,7 +180,7 @@ local function trigger(bufnr)
 
     local provider = require('minuet.backends.' .. config.provider)
 
-    provider.complete(context.lines_before, context.lines_after, function(data)
+    provider.complete(context, function(data)
         data = utils.list_dedup(data or {})
 
         local ctx = get_ctx()

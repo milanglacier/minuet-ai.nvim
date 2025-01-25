@@ -77,18 +77,28 @@ end
 
 local default_chat_input = {
     template = '{{{language}}}\n{{{tab}}}\n<contextAfterCursor>\n{{{context_after_cursor}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>',
-    language = function(_, _)
+    language = function(_, _, _)
         local utils = require 'minuet.utils'
         return utils.add_language_comment()
     end,
-    tab = function(_, _)
+    tab = function(_, _, _)
         local utils = require 'minuet.utils'
         return utils.add_tab_comment()
     end,
-    context_before_cursor = function(context_before_cursor, _)
+    context_before_cursor = function(context_before_cursor, _, opts)
+        if opts.is_incomplete_before then
+            -- Remove first line when context is incomplete at start
+            local _, rest = context_before_cursor:match '([^\n]*)\n(.*)'
+            return rest or context_before_cursor
+        end
         return context_before_cursor
     end,
-    context_after_cursor = function(_, context_after_cursor)
+    context_after_cursor = function(_, context_after_cursor, opts)
+        if opts.is_incomplete_after then
+            -- Remove last line when context is incomplete at end
+            local content = context_after_cursor:match '(.*)[\n][^\n]*$'
+            return content or context_after_cursor
+        end
         return context_after_cursor
     end,
 }

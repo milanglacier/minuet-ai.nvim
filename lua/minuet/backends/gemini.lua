@@ -62,17 +62,17 @@ local function make_request_data()
     return options, request_data
 end
 
-function M.complete(context_before_cursor, context_after_cursor, callback)
+function M.complete(context, callback)
     common.terminate_all_jobs()
 
     local options, data = make_request_data()
 
-    local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor, options.chat_input)
+    local ctx = utils.make_chat_llm_shot(context, options.chat_input)
 
     table.insert(data.contents, {
         role = 'user',
         parts = {
-            { text = context },
+            { text = ctx },
         },
     })
 

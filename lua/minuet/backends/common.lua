@@ -79,17 +79,17 @@ function M.openai_get_text_fn_stream(json)
     return json.choices[1].delta.content
 end
 
-function M.complete_openai_base(options, context_before_cursor, context_after_cursor, callback)
+function M.complete_openai_base(options, context, callback)
     M.terminate_all_jobs()
 
-    local context = utils.make_chat_llm_shot(context_before_cursor, context_after_cursor, options.chat_input)
+    local ctx = utils.make_chat_llm_shot(context, options.chat_input)
 
     local few_shots = vim.deepcopy(utils.get_or_eval_value(options.few_shots))
 
     local system = utils.make_system_prompt(options.system, config.n_completions)
 
     table.insert(few_shots, 1, { role = 'system', content = system })
-    table.insert(few_shots, { role = 'user', content = context })
+    table.insert(few_shots, { role = 'user', content = ctx })
 
     local data = {
         model = options.model,
