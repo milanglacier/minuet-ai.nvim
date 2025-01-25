@@ -248,6 +248,9 @@ Ollama:
 require('minuet').setup {
     provider = 'openai_fim_compatible',
     n_completions = 1, -- recommend for local model for resource saving
+    -- I recommend you start with a small context window firstly, and gradually
+    -- increase it based on your local computing power.
+    context_window = 512,
     provider_options = {
         openai_fim_compatible = {
             api_key = 'TERM',
