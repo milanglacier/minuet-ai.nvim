@@ -16,13 +16,13 @@ if not M.is_available() then
     utils.notify('OpenAI API key is not set', 'error', vim.log.levels.ERROR)
 end
 
-M.complete = function(context_before_cursor, context_after_cursor, callback)
+M.complete = function(context, callback)
     local options = vim.deepcopy(config.provider_options.openai)
     options.name = 'OpenAI'
     options.end_point = 'https://api.openai.com/v1/chat/completions'
     options.api_key = 'OPENAI_API_KEY'
 
-    common.complete_openai_base(options, context_before_cursor, context_after_cursor, callback)
+    common.complete_openai_base(options, context, callback)
 end
 
 return M

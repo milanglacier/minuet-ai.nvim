@@ -29,9 +29,9 @@ function M.get_text_fn(json)
     return json.choices[1].text
 end
 
-M.complete = function(context_before_cursor, context_after_cursor, callback)
+M.complete = function(context, callback)
     local options = vim.deepcopy(config.provider_options.openai_fim_compatible)
-    common.complete_openai_fim_base(options, M.get_text_fn, context_before_cursor, context_after_cursor, callback)
+    common.complete_openai_fim_base(options, M.get_text_fn, context, callback)
 end
 
 return M

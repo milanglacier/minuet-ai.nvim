@@ -25,7 +25,7 @@ function M.get_text_fn_stream(json)
     return json.choices[1].delta.content
 end
 
-M.complete = function(context_before_cursor, context_after_cursor, callback)
+M.complete = function(context, callback)
     local options = vim.deepcopy(config.provider_options.codestral)
 
     options.name = 'Codestral'
@@ -33,8 +33,7 @@ M.complete = function(context_before_cursor, context_after_cursor, callback)
     common.complete_openai_fim_base(
         options,
         options.stream and M.get_text_fn_stream or M.get_text_fn_no_stream,
-        context_before_cursor,
-        context_after_cursor,
+        context,
         callback
     )
 end

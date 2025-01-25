@@ -141,7 +141,10 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
     new_job:start()
 end
 
-M.complete = function(context_before_cursor, context_after_cursor, callback)
+M.complete = function(context, callback)
+    local context_before_cursor = context.lines_before
+    local context_after_cursor = context.lines_after
+
     local options, _ = make_request_data()
     if options.type == 'completion' then
         M.complete_completion(context_before_cursor, context_after_cursor, callback)

@@ -25,9 +25,9 @@ if not M.is_available() then
     )
 end
 
-M.complete = function(context_before_cursor, context_after_cursor, callback)
+M.complete = function(context, callback)
     local options = vim.deepcopy(config.provider_options.openai_compatible)
-    common.complete_openai_base(options, context_before_cursor, context_after_cursor, callback)
+    common.complete_openai_base(options, context, callback)
 end
 
 return M

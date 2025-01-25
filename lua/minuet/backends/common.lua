@@ -144,7 +144,7 @@ function M.complete_openai_base(options, context, callback)
 
             local items = M.parse_completion_items(items_raw, options.name)
 
-            items = M.filter_context_sequences_in_items(items, context_after_cursor)
+            items = M.filter_context_sequences_in_items(items, context.lines_after)
 
             items = utils.remove_spaces(items)
 
@@ -156,13 +156,15 @@ function M.complete_openai_base(options, context, callback)
     new_job:start()
 end
 
-function M.complete_openai_fim_base(options, get_text_fn, context_before_cursor, context_after_cursor, callback)
+function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     M.terminate_all_jobs()
 
     local data = {}
 
     data.model = options.model
     data.stream = options.stream
+    local context_before_cursor = context.lines_before
+    local context_after_cursor = context.lines_after
 
     data = vim.tbl_deep_extend('force', data, options.optional or {})
 

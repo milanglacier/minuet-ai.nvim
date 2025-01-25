@@ -99,7 +99,7 @@ M.complete = function(context, callback)
 
             local items = common.parse_completion_items(items_raw, 'Claude')
 
-            items = common.filter_context_sequences_in_items(items, context_after_cursor)
+            items = common.filter_context_sequences_in_items(items, context.lines_after)
 
             items = utils.remove_spaces(items)
 
