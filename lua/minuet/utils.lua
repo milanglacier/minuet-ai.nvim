@@ -101,9 +101,10 @@ function M.add_tab_comment()
     end
 
     local tab_comment
+    local tabwidth = vim.bo.softtabstop > 0 and vim.bo.softtabstop or vim.bo.shiftwidth
 
-    if vim.bo.expandtab and vim.bo.softtabstop > 0 then
-        tab_comment = 'indentation: use ' .. vim.bo.softtabstop .. ' spaces for a tab'
+    if vim.bo.expandtab and tabwidth > 0 then
+        tab_comment = 'indentation: use ' .. tabwidth .. ' spaces for a tab'
 
         if vim.bo.commentstring == nil or vim.bo.commentstring == '' then
             return '# ' .. tab_comment
