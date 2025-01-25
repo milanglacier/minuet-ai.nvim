@@ -169,6 +169,8 @@ require('blink-cmp').setup {
             },
         },
     },
+    -- Recommended to avoid unnecessary request
+    completion = { trigger = { prefetch_on_insert = false } },
 }
 ```
 
