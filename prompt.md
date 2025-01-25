@@ -123,8 +123,15 @@ Components:
 - `context_before_cursor` and `context_after_cursor`: Represent the text
   content before and after the cursor position
 
-Each subcomponent must be defined by a function that takes two parameters
-(`context_before_cursor`, `context_after_cursor`) and returns a string value.
+Each subcomponent must be defined by a function that takes three parameters:
+
+- `context_before_cursor`: The text content before the cursor
+- `context_after_cursor`: The text content after the cursor
+- `opts`: A table containing flags about context truncation:
+  - `is_incomplete_before`: True if content before cursor was truncated
+  - `is_incomplete_after`: True if content after cursor was truncated
+
+The function should return a string value.
 
 ## Customization
 

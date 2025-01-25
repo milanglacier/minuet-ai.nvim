@@ -75,6 +75,13 @@ local default_fim_suffix = function(_, context_after_cursor)
     return context_after_cursor
 end
 
+--- Configuration for formatting chat input to the LLM
+---@class ChatInput
+---@field template string Template string with placeholders for context parts
+---@field language function Function to add language comment based on filetype
+---@field tab function Function to add indentation style comment
+---@field context_before_cursor function Function to process text before cursor
+---@field context_after_cursor function Function to process text after cursor
 local default_chat_input = {
     template = '{{{language}}}\n{{{tab}}}\n<contextAfterCursor>\n{{{context_after_cursor}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>',
     language = function(_, _, _)
@@ -85,6 +92,11 @@ local default_chat_input = {
         local utils = require 'minuet.utils'
         return utils.add_tab_comment()
     end,
+    --- Process text content before the cursor position
+    ---@param context_before_cursor string The text content before cursor
+    ---@param _ any Unused parameter
+    ---@param opts table Options containing is_incomplete_before flag
+    ---@return string Processed text, with first line removed if context is incomplete
     context_before_cursor = function(context_before_cursor, _, opts)
         if opts.is_incomplete_before then
             -- Remove first line when context is incomplete at start
@@ -93,6 +105,11 @@ local default_chat_input = {
         end
         return context_before_cursor
     end,
+    --- Process text content after the cursor position
+    ---@param _ any Unused parameter
+    ---@param context_after_cursor string The text content after cursor
+    ---@param opts table Options containing is_incomplete_after flag
+    ---@return string Processed text, with last line removed if context is incomplete
     context_after_cursor = function(_, context_after_cursor, opts)
         if opts.is_incomplete_after then
             -- Remove last line when context is incomplete at end

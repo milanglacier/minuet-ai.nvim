@@ -159,6 +159,14 @@ function M.make_cmp_context(blink_context)
     return self
 end
 
+--- Get the context around the cursor position for code completion
+---@param cmp_context table The completion context object containing cursor position and line info
+---@return table Context information with the following fields:
+---   - lines_before: string - Text content before cursor, truncated based on context window size
+---   - lines_after: string - Text content after cursor, truncated based on context window size
+---   - opts: table - Options indicating if context was truncated:
+---     - is_incomplete_before: boolean - True if content before cursor was truncated
+---     - is_incomplete_after: boolean - True if content after cursor was truncated
 function M.get_context(cmp_context)
     local cursor = cmp_context.cursor
     local lines_before_list = vim.api.nvim_buf_get_lines(0, 0, cursor.line, false)
