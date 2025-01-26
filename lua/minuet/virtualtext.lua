@@ -243,7 +243,6 @@ local action = {}
 
 action.next = function()
     local ctx = get_ctx()
-    vim.notify(vim.inspect(ctx))
 
     -- no suggestion request yet
     if not ctx.suggestions then
