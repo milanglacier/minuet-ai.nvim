@@ -566,6 +566,14 @@ provider_options = {
 }
 ```
 
+### Experimental Configuration
+
+Gemini appears to perform better with an alternative input structure, unlike
+other chat-based LLMs. This observation is currently experimental and requires
+further validation. For details on the experimental prompt setup currently in
+use by the maintainer, please refer to the [prompt
+documentation](./prompt.md#an-experimental-configuration-setup for-gemini).
+
 </details>
 
 ## OpenAI-compatible
