@@ -441,4 +441,24 @@ M.list_dedup = function(list)
     return items_cleaned
 end
 
+-- Refer: https://github.com/MunifTanjim/nui.nvim
+function M.truncate_text(text, max_length)
+    if vim.fn.strdisplaywidth(text) <= max_length then
+        return text .. ' […]'
+    end
+
+    local low, high = 0, vim.fn.strchars(text)
+    local mid
+
+    while low < high do
+        mid = math.floor((low + high + 1) / 2)
+        if vim.fn.strdisplaywidth(vim.fn.strcharpart(text, 0, mid)) < max_length then
+            low = mid
+        else
+            high = mid - 1
+        end
+    end
+
+    return vim.fn.strcharpart(text, 0, low) .. ' […]'
+end
 return M
