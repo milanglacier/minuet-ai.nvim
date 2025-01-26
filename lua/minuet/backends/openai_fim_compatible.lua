@@ -19,7 +19,8 @@ end
 
 if not M.is_available() then
     utils.notify(
-        'The provider specified as OpenAI FIM compatible is not properly configured.',
+        [[The API key has not been provided as an environment variable, or the specified API key environment variable does not exist.
+If you are using Ollama, you can simply set it to 'TERM'.]],
         'error',
         vim.log.levels.ERROR
     )
