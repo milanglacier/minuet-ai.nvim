@@ -23,6 +23,7 @@
   - [Customize `cmp` ui](#customize-cmp-ui)
   - [Significant Input Delay When Moving to a New Line](#significant-input-delay-when-moving-to-a-new-line)
   - [Integration with `lazyvim`](#integration-with-lazyvim)
+- [Troubleshooting](#troubleshooting)
 - [TODO](#todo)
 - [Contributing](#contributing)
 - [Acknowledgement](#acknowledgement)
@@ -914,6 +915,21 @@ vim.g.lazyvim_blink_main = true
 ```
 
 </details>
+
+# Troubleshooting
+
+If your setup failed, there are two most likely reasons:
+
+1. You are setting the API key to a literal value instead of the environment
+   variable name.
+2. You are using a context window that is too large, causing completion items
+   to timeout before returning. It is recommended to:
+   - Test with manual completion first
+   - Use a smaller context window (e.g., `config.context_window = 768`)
+   - Set a longer request timeout (e.g., `config.request_timeout = 5`) to
+     evaluate your provider's response time
+
+To diagnose issues, set `config.notify = debug` and examine the output.
 
 # TODO
 
