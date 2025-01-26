@@ -572,7 +572,7 @@ Gemini appears to perform better with an alternative input structure, unlike
 other chat-based LLMs. This observation is currently experimental and requires
 further validation. For details on the experimental prompt setup currently in
 use by the maintainer, please refer to the [prompt
-documentation](./prompt.md#an-experimental-configuration-setup for-gemini).
+documentation](./prompt.md#an-experimental-configuration-setup-for-gemini).
 
 </details>
 
@@ -626,10 +626,6 @@ For example, you can set the `end_point` to
 Refer to the [Completions
 Legacy](https://platform.openai.com/docs/api-reference/completions) section of
 the OpenAI documentation for details.
-
-Note that not all openAI compatible services has streaming support, you should
-change `stream=false` to disable streaming in case your services do not support
-it.
 
 Please note that not all OpenAI-compatible services support streaming. If your
 service does not support streaming, you should set `stream=false` to disable
