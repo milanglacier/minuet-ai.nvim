@@ -218,8 +218,8 @@ M.default_chat_input = default_chat_input
 M.default_few_shots = default_few_shots
 
 M.default_fim_template = {
-    default_prompt = default_fim_prompt,
-    default_suffix = default_fim_suffix,
+    prompt = default_fim_prompt,
+    suffix = default_fim_suffix,
 }
 
 M.provider_options = {
@@ -228,10 +228,7 @@ M.provider_options = {
         end_point = 'https://codestral.mistral.ai/v1/fim/completions',
         api_key = 'CODESTRAL_API_KEY',
         stream = true,
-        template = {
-            prompt = M.default_fim_template.default_prompt,
-            suffix = M.default_fim_template.default_suffix,
-        },
+        template = M.default_fim_template,
         optional = {
             stop = nil, -- the identifier to stop the completion generation
             max_tokens = nil,
@@ -287,10 +284,7 @@ M.provider_options = {
         api_key = 'DEEPSEEK_API_KEY',
         name = 'Deepseek',
         stream = true,
-        template = {
-            prompt = M.default_fim_template.default_prompt,
-            suffix = M.default_fim_template.default_suffix,
-        },
+        template = M.default_fim_template,
         optional = {
             stop = nil,
             max_tokens = nil,

@@ -371,8 +371,8 @@ default_config = {
         n_completion_template = '...',
     },
     default_fim_template = {
-        default_prompt = '...',
-        default_suffix = '...',
+        prompt = '...',
+        suffix = '...',
     },
     default_few_shots = { '...' },
 }
