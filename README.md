@@ -179,7 +179,7 @@ require('blink-cmp').setup {
 
 **LLM Provider Examples**:
 
-Fireworks (`llama-3.3-70b`):
+**Fireworks (`llama-3.3-70b`)**:
 
 <details>
 
@@ -203,7 +203,7 @@ require('minuet').setup {
 
 </details>
 
-Deepseek:
+**Deepseek**:
 
 <details>
 
@@ -243,7 +243,7 @@ require('minuet').setup {
 
 </details>
 
-Ollama:
+**Ollama (`qwen-2.5-coder`)**:
 
 <details>
 
@@ -259,7 +259,7 @@ require('minuet').setup {
             api_key = 'TERM',
             name = 'Ollama',
             end_point = 'http://localhost:11434/v1/completions',
-            model = 'qwen2.5-coder:14b',
+            model = 'qwen2.5-coder:7b',
             optional = {
                 max_tokens = 256,
                 top_p = 0.9,
@@ -922,12 +922,15 @@ If your setup failed, there are two most likely reasons:
 
 1. You are setting the API key to a literal value instead of the environment
    variable name.
-2. You are using a context window that is too large, causing completion items
-   to timeout before returning. It is recommended to:
-   - Test with manual completion first
+2. You are using a model or a context window that is too large, causing
+   completion items to timeout before returning any tokens. This is
+   particularly common with local LLM. It is recommended to start with the
+   following settings to have a better understanding of your provider's inference
+   speed.
+   - Begin by testing with manual completions.
    - Use a smaller context window (e.g., `config.context_window = 768`)
-   - Set a longer request timeout (e.g., `config.request_timeout = 5`) to
-     evaluate your provider's response time
+   - Use a smaller model
+   - Set a longer request timeout (e.g., `config.request_timeout = 5`)
 
 To diagnose issues, set `config.notify = debug` and examine the output.
 
