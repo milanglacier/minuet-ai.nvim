@@ -39,7 +39,8 @@ Just as dancers move during a minuet.
 
 - AI-powered code completion with dual modes:
   - Specialized prompts and various enhancements for chat-based LLMs on code completion tasks.
-  - Fill-in-the-middle (FIM) completion for compatible models (DeepSeek, Codestral, and others).
+  - Fill-in-the-middle (FIM) completion for compatible models (DeepSeek,
+    Codestral, Qwen, and others).
 - Support for multiple AI providers (OpenAI, Claude, Gemini, Codestral,
   Huggingface, and OpenAI-compatible services)
 - Customizable configuration options
@@ -179,7 +180,7 @@ require('blink-cmp').setup {
 
 **LLM Provider Examples**:
 
-**Fireworks (`llama-3.3-70b`)**:
+**Fireworks (`Qwen-2.5-72b`)**:
 
 <details>
 
@@ -190,7 +191,7 @@ require('minuet').setup {
         openai_compatible = {
             api_key = 'FIREWORKS_API_KEY',
             end_point = 'https://api.fireworks.ai/inference/v1/chat/completions',
-            model = 'accounts/fireworks/models/llama-v3p3-70b-instruct',
+            model = 'accounts/fireworks/models/qwen2p5-72b-instruct',
             name = 'Fireworks',
             optional = {
                 max_tokens = 256,
@@ -243,7 +244,7 @@ require('minuet').setup {
 
 </details>
 
-**Ollama (`qwen-2.5-coder`)**:
+**Ollama (`qwen-2.5-coder:7b`)**:
 
 <details>
 
