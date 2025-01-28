@@ -2,6 +2,7 @@
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Selecting a Provider or Model](#selecting-a-provider-or-model)
 - [Configuration](#configuration)
 - [API Keys](#api-keys)
 - [Prompt](#prompt)
@@ -85,10 +86,6 @@ specs = {
     { 'Saghen/blink.cmp' },
 }
 ```
-
-Given the response speed and rate limits of LLM services, we recommend you
-either invoke `minuet` completion manually or use a cost-effective model like
-`gemini-flash` or `codestral` for auto-completion.
 
 **Setting up with virtual text**:
 
@@ -271,6 +268,19 @@ require('minuet').setup {
 ```
 
 </details>
+
+# Selecting a Provider or Model
+
+The `gemini-flash` and `codestral` models offer high-quality output with free
+and fast processing. For optimal quality (albeit slower generation speed),
+consider using the `deepseek-chat` model, which is compatible with both
+`openai-fim-compatible` and `openai-compatible` providers. For local LLM
+inference, you can deploy either `qwen-2.5-coder` or `deepseek-coder-v2` through
+Ollama using the `openai-fim-compatible` provider.
+
+As of January 28, 2025: Due to high server demand, Deepseek users may
+experience significant response delays or timeout. We recommend trying
+alternative providers instead.
 
 # Configuration
 
@@ -624,6 +634,9 @@ examples are not applicable.
 For example, you can set the `end_point` to
 `http://localhost:11434/v1/completions` to use `ollama`.
 
+Cmdline completion is available for models supported by these providers:
+`deepseek`, `ollama`, and `siliconflow`.
+
 <details>
 
 Refer to the [Completions
@@ -635,11 +648,11 @@ service does not support streaming, you should set `stream=false` to disable
 it.
 
 Additionally, for Ollama users, it is essential to verify whether the model's
-template supports FIM completion. For example, [qwen2.5-coder's
-template](https://ollama.com/library/qwen2.5-coder/blobs/e94a8ecb9327) is a
-supported model. However if may come as a surprise to some users that,
-`deepseek-coder` does not support the FIM template, and you should use
-`deepseek-coder-v2` instead.
+template supports FIM completion. For example, qwen2.5-coder offers FIM support,
+as suggested in its
+[template]((https://ollama.com/library/qwen2.5-coder/blobs/e94a8ecb9327).
+However it may come as a surprise to some users that, `deepseek-coder` does not
+support the FIM template, and you should use `deepseek-coder-v2` instead.
 
 ```lua
 provider_options = {
