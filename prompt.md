@@ -122,9 +122,6 @@ The chat input represents the final prompt delivered to the LLM for completion.
 Its template follows a structured format similar to the system prompt and can
 be customized as follows:
 
-The chat input template follows a structure similar to the system prompt and
-can be customized using the following format:
-
 `{{{language}}}\n{{{tab}}}\n<contextAfterCursor>\n{{{context_after_cursor}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>`
 
 Components:

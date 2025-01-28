@@ -375,6 +375,7 @@ default_config = {
         suffix = '...',
     },
     default_few_shots = { '...' },
+    default_chat_input = { '...' },
 }
 ```
 
@@ -419,8 +420,8 @@ the following is the default configuration for OpenAI:
 provider_options = {
     openai = {
         model = 'gpt-4o-mini',
-        system = "see [System Prompt] section for the default value",
-        few_shots = "see [System Prompt] section for the default value",
+        system = "see [Prompt] section for the default value",
+        few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
         stream = true,
         optional = {
@@ -460,8 +461,8 @@ provider_options = {
     claude = {
         max_tokens = 512,
         model = 'claude-3-5-haiku-20241022',
-        system = "see [System Prompt] section for the default value",
-        few_shots = "see [System Prompt] section for the default value",
+        system = "see [Prompt] section for the default value",
+        few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
         stream = true,
         optional = {
@@ -532,8 +533,8 @@ The following config is the default.
 provider_options = {
     gemini = {
         model = 'gemini-1.5-flash-latest',
-        system = "see [System Prompt] section for the default value",
-        few_shots = "see [System Prompt] section for the default value",
+        system = "see [Prompt] section for the default value",
+        few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
         stream = true,
         optional = {},
@@ -596,8 +597,8 @@ The following config is the default.
 provider_options = {
     openai_compatible = {
         model = 'llama-3.3-70b-versatile',
-        system = "see [System Prompt] section for the default value",
-        few_shots = "see [System Prompt] section for the default value",
+        system = "see [Prompt] section for the default value",
+        few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
         end_point = 'https://api.groq.com/openai/v1/chat/completions',
         api_key = 'GROQ_API_KEY',
