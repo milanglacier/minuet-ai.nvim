@@ -76,6 +76,12 @@ M.models = {
     openai_fim_compatible = {
         deepseek = { 'deepseek-chat' },
         ollama = { 'qwen2.5-coder', 'deepseek-coder-v2', 'deepseek-v2.5', 'deepseek-v3', 'codestral' },
+        siliconflow = {
+            'deepseek-ai/DeepSeek-V2.5',
+            'Pro/Qwen/Qwen2.5-Coder-7B-Instruct',
+            'Qwen/Qwen2.5-Coder-7B-Instruct',
+            'Qwen/Qwen2.5-Coder-32B-Instruct',
+        },
     },
     codestral = { 'codestral-latest' },
 }
