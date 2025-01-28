@@ -192,13 +192,16 @@ local function trigger(bufnr)
 
         data = utils.list_dedup(data or {})
         local ctx = get_ctx()
-        ctx.suggestions = data
-        if not ctx.choice then
-            ctx.choice = 1
-        end
-        ctx.shown_choices = {}
 
-        update_preview()
+        if next(data) then
+            ctx.suggestions = data
+            if not ctx.choice then
+                ctx.choice = 1
+            end
+            ctx.shown_choices = {}
+        end
+
+        update_preview(ctx)
     end)
 end
 
