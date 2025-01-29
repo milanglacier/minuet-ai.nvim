@@ -1,15 +1,6 @@
 local M = {}
 local config = require('minuet').config
 local utils = require 'minuet.utils'
-local max_label_width = nil
-
-local has_blink = pcall(require, 'blink.cmp.config')
-
-if has_blink then
-    max_label_width = require('blink.cmp.config').completion.menu.draw.components.label.width.max
-else
-    vim.notify('Please install blink.cmp!', vim.log.levels.ERROR)
-end
 
 if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = 'BlinkCmpItemKindMinuet' })) then
     vim.api.nvim_set_hl(0, 'BlinkCmpItemKindMinuet', { link = 'BlinkCmpItemKind' })
@@ -92,27 +83,30 @@ function M:get_completions(ctx, callback)
                 end
             end
 
+            local success, max_label_width = pcall(function()
+                return require('blink.cmp.config').completion.menu.draw.components.label.width.max
+            end)
+            if not success then
+                max_label_width = 60
+            end
+
+            local multi_lines_indicators = ' [...]'
+
             local items = {}
             for _, result in ipairs(new_data) do
-                local line_entry = vim.split(result, '\n')
-                local item_label = nil
-                if #line_entry == 1 then
+                local item_lines = vim.split(result, '\n')
+                local item_label
+
+                if #item_lines == 1 then
                     item_label = result
                 else
-                    for _, line in ipairs(line_entry) do
-                        line = utils.remove_spaces({ line })[1]
-                        if line and line ~= '' then
-                            line = utils.truncate_text(line, max_label_width - 3)
-                            item_label = line
-                            break
-                        end
-                    end
+                    item_label = vim.fn.strcharpart(item_lines[1], 0, max_label_width - #multi_lines_indicators)
+                        .. multi_lines_indicators
                 end
+
                 table.insert(items, {
                     label = item_label,
-                    filterText = result,
-                    insertText = result .. '$0',
-                    insertTextFormat = vim.lsp.protocol.InsertTextFormat.Snippet,
+                    insertText = result,
                     documentation = {
                         kind = 'markdown',
                         value = '```' .. (vim.bo.ft or '') .. '\n' .. result .. '\n```',
