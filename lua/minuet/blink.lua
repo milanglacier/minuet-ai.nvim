@@ -93,7 +93,7 @@ function M:get_completions(ctx, callback)
                     },
                     -- TODO: use the provider name as kind name like nvim-cmp
                     -- when blink supports non-lsp kind name.
-                    kind = vim.lsp.protocol.CompletionItemKind.Text,
+                    kind = 'Text',
                 })
             end
             callback {
