@@ -293,7 +293,7 @@ default_config = {
     -- will attempt to invoke minuet when minuet is included in cmp/blink
     -- sources. This setting has no effect on manual completion; Minuet will
     -- always be enabled when invoked manually. You can use the command
-    -- `MinuetToggle` to toggle this option.
+    -- `Minuet cmp/blink toggle` to toggle this option.
     cmp = {
         enable_auto_complete = true,
     },
@@ -648,9 +648,9 @@ service does not support streaming, you should set `stream=false` to disable
 it.
 
 Additionally, for Ollama users, it is essential to verify whether the model's
-template supports FIM completion. For example, qwen2.5-coder offers FIM support,
-as suggested in its
-[template]((https://ollama.com/library/qwen2.5-coder/blobs/e94a8ecb9327).
+template supports FIM completion. For example, qwen2.5-coder offers FIM
+support, as suggested in its
+[template](https://ollama.com/library/qwen2.5-coder/blobs/e94a8ecb9327).
 However it may come as a surprise to some users that, `deepseek-coder` does not
 support the FIM template, and you should use `deepseek-coder-v2` instead.
 
