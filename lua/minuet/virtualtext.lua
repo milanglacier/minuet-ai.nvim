@@ -229,7 +229,7 @@ local function schedule()
     local bufnr = api.nvim_get_current_buf()
 
     internal.timer = vim.defer_fn(function()
-        if internal.is_on_throttle then
+        if internal.is_on_throttle or completion_menu_visible() then
             return
         end
 
