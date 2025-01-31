@@ -83,10 +83,30 @@ function M:get_completions(ctx, callback)
                 end
             end
 
+            local success, max_label_width = pcall(function()
+                return require('blink.cmp.config').completion.menu.draw.components.label.width.max
+            end)
+            if not success then
+                max_label_width = 60
+            end
+
+            local multi_lines_indicators = ' [...]'
+
             local items = {}
             for _, result in ipairs(new_data) do
+                local item_lines = vim.split(result, '\n')
+                local item_label
+
+                if #item_lines == 1 then
+                    item_label = result
+                else
+                    item_label = vim.fn.strcharpart(item_lines[1], 0, max_label_width - #multi_lines_indicators)
+                        .. multi_lines_indicators
+                end
+
                 table.insert(items, {
-                    label = result,
+                    label = item_label,
+                    insertText = result,
                     documentation = {
                         kind = 'markdown',
                         value = '```' .. (vim.bo.ft or '') .. '\n' .. result .. '\n```',
