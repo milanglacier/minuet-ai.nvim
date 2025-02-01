@@ -417,7 +417,7 @@ require('mineut').setup {
     provider_options = {
         openai_compatible = {
             -- good
-            api_key = 'FIREWORKS_API_KEY',
+            api_key = 'FIREWORKS_API_KEY', -- will read the environment variable FIREWORKS_API_KEY
             -- good
             api_key = function() return 'sk-xxxx' end,
             -- bad
@@ -957,9 +957,8 @@ vim.g.lazyvim_blink_main = true
 
 If your setup failed, there are two most likely reasons:
 
-1. You are setting the API key to a literal value instead of the environment
-   variable name. Or You are setting the API key to a function that does not
-   return the API key (e.g. this function should return `sk-xxxx`).
+1. You may set the API key incorrectly. Checkout the [API Key](#api-keys)
+   section to see how to correctly specify the API key.
 2. You are using a model or a context window that is too large, causing
    completion items to timeout before returning any tokens. This is
    particularly common with local LLM. It is recommended to start with the
