@@ -5,12 +5,7 @@ local common = require 'minuet.backends.common'
 local M = {}
 
 M.is_available = function()
-    local options = config.provider_options.codestral
-    if vim.env[options.api_key] == nil or vim.env[options.api_key] == '' then
-        return false
-    else
-        return true
-    end
+    return utils.get_api_key(config.provider_options.codestral.api_key) and true or false
 end
 
 if not M.is_available() then

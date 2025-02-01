@@ -5,11 +5,7 @@ local utils = require 'minuet.utils'
 local M = {}
 
 M.is_available = function()
-    if vim.env.OPENAI_API_KEY == nil or vim.env.OPENAI_API_KEY == '' then
-        return false
-    else
-        return true
-    end
+    return utils.get_api_key(config.provider_options.openai.api_key) and true or false
 end
 
 if not M.is_available() then
@@ -20,7 +16,6 @@ M.complete = function(context, callback)
     local options = vim.deepcopy(config.provider_options.openai)
     options.name = 'OpenAI'
     options.end_point = 'https://api.openai.com/v1/chat/completions'
-    options.api_key = 'OPENAI_API_KEY'
 
     common.complete_openai_base(options, context, callback)
 end

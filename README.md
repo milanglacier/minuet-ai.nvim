@@ -408,6 +408,25 @@ itself (e.g., `sk-xxxx`).
 If using Ollama, you need to assign an arbitrary, non-null environment variable
 as a placeholder for it to function.
 
+Alternatively, you can provide a function that returns the API key. This
+function should return the result instantly as it will be called for each
+completion request.
+
+```lua
+require('mineut').setup {
+    provider_options = {
+        openai_compatible = {
+            -- good
+            api_key = 'FIREWORKS_API_KEY',
+            -- good
+            api_key = function() return 'sk-xxxx' end,
+            -- bad
+            api_key = 'sk-xxxx',
+        }
+    }
+}
+```
+
 # Prompt
 
 See [prompt](./prompt.md) for the default prompt used by `minuet` and
@@ -435,6 +454,7 @@ provider_options = {
         few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
         stream = true,
+        api_key = 'OPENAI_API_KEY',
         optional = {
             -- pass any additional parameters you want to send to OpenAI request,
             -- e.g.
@@ -476,6 +496,7 @@ provider_options = {
         few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
         stream = true,
+        api_key = 'ANTHROPIC_API_KEY',
         optional = {
             -- pass any additional parameters you want to send to claude request,
             -- e.g.
@@ -548,6 +569,7 @@ provider_options = {
         few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
         stream = true,
+        api_key = 'ANTHROPIC_API_KEY',
         optional = {},
     },
 }
@@ -936,7 +958,8 @@ vim.g.lazyvim_blink_main = true
 If your setup failed, there are two most likely reasons:
 
 1. You are setting the API key to a literal value instead of the environment
-   variable name.
+   variable name. Or You are setting the API key to a function that does not
+   return the API key (e.g. this function should return `sk-xxxx`).
 2. You are using a model or a context window that is too large, causing
    completion items to timeout before returning any tokens. This is
    particularly common with local LLM. It is recommended to start with the

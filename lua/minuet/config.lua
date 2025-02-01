@@ -236,6 +236,7 @@ M.provider_options = {
     },
     openai = {
         model = 'gpt-4o-mini',
+        api_key = 'OPENAI_API_KEY',
         system = M.default_system,
         few_shots = M.default_few_shots,
         chat_input = M.default_chat_input,
@@ -247,6 +248,7 @@ M.provider_options = {
     },
     claude = {
         max_tokens = 512,
+        api_key = 'ANTHROPIC_API_KEY',
         model = 'claude-3-5-haiku-20241022',
         system = M.default_system,
         chat_input = M.default_chat_input,
@@ -272,6 +274,7 @@ M.provider_options = {
     },
     gemini = {
         model = 'gemini-1.5-flash-latest',
+        api_key = 'GEMINI_API_KEY',
         system = M.default_system,
         chat_input = M.default_chat_input,
         few_shots = M.default_few_shots,
@@ -292,6 +295,7 @@ M.provider_options = {
     },
     huggingface = {
         end_point = 'https://api-inference.huggingface.co/models/bigcode/starcoder2-3b',
+        api_key = 'HF_API_KEY',
         type = 'completion', -- chat or completion
         strategies = {
             completion = {

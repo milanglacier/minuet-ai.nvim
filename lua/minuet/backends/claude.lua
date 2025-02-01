@@ -6,11 +6,7 @@ local Job = require 'plenary.job'
 local M = {}
 
 M.is_available = function()
-    if vim.env.ANTHROPIC_API_KEY == nil or vim.env.ANTHROPIC_API_KEY == '' then
-        return false
-    else
-        return true
-    end
+    return utils.get_api_key(config.provider_options.claude.api_key) and true or false
 end
 
 if not M.is_available() then
@@ -64,7 +60,7 @@ M.complete = function(context, callback)
         '-H',
         'Content-Type: application/json',
         '-H',
-        'x-api-key: ' .. vim.env.ANTHROPIC_API_KEY,
+        'x-api-key: ' .. utils.get_api_key(options.api_key),
         '-H',
         'anthropic-version: 2023-06-01',
         '--max-time',

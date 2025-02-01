@@ -24,11 +24,7 @@ end
 local M = {}
 
 M.is_available = function()
-    if vim.env.HF_API_KEY == nil or vim.env.HF_API_KEY == '' then
-        return false
-    else
-        return true
-    end
+    return utils.get_api_key(config.provider_options.huggingface.api_key) and true or false
 end
 
 if not M.is_available() then
@@ -88,7 +84,7 @@ M.complete_completion = function(context_before_cursor, context_after_cursor, ca
         '-H',
         'Accept: application/json',
         '-H',
-        'Authorization: Bearer ' .. vim.env.HF_API_KEY,
+        'Authorization: Bearer ' .. utils.get_api_key(options.api_key),
         '--max-time',
         tostring(config.request_timeout),
         '-d',

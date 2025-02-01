@@ -14,6 +14,24 @@ function M.notify(msg, minuet_level, vim_level, opts)
     end
 end
 
+--- Get API key from environment variable or function.
+---@param env_var string|function environment variable name or function returning API key
+---@return string? API key or nil if not found or invalid
+function M.get_api_key(env_var)
+    local api_key
+    if type(env_var) == 'function' then
+        api_key = env_var()
+    elseif type(env_var) == 'string' then
+        api_key = vim.env[env_var]
+    end
+
+    if type(api_key) ~= 'string' or api_key == '' then
+        return nil
+    end
+
+    return api_key
+end
+
 -- referenced from cmp_ai
 function M.make_tmp_file(content)
     local tmp_file = os.tmpname()
