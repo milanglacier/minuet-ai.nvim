@@ -11,21 +11,23 @@
   - [Claude](#claude)
   - [Codestral](#codestral)
   - [Gemini](#gemini)
+    - [Experimental Configuration](#experimental-configuration)
   - [OpenAI-compatible](#openai-compatible)
   - [OpenAI-FIM-compatible](#openai-fim-compatible)
   - [Huggingface](#huggingface)
 - [Commands](#commands)
-  - [`Minuet change_provider`, `Minuet change_model`](#minuet-change_provider-minuet-change_model)
-  - [`Minuet blink`, `Minuet cmp`](#minuet-blink-minuet-cmp)
-  - [`Minuet virtualtext`](#minuet-virtualtext)
+  - [`Minuet change_provider`, `Minuet change_model`](#-minuet-change-provider----minuet-change-model-)
+  - [`Minuet blink`, `Minuet cmp`](#-minuet-blink----minuet-cmp-)
+  - [`Minuet virtualtext`](#-minuet-virtualtext-)
 - [API](#api)
   - [Virtual Text](#virtual-text)
 - [FAQ](#faq)
-  - [Customize `cmp` ui](#customize-cmp-ui)
+  - [Customize `cmp` ui](#customize--cmp--ui)
   - [Significant Input Delay When Moving to a New Line](#significant-input-delay-when-moving-to-a-new-line)
-  - [Integration with `lazyvim`](#integration-with-lazyvim)
+  - [Integration with `lazyvim`](#integration-with--lazyvim-)
+- [Enhancement](#enhancement)
+  - [RAG (Experimental)](#rag--experimental-)
 - [Troubleshooting](#troubleshooting)
-- [TODO](#todo)
 - [Contributing](#contributing)
 - [Acknowledgement](#acknowledgement)
 
@@ -956,6 +958,28 @@ vim.g.lazyvim_blink_main = true
 
 </details>
 
+# Enhancement
+
+## RAG (Experimental)
+
+You can enhance the content sent to the LLM for code completion by leveraging
+RAG support through the [VectorCode](https://github.com/Davidyz/VectorCode)
+package.
+
+VectorCode contains two main components. The first is a standalone CLI program
+written in Python, available for installation via PyPI. This program is
+responsible for creating the vector database and processing RAG queries. The
+second component is a Neovim plugin that provides utility functions to send
+queries and manage buffer-related RAG information within Neovim.
+
+Currently, VectorCode offers integration recipes for combining `minuet` with
+`Qwen-2.5-coder` using `ollama`. We are actively exploring enhancements for
+other providers, particularly for chat-based LLMs.
+
+For detailed instructions on working with `Qwen-2.5-coder`, please refer to the
+[official VectorCode
+documentation](https://github.com/Davidyz/VectorCode/blob/main/docs/neovim.md).
+
 # Troubleshooting
 
 If your setup failed, there are two most likely reasons:
@@ -973,10 +997,6 @@ If your setup failed, there are two most likely reasons:
    - Set a longer request timeout (e.g., `config.request_timeout = 5`)
 
 To diagnose issues, set `config.notify = debug` and examine the output.
-
-# TODO
-
-1. Implement `RAG` on the codebase and encode the codebase information into the request to LLM.
 
 # Contributing
 
