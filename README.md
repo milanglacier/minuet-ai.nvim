@@ -324,6 +324,9 @@ default_config = {
             prev = nil,
             dismiss = nil,
         },
+        -- Whether show virtual text suggestion when the completion menu
+        -- (nvim-cmp or blink-cmp) is visible.
+        show_on_completion_menu = false,
     },
     provider = 'codestral',
     -- the maximum total characters of the context before and after the cursor

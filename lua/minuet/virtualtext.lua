@@ -121,7 +121,9 @@ local function update_preview(ctx)
 
     clear_preview()
 
-    if not suggestion or #display_lines == 0 or completion_menu_visible() then
+    local show_on_completion_menu = require('minuet').config.virtualtext.show_on_completion_menu
+
+    if not suggestion or #display_lines == 0 or (not show_on_completion_menu and completion_menu_visible()) then
         return
     end
 
@@ -229,7 +231,9 @@ local function schedule()
     local bufnr = api.nvim_get_current_buf()
 
     internal.timer = vim.defer_fn(function()
-        if internal.is_on_throttle or completion_menu_visible() then
+        local show_on_completion_menu = require('minuet').config.virtualtext.show_on_completion_menu
+
+        if internal.is_on_throttle or (not show_on_completion_menu and completion_menu_visible()) then
             return
         end
 
