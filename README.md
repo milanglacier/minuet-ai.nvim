@@ -565,8 +565,8 @@ provider_options = {
 
 ## Gemini
 
-You should use the end point from Google AI Studio instead of Google Cloud. You
-can get an API key via their
+You should register the account and use the service from Google AI Studio
+instead of Google Cloud. You can get an API key via their
 [Google API page](https://makersuite.google.com/app/apikey).
 
 <details>
@@ -576,12 +576,12 @@ The following config is the default.
 ```lua
 provider_options = {
     gemini = {
-        model = 'gemini-1.5-flash-latest',
+        model = 'gemini-2.0-flash',
         system = "see [Prompt] section for the default value",
         few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
         stream = true,
-        api_key = 'ANTHROPIC_API_KEY',
+        api_key = 'GEMINI_API_KEY',
         optional = {},
     },
 }
