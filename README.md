@@ -565,6 +565,10 @@ provider_options = {
 
 ## Gemini
 
+You should use the end point from Google AI Studio instead of Google Cloud. You
+can get an API key via their
+[Google API page](https://makersuite.google.com/app/apikey).
+
 <details>
 
 The following config is the default.
