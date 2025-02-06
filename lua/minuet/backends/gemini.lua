@@ -1,4 +1,3 @@
-local config = require('minuet').config
 local utils = require 'minuet.utils'
 local common = require 'minuet.backends.common'
 local Job = require 'plenary.job'
@@ -6,6 +5,7 @@ local Job = require 'plenary.job'
 local M = {}
 
 M.is_available = function()
+    local config = require('minuet').config
     return utils.get_api_key(config.provider_options.gemini.api_key) and true or false
 end
 
@@ -18,6 +18,7 @@ function M.get_text_fn(json)
 end
 
 local function make_request_data()
+    local config = require('minuet').config
     local options = vim.deepcopy(config.provider_options.gemini)
 
     local contents = {}
@@ -59,6 +60,8 @@ local function make_request_data()
 end
 
 function M.complete(context, callback)
+    local config = require('minuet').config
+
     common.terminate_all_jobs()
 
     local options, data = make_request_data()

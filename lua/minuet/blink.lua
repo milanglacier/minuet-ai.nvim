@@ -1,5 +1,4 @@
 local M = {}
-local config = require('minuet').config
 local utils = require 'minuet.utils'
 
 if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = 'BlinkCmpItemKindMinuet' })) then
@@ -11,6 +10,7 @@ function M.get_trigger_characters()
 end
 
 function M:enabled()
+    local config = require('minuet').config
     local provider = require('minuet.backends.' .. config.provider)
     return provider.is_available()
 end
@@ -23,6 +23,7 @@ function M.new()
 end
 
 function M:get_completions(ctx, callback)
+    local config = require('minuet').config
     -- we want to always invoke completion when invoked manually
     if not config.blink.enable_auto_complete and ctx.trigger.kind ~= 'manual' then
         callback()

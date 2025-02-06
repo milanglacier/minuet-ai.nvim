@@ -1,10 +1,10 @@
-local config = require('minuet').config
 local common = require 'minuet.backends.common'
 local utils = require 'minuet.utils'
 
 local M = {}
 
 M.is_available = function()
+    local config = require('minuet').config
     local options = config.provider_options.openai_fim_compatible
     if options.end_point == '' or options.api_key == '' or options.name == '' then
         return false
@@ -28,6 +28,7 @@ function M.get_text_fn(json)
 end
 
 M.complete = function(context, callback)
+    local config = require('minuet').config
     local options = vim.deepcopy(config.provider_options.openai_fim_compatible)
     common.complete_openai_fim_base(options, M.get_text_fn, context, callback)
 end

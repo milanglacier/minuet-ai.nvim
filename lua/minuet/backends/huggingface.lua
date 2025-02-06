@@ -1,9 +1,9 @@
-local config = require('minuet').config
 local utils = require 'minuet.utils'
 local Job = require 'plenary.job'
 local common = require 'minuet.backends.common'
 
 local function make_request_data()
+    local config = require('minuet').config
     local request_data = {
         parameters = {
             return_full_text = false,
@@ -24,6 +24,7 @@ end
 local M = {}
 
 M.is_available = function()
+    local config = require('minuet').config
     return utils.get_api_key(config.provider_options.huggingface.api_key) and true or false
 end
 
@@ -32,6 +33,8 @@ if not M.is_available() then
 end
 
 M.complete_completion = function(context_before_cursor, context_after_cursor, callback)
+    local config = require('minuet').config
+
     common.terminate_all_jobs()
 
     local options, data = make_request_data()
