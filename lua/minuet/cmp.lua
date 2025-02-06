@@ -1,5 +1,4 @@
 local M = {}
-local config = require('minuet').config
 local utils = require 'minuet.utils'
 local cmp = require 'cmp'
 local lsp = require 'cmp.types.lsp'
@@ -9,6 +8,7 @@ if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = 'CmpItemKindMinuet' })) then
 end
 
 function M:is_available()
+    local config = require('minuet').config
     local provider = require('minuet.backends.' .. config.provider)
     return provider.is_available()
 end
@@ -38,6 +38,8 @@ function M:new()
 end
 
 function M:complete(ctx, callback)
+    local config = require('minuet').config
+
     -- we want to always invoke completion when invoked manually
     if not config.cmp.enable_auto_complete and ctx.context.option.reason ~= 'manual' then
         callback()

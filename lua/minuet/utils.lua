@@ -1,7 +1,7 @@
 local M = {}
-local config = require('minuet').config
 
 function M.notify(msg, minuet_level, vim_level, opts)
+    local config = require('minuet').config
     local notify_levels = {
         debug = 0,
         verbose = 1,
@@ -186,6 +186,8 @@ end
 ---     - is_incomplete_before: boolean - True if content before cursor was truncated
 ---     - is_incomplete_after: boolean - True if content after cursor was truncated
 function M.get_context(cmp_context)
+    local config = require('minuet').config
+
     local cursor = cmp_context.cursor
     local lines_before_list = vim.api.nvim_buf_get_lines(0, 0, cursor.line, false)
     local lines_after_list = vim.api.nvim_buf_get_lines(0, cursor.line + 1, -1, false)

@@ -3,6 +3,10 @@ local default_config = require 'minuet.config'
 local M = {}
 
 function M.setup(config)
+    M.presets = config.presets or {}
+    M.presets.orignal = config
+
+    config.presets = nil
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
 
     local has_cmp = pcall(require, 'cmp')
@@ -121,6 +125,27 @@ function M.change_provider(provider)
     vim.notify('Minuet Provider changed to: ' .. provider, vim.log.levels.INFO)
 end
 
+function M.change_preset(preset)
+    if not M.config then
+        vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
+        return
+    end
+
+    if not M.presets[preset] then
+        vim.notify('The preset is not supported.', vim.log.levels.ERROR)
+        return
+    end
+
+    local preset_config = M.presets[preset]
+    if not preset_config then
+        return
+    end
+
+    -- deep extend the config with preset_config
+    M.config = vim.tbl_deep_extend('force', M.config, preset_config)
+    vim.notify('Minuet Preset changed to: ' .. preset, vim.log.levels.INFO)
+end
+
 vim.api.nvim_create_user_command('Minuet', function(args)
     if not M.config then
         vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
@@ -164,6 +189,8 @@ vim.api.nvim_create_user_command('Minuet', function(args)
 
     if fargs[1] == 'change_model' then
         M.change_model(fargs[2])
+    elseif fargs[1] == 'change_preset' then
+        M.change_preset(fargs[2])
     else
         actions[fargs[1]][fargs[2]]()
     end
@@ -201,7 +228,15 @@ end, {
             return providers
         end
 
-        return { 'cmp', 'virtualtext', 'blink', 'change_provider', 'change_model' }
+        if cmdline:find 'change_preset' then
+            local presets = {}
+            for k, _ in pairs(M.presets) do
+                table.insert(presets, k)
+            end
+            return presets
+        end
+
+        return { 'cmp', 'virtualtext', 'blink', 'change_provider', 'change_model', 'change_preset' }
     end,
 })
 

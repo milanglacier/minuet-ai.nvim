@@ -1,7 +1,6 @@
 local M = {}
 local utils = require 'minuet.utils'
 local Job = require 'plenary.job'
-local config = require('minuet').config
 local uv = vim.uv or vim.loop
 
 -- currently running completion jobs, basically forked curl processes
@@ -58,6 +57,7 @@ function M.parse_completion_items(items_raw, provider)
 end
 
 function M.filter_context_sequences_in_items(items, context)
+    local config = require('minuet').config
     if config.after_cursor_filter_length == 0 then
         return items
     end
@@ -80,6 +80,8 @@ function M.openai_get_text_fn_stream(json)
 end
 
 function M.complete_openai_base(options, context, callback)
+    local config = require('minuet').config
+
     M.terminate_all_jobs()
 
     local ctx = utils.make_chat_llm_shot(context, options.chat_input)
@@ -157,6 +159,8 @@ function M.complete_openai_base(options, context, callback)
 end
 
 function M.complete_openai_fim_base(options, get_text_fn, context, callback)
+    local config = require('minuet').config
+
     M.terminate_all_jobs()
 
     local data = {}

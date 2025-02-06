@@ -395,6 +395,8 @@ default_config = {
     },
     default_few_shots = { '...' },
     default_chat_input = { '...' },
+    -- Config options for `Minuet change_preset` command
+    presets = {}
 }
 ```
 
@@ -786,6 +788,68 @@ provider_options.openai_compatible.name = 'Fireworks'
 
 When entering `Minuet change_model openai_compatible:` in the cmdline,
 you'll see model completions specific to the Fireworks provider.
+
+## `Minuet change_preset`
+
+The `change_preset` command allows you to switch between config presets that
+were defined during initial setup. Presets provide a convenient way to toggle
+between different config sets. This is particularly useful when you need to:
+
+- Switch between different cloud providers (such as Fireworks or Groq) for the
+  `openai_compatible` provider
+- Apply different throttle and debounce settings for different providers
+
+When called, the command merges the selected preset with the current config
+table to create an updated configuration.
+
+Usage syntax: `Minuet change_preset preset_1`
+
+Presets can be configured during the initial setup process.
+
+<details>
+
+```lua
+require('minuet').setup {
+    presets = {
+        preset_1 = {
+            -- Configuration for cloud-based requests with large context window
+            context_window = 20000,
+            request_timeout = 4,
+            throttle = 3000,
+            debounce = 1000,
+            provider = 'openai_compatible',
+            provider_options = {
+                openai_compatible = {
+                    model = 'llama-3.3-70b-versatile',
+                    api_key = 'GROQ_API_KEY',
+                    name = 'Groq'
+                }
+            }
+        },
+        preset_2 = {
+            -- Configuration for local model with smaller context window
+            provider = 'openai_fim_compatible',
+            context_window = 2000,
+            throttle = 400,
+            debounce = 100,
+            provider_options = {
+                openai_fim_compatible = {
+                    api_key = 'TERM',
+                    name = 'Ollama',
+                    end_point = 'http://localhost:11434/v1/completions',
+                    model = 'qwen2.5-coder:7b',
+                    optional = {
+                        max_tokens = 256,
+                        top_p = 0.9
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+</details>
 
 ## `Minuet blink`, `Minuet cmp`
 

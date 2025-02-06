@@ -1,10 +1,10 @@
-local config = require('minuet').config
 local common = require 'minuet.backends.common'
 local utils = require 'minuet.utils'
 
 local M = {}
 
 M.is_available = function()
+    local config = require('minuet').config
     local options = config.provider_options.openai_compatible
     if options.end_point == '' or options.api_key == '' or options.name == '' then
         return false
@@ -24,6 +24,7 @@ If you are using Ollama, you can simply set it to 'TERM'.]],
 end
 
 M.complete = function(context, callback)
+    local config = require('minuet').config
     local options = vim.deepcopy(config.provider_options.openai_compatible)
     common.complete_openai_base(options, context, callback)
 end

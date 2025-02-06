@@ -1,10 +1,10 @@
-local config = require('minuet').config
 local utils = require 'minuet.utils'
 local common = require 'minuet.backends.common'
 
 local M = {}
 
 M.is_available = function()
+    local config = require('minuet').config
     return utils.get_api_key(config.provider_options.codestral.api_key) and true or false
 end
 
@@ -21,6 +21,8 @@ function M.get_text_fn_stream(json)
 end
 
 M.complete = function(context, callback)
+    local config = require('minuet').config
+
     local options = vim.deepcopy(config.provider_options.codestral)
 
     options.name = 'Codestral'
