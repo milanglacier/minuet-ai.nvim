@@ -17,6 +17,7 @@
   - [Huggingface](#huggingface)
 - [Commands](#commands)
   - [`Minuet change_provider`, `Minuet change_model`](#minuet-change_provider-minuet-change_model)
+  - [`Minuet change_preset`](#minuet-change_preset)
   - [`Minuet blink`, `Minuet cmp`](#minuet-blink-minuet-cmp)
   - [`Minuet virtualtext`](#minuet-virtualtext)
 - [API](#api)
