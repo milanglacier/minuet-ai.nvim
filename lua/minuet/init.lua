@@ -137,9 +137,6 @@ function M.change_preset(preset)
     end
 
     local preset_config = M.presets[preset]
-    if not preset_config then
-        return
-    end
 
     -- deep extend the config with preset_config
     M.config = vim.tbl_deep_extend('force', M.config, preset_config)
