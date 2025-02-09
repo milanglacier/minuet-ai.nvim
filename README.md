@@ -14,7 +14,6 @@
     - [Experimental Configuration](#experimental-configuration)
   - [OpenAI-compatible](#openai-compatible)
   - [OpenAI-FIM-compatible](#openai-fim-compatible)
-  - [Huggingface](#huggingface)
 - [Commands](#commands)
   - [`Minuet change_provider`, `Minuet change_model`](#minuet-change_provider-minuet-change_model)
   - [`Minuet change_preset`](#minuet-change_preset)
@@ -45,8 +44,8 @@ Just as dancers move during a minuet.
   - Specialized prompts and various enhancements for chat-based LLMs on code completion tasks.
   - Fill-in-the-middle (FIM) completion for compatible models (DeepSeek,
     Codestral, Qwen, and others).
-- Support for multiple AI providers (OpenAI, Claude, Gemini, Codestral,
-  Huggingface, and OpenAI-compatible services)
+- Support for multiple AI providers (OpenAI, Claude, Gemini, Codestral, , and
+  OpenAI-compatible services)
 - Customizable configuration options
 - Streaming support to enable completion delivery even with slower LLMs
 - Support `nvim-cmp`, `blink-cmp`, `virtual text` frontend
@@ -409,7 +408,6 @@ Minuet AI requires API keys to function. Set the following environment variables
 - `GEMINI_API_KEY` for Gemini
 - `ANTHROPIC_API_KEY` for Claude
 - `CODESTRAL_API_KEY` for Codestral
-- `HF_API_KEY` for Huggingface
 - Custom environment variable for OpenAI-compatible services (as specified in your configuration)
 
 **Note:** Provide the name of the environment variable to Minuet, not the
@@ -720,44 +718,6 @@ provider_options = {
         optional = {
             max_tokens = 256,
             stop = { '\n\n' },
-        },
-    },
-}
-```
-
-</details>
-
-## Huggingface
-
-<details>
-
-Currently only text completion model in huggingface is supported, so the system
-prompt and few shot examples does not apply.
-
-```lua
-provider_options = {
-    huggingface = {
-        end_point = 'https://api-inference.huggingface.co/models/bigcode/starcoder2-3b',
-        type = 'completion',
-        strategies = {
-            completion = {
-                markers = {
-                    prefix = '<fim_prefix>',
-                    suffix = '<fim_suffix>',
-                    middle = '<fim_middle>',
-                },
-                strategy = 'PSM', -- PSM, SPM or PM
-            },
-        },
-        optional = {
-            parameters = {
-                -- The parameter specifications for different LLMs may vary.
-                -- Ensure you specify the parameters after reading the API
-                -- documentation.
-                stop = nil,
-                max_tokens = nil,
-                do_sample = nil,
-            },
         },
     },
 }

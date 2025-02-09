@@ -296,31 +296,6 @@ M.provider_options = {
             max_tokens = nil,
         },
     },
-    huggingface = {
-        end_point = 'https://api-inference.huggingface.co/models/bigcode/starcoder2-3b',
-        api_key = 'HF_API_KEY',
-        type = 'completion', -- chat or completion
-        strategies = {
-            completion = {
-                markers = {
-                    prefix = '<fim_prefix>',
-                    suffix = '<fim_suffix>',
-                    middle = '<fim_middle>',
-                },
-                strategy = 'PSM', -- PSM, SPM or PM
-            },
-        },
-        optional = {
-            parameters = {
-                -- The parameter specifications for different LLMs may vary.
-                -- Ensure you specify the parameters after reading the API
-                -- documentation.
-                stop = nil,
-                max_tokens = nil,
-                do_sample = nil,
-            },
-        },
-    },
 }
 
 M.presets = {}
