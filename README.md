@@ -44,11 +44,11 @@ Just as dancers move during a minuet.
   - Specialized prompts and various enhancements for chat-based LLMs on code completion tasks.
   - Fill-in-the-middle (FIM) completion for compatible models (DeepSeek,
     Codestral, Qwen, and others).
-- Support for multiple AI providers (OpenAI, Claude, Gemini, Codestral, , and
-  OpenAI-compatible services)
-- Customizable configuration options
-- Streaming support to enable completion delivery even with slower LLMs
-- Support `nvim-cmp`, `blink-cmp`, `virtual text` frontend
+- Support for multiple AI providers (OpenAI, Claude, Gemini, Codestral, Ollama, and
+  OpenAI-compatible services).
+- Customizable configuration options.
+- Streaming support to enable completion delivery even with slower LLMs.
+- Support `nvim-cmp`, `blink-cmp`, `virtual text` frontend.
 
 **With nvim-cmp / blink-cmp frontend**:
 
@@ -68,7 +68,7 @@ Just as dancers move during a minuet.
 
 # Installation
 
-Lazy
+**Lazy.nvim**:
 
 ```lua
 specs = {
@@ -88,6 +88,10 @@ specs = {
     { 'Saghen/blink.cmp' },
 }
 ```
+
+**Rocks.nvim**:
+
+Just run `Rocks install minuet-ai.nvim`
 
 **Setting up with virtual text**:
 
