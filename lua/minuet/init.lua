@@ -38,53 +38,52 @@ function M.make_blink_map()
     }
 end
 
-local function complete_change_model_options(cmdline)
+local function complete_change_model_options()
     local modelcard = require 'minuet.modelcard'
+    local choices = {}
 
-    -- If there's no colon yet, we're completing providers
-    if not cmdline:find ':' then
-        local providers = {}
-        for provider, _ in pairs(modelcard.models) do
-            table.insert(providers, provider .. ':')
-        end
-        return providers
-    end
-
-    -- If there's a colon, we're completing models for the selected provider
-    local provider = cmdline:match '([^:]+):'
-    if not provider then
-        return {}
-    end
-
-    local completions = {}
-    local models = modelcard.models[provider]
-
-    -- Handle special cases for openai_compatible and openai_fim_compatible
-    if provider == 'openai_compatible' or provider == 'openai_fim_compatible' then
-        local subprovider = M.config.provider_options[provider]
-            and string.lower(M.config.provider_options[provider].name)
-        if subprovider and models[subprovider] then
-            -- Only show models for the configured subprovider
-            for _, model in ipairs(models[subprovider]) do
-                table.insert(completions, provider .. ':' .. model)
+    -- Build the list of available models
+    for provider, models in pairs(modelcard.models) do
+        if provider == 'openai_compatible' or provider == 'openai_fim_compatible' then
+            -- Handle subproviders for compatible APIs
+            local subprovider = M.config.provider_options[provider]
+                and string.lower(M.config.provider_options[provider].name)
+            if subprovider and models[subprovider] then
+                for _, model in ipairs(models[subprovider]) do
+                    table.insert(choices, provider .. ':' .. model)
+                end
             end
-            return completions
+        elseif type(models) == 'table' then
+            -- Handle regular providers
+            for _, model in ipairs(models) do
+                table.insert(choices, provider .. ':' .. model)
+            end
         end
     end
 
-    -- Handle regular providers
-    if type(models) == 'table' and models[1] then
-        for _, model in ipairs(models) do
-            table.insert(completions, provider .. ':' .. model)
-        end
-    end
-
-    return completions
+    return choices
 end
 
 function M.change_model(provider_model)
     if not M.config then
         vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
+        return
+    end
+
+    -- If no provider_model is provided, use vim.ui.select to choose one
+    if not provider_model then
+        local choices = complete_change_model_options()
+
+        vim.ui.select(choices, {
+            prompt = 'Select a model:',
+            format_item = function(item)
+                return item
+            end,
+        }, function(choice)
+            if choice then
+                M.change_model(choice)
+            end
+        end)
         return
     end
 
@@ -202,8 +201,7 @@ end, {
         cmdline = cmdline or ''
 
         if cmdline:find 'change_model' then
-            local model_part = cmdline:match 'change_model%s+(.*)$' or ''
-            return complete_change_model_options(model_part)
+            return complete_change_model_options()
         end
 
         if cmdline:find 'cmp' or cmdline:find 'blink' or cmdline:find 'virtualtext' then

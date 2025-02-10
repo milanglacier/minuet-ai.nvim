@@ -735,9 +735,14 @@ has been setup.
 Example usage: `Minuet change_provider claude`
 
 The `change_model` command allows you to change both the provider and model in
-one command. The format is `provider:model`.
+one command. When called without arguments, it will open an interactive
+selection menu using `vim.ui.select` to choose from available models. When
+called with an argument, the format is `provider:model`.
 
-Example usage: `Minuet change_model gemini:gemini-1.5-pro-latest`
+Example usage:
+
+- `Minuet change_model` - Opens interactive model selection
+- `Minuet change_model gemini:gemini-1.5-pro-latest` - Directly sets the model
 
 Note: For `openai_compatible` and `openai_fim_compatible` providers, the model
 completions in cmdline are determined by the `name` field in your

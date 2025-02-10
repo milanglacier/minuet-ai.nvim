@@ -49,7 +49,6 @@ M.models = {
             'accounts/fireworks/models/llama-v3p1-8b-instruct',
             'accounts/fireworks/models/qwen2p5-72b-instruct',
             'accounts/fireworks/models/qwen2p5-coder-32b-instruct',
-            'accounts/fireworks/models/qwen2p5-coder-32b-instruct',
         },
         groq = {
             'llama-3.3-70b-versatile',
