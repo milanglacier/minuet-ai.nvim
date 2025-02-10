@@ -1,3 +1,7 @@
+# Version 0.3.2 (2025-02-10)
+
+- Add luarocks release
+
 # Version 0.3.1 (2025-02-10)
 
 ## Features
