@@ -1013,11 +1013,104 @@ responsible for creating the vector database and processing RAG queries. The
 second component is a Neovim plugin that provides utility functions to send
 queries and manage buffer-related RAG information within Neovim.
 
-Currently, VectorCode offers integration recipes for combining `minuet` with
-`Qwen-2.5-coder` using `ollama`. We are actively exploring enhancements for
-other providers, particularly for chat-based LLMs.
+For a project that has been
+[indexed by VectorCode](https://github.com/Davidyz/VectorCode/blob/main/docs/cli.md),
+you can add the query results to the prompt. After that, when you're working on
+a buffer that has been
+[registered](https://github.com/Davidyz/VectorCode/blob/main/docs/neovim.md#user-command)
+with vectorcode, the automatically retrieved relevant files from the repo will
+be added to the prompt and hence improve the completion results. The entire
+retrieval process happens locally on your machine (but you have the option to
+use a hosted embedding model or database provider).
 
-For detailed instructions on working with `Qwen-2.5-coder`, please refer to the
+### Chat-based Backends
+For chat-based backends like [OpenAI](#openai) and [Claude](#claude), we need to
+modify `chat_input` so that it contains the project context. To do this, we can
+add an extra placeholder in the template:
+```lua
+provider_options = {
+    openai = { -- or any chat-based backend
+        chat_input = {
+            template = '{{{language}}}\n{{{tab}}}\n{{{repo_context}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>\n<contextAfterCursor>\n{{{context_after_cursor}}}'
+            repo_context = function()
+                local vc_cache = require("vectorcode.cacher")
+                local repo_files =
+                    "Use content lead by <|repo_file|> as extra context from the code repository."
+
+                for _, file in pairs(vc_cache.query_from_cache(0)) do
+                    -- add the repo context files here
+                    repo_files = repo_files
+                        .. "<|repo_file|>"
+                        .. file.path  -- path to the file
+                        .. "\n"
+                        .. file.document  -- content of the file
+                end
+                return repo_files
+            end
+        }
+    }
+}
+```
+The `repo_context` function will populate the `{{{repo_context}}}` placeholder
+in the template and therefore add repo context to the prompt.
+
+### FIM-compatible Backends
+For FIM-compatible backends like [Codestral](#codestral) and
+[openai_fim_compatible](#openai-fim-compatible), the actual prompt fed to the
+LLM is made up of the `prompt` and `suffix` options in the minuet
+configuration. The default `prompt` and `suffix` are the lines before and after
+the cursor position, and the LLM server will build the actual prompt from these
+2 values. Since the inference server may add extra content when building the
+actual prompt, simply adding repo context to `prompt` may break the FIM
+completion. To preserve the FIM functionality, we need to override this by setting
+`suffix` to `false` so that the LLM server will skip the prompt construction and
+just use the string in the `prompt` option as the prompt. We can then add the
+repo context in the `prompt` option. In this case, the `prompt` function will
+contain: repo context, prefix, suffix, cursor position and any other
+instructions/context you want to feed to the LLM.
+
+```lua
+provider_options = {
+    openai_fim_compatible = {  -- or codestral, etc.
+        -- your other provider options
+        template = {
+            prompt = function(prefix, suffix)
+                local prompt_message =
+                    "Use content lead by <|repo_file|> as extra context from the code repository."
+                local vc_cache = require("vectorcode.cacher")
+                for _, file in pairs(vc_cache.query_from_cache(0)) do
+                    -- add the repo context files here
+                    prompt_message = prompt_message
+                        .. "<|repo_file|>"
+                        .. file.path  -- path to the file
+                        .. "\n"
+                        .. file.document  -- content of the file
+                end
+                return prompt_message
+                    .. "<|fim_begin|>"
+                    .. pref
+                    .. "<|fim_hole|>"
+                    .. suff
+                    .. "<|fim_end|>"
+            end,
+            suffix = false,
+        }
+    }
+}
+```
+
+> [!NOTE]
+> Symbols like `<|repo_file|>`, `<|fim_begin|>` are control tokens to tell LLMs
+> about different sections of the prompt. Some LLMs, like Qwen2.5-Coder and
+> Gemini, have been trained with specific control tokens that will help them
+> better understand the prompt composition. The
+> [VectorCode wiki](https://github.com/Davidyz/VectorCode/wiki/Prompt-Gallery)
+> provides a comprehensive list of prompt structures tailored for various LLMs
+> (Qwen2.5-coder, deepseek-V3, Google Gemini, Codestral, StarCoder2, etc.).
+> These structures and control tokens help the models generate more accurate
+> completions.
+
+For detailed instructions on setting up and using VectorCode, please refer to the
 [official VectorCode
 documentation](https://github.com/Davidyz/VectorCode/blob/main/docs/neovim.md).
 
