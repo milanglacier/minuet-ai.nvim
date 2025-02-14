@@ -91,7 +91,8 @@ specs = {
 
 **Rocks.nvim**:
 
-Just run `Rocks install minuet-ai.nvim`
+`Minuet` is available on luarocks.org. Simply run `Rocks install
+minuet-ai.nvim` to install it like any other luarocks package.
 
 **Setting up with virtual text**:
 
@@ -105,6 +106,7 @@ require('minuet').setup {
             -- accept one line
             accept_line = '<A-a>',
             -- accept n lines (prompts for number)
+            -- e.g. "A-z 2 CR" will accept 2 lines
             accept_n_lines = '<A-z>',
             -- Cycle to prev completion item, or manually invoke completion
             prev = '<A-[>',
