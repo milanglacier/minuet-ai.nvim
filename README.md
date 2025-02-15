@@ -48,6 +48,7 @@ Just as dancers move during a minuet.
   OpenAI-compatible services).
 - Customizable configuration options.
 - Streaming support to enable completion delivery even with slower LLMs.
+- No proprietary binary running in the background. Just curl and your preferred LLM provider.
 - Support `nvim-cmp`, `blink-cmp`, `virtual text` frontend.
 
 **With nvim-cmp / blink-cmp frontend**:
