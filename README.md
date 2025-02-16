@@ -1018,7 +1018,7 @@ queries and manage buffer-related RAG information within Neovim.
 
 We offer two example recipes demonstrating VectorCode integration: one for
 chat-based LLMs (Gemini) and another for the FIM model (Qwen-2.5-Coder),
-available in [recipes.md](.recipes.md).
+available in [recipes.md](./recipes.md).
 
 For detailed instructions on setting up and using VectorCode, please refer to the
 [official VectorCode
