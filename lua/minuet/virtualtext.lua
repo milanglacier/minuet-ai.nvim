@@ -407,7 +407,7 @@ function autocmd.on_cursor_hold_i()
     update_preview()
 end
 
-function autocmd.on_complete_changed()
+function autocmd.on_text_changed_p()
     autocmd.on_cursor_moved_i()
 end
 
@@ -447,10 +447,10 @@ local function create_autocmds()
         desc = '[minuet.virtualtext] cursor moved insert',
     })
 
-    api.nvim_create_autocmd('CompleteChanged', {
+    api.nvim_create_autocmd('TextChangedP', {
         group = internal.augroup,
-        callback = autocmd.on_complete_changed,
-        desc = '[minuet.virtualtext] complete changed',
+        callback = autocmd.on_text_changed_p,
+        desc = '[minuet.virtualtext] text changed p',
     })
 
     api.nvim_create_autocmd('BufUnload', {
