@@ -21,7 +21,7 @@ gemini = {
     model = 'gemini-2.0-flash',
     system = {
         template = '{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}\n{{{repo_context}}}',
-        repo_context = [[9. Additional context from other files in the repository will be wrapped in <repo_context> tags. Each file will be separated by <file_separator> tags. Each file will include its relative path and content.]],
+        repo_context = [[9. Additional context from other files in the repository will be enclosed in <repo_context> tags. Each file will be separated by <file_separator> tags, containing its relative path and content.]],
     },
     chat_input = {
         template = '{{{repo_context}}}\n{{{language}}}\n{{{tab}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>\n<contextAfterCursor>\n{{{context_after_cursor}}}',
@@ -32,9 +32,7 @@ gemini = {
                 num_docs = #cache_result
                 for _, file in ipairs(cache_result) do
                     prompt_message = prompt_message
-                        .. '<'
-                        .. 'file_separator'
-                        .. '>'
+                        .. '<file_separator>'
                         .. file.path
                         .. '\n'
                         .. file.document
