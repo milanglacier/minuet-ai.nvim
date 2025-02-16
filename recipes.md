@@ -89,7 +89,8 @@ provider_options = {
 }
 ```
 
-> [!NOTE] Symbols like `<|file_sep|>`, `<|fim_begin|>` are special tokens
+> [!NOTE]
+> Symbols like `<|file_sep|>`, `<|fim_begin|>` are special tokens
 > serve as prompt boundaries. Some LLMs, like Qwen2.5-Coder have been trained
 > with specific tokens that will help them better understand the prompt
 > composition. The [VectorCode
