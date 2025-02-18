@@ -88,13 +88,32 @@ the prompt, enhancing completion results. This retrieval process occurs locally
 on your machine, though you may opt to utilize a hosted embedding model or
 database provider if desired.
 
+Note that `minuet.config.context_window` controls only the context window
+before and after the cursor; it does not affect the data returned by
+VectorCode, as that information is external and not managed by Minuet. If
+needed, consider limiting the context size on your side.
+
+This recipe demonstrates a basic setup of `VectorCode`. For comprehensive
+configuration options, please consult the [official VectorCode
+documentation](https://github.com/Davidyz/VectorCode/blob/main/docs/neovim.md).
+
 ## Chat LLMs
 
 For chat models like OpenAI, Claude, and Gemini, repository context can be
 incrementally added to the prompt-building process. To achieve this, include an
 additional placeholder `{{{repo_context}}}` in the template:
 
+Firstly, type `:VectorCode register`, this command starts the timer to
+periodically update RAG queries for the current buffer you are editing.
+
 ```lua
+
+require("vectorcode").setup({
+    -- number of retrieved documents
+    n_query = 1,
+})
+local has_vc, vectorcode_cacher = pcall(require, "vectorcode.cacher")
+
 gemini = {
     model = 'gemini-2.0-flash',
     system = {
@@ -103,11 +122,10 @@ gemini = {
     },
     chat_input = {
         template = '{{{repo_context}}}\n{{{language}}}\n{{{tab}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>\n<contextAfterCursor>\n{{{context_after_cursor}}}',
-        repo_context = function(pref, suff)
+        repo_context = function(_, _, _)
             local prompt_message = ''
             if has_vc then
                 local cache_result = vectorcode_cacher.query_from_cache(0)
-                num_docs = #cache_result
                 for _, file in ipairs(cache_result) do
                     prompt_message = prompt_message
                         .. '<file_separator>'
@@ -149,7 +167,16 @@ function in this way, you can include:
 - Suffix text
 - Any additional context required for the LLM
 
+Firstly, type `:VectorCode regiester`, this command starts the timer to
+periodically update RAG queries for the current buffer you are editing.
+
 ```lua
+require("vectorcode").setup({
+    -- number of retrieved documents
+    n_query = 1,
+})
+local has_vc, vectorcode_cacher = pcall(require, "vectorcode.cacher")
+
 provider_options = {
     openai_fim_compatible = { -- or codestral
         model = 'qwen-2.5-coder:7b',
