@@ -336,6 +336,9 @@ require('minuet').setup {
 }
 ```
 
+For additional example bash scripts to run llama.cpp based on your local
+computing power, please refer to [recipes.md](./recipes.md).
+
 </details>
 
 # Selecting a Provider or Model
@@ -733,6 +736,9 @@ examples are not applicable.
 For example, you can set the `end_point` to
 `http://localhost:11434/v1/completions` to use `ollama`.
 
+For example, you can set the `end_point` to
+`http://localhost:8012/v1/completions` to use `llama.cpp`.
+
 Cmdline completion is available for models supported by these providers:
 `deepseek`, `ollama`, and `siliconflow`.
 
@@ -752,6 +758,9 @@ support, as suggested in its
 [template](https://ollama.com/library/qwen2.5-coder/blobs/e94a8ecb9327).
 However it may come as a surprise to some users that, `deepseek-coder` does not
 support the FIM template, and you should use `deepseek-coder-v2` instead.
+
+For example bash scripts to run llama.cpp based on your local
+computing power, please refer to [recipes.md](./recipes.md).
 
 ```lua
 provider_options = {
