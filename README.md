@@ -734,9 +734,7 @@ text completion API, not chat completion, so system prompts and few-shot
 examples are not applicable.
 
 For example, you can set the `end_point` to
-`http://localhost:11434/v1/completions` to use `ollama`.
-
-For example, you can set the `end_point` to
+`http://localhost:11434/v1/completions` to use `ollama`, or set it to
 `http://localhost:8012/v1/completions` to use `llama.cpp`.
 
 Cmdline completion is available for models supported by these providers:
@@ -760,7 +758,9 @@ However it may come as a surprise to some users that, `deepseek-coder` does not
 support the FIM template, and you should use `deepseek-coder-v2` instead.
 
 For example bash scripts to run llama.cpp based on your local
-computing power, please refer to [recipes.md](./recipes.md).
+computing power, please refer to [recipes.md](./recipes.md). Note
+that the model for `llama.cpp` must be determined when you launch the
+`llama.cpp` server and cannot be changed thereafter.
 
 ```lua
 provider_options = {

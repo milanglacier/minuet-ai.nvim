@@ -2,7 +2,7 @@
 
 ## Documentation
 
-- Added recipes for launching llama.cpp server
+- Added recipes for llama.cpp
 - Added recipes for integration with VectorCode
 
 # Version 0.3.2 (2025-02-10)
