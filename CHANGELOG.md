@@ -1,3 +1,10 @@
+# Version 0.3.3 (2025-02-18)
+
+## Documentation
+
+- Added recipes for launching llama.cpp server
+- Added recipes for integration with VectorCode
+
 # Version 0.3.2 (2025-02-10)
 
 - Add luarocks release
