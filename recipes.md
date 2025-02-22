@@ -103,7 +103,7 @@ For chat models like OpenAI, Claude, and Gemini, repository context can be
 incrementally added to the prompt-building process. To achieve this, include an
 additional placeholder `{{{repo_context}}}` in the template:
 
-Firstly, type `:VectorCode register`, this command starts the timer to
+Firstly, type `:VectorCode register`, this command sets the autocmd to
 periodically update RAG queries for the current buffer you are editing.
 
 ```lua

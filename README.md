@@ -185,7 +185,7 @@ require('blink-cmp').setup {
 
 **LLM Provider Examples**:
 
-**Fireworks (`Qwen-2.5-72b`)**:
+**Openrouter (`Llama-3.3-70b`)**:
 
 <details>
 
@@ -194,13 +194,20 @@ require('minuet').setup {
     provider = 'openai_compatible',
     provider_options = {
         openai_compatible = {
-            api_key = 'FIREWORKS_API_KEY',
-            end_point = 'https://api.fireworks.ai/inference/v1/chat/completions',
-            model = 'accounts/fireworks/models/qwen2p5-72b-instruct',
-            name = 'Fireworks',
+            api_key = 'OPENROUTER_API_KEY',
+            end_point = 'https://openrouter.ai/api/v1/chat/completions',
+            model = 'meta-llama/llama-3.3-70b-instruct',
+            request_timeout = 2.5,
+            throttle = 1500, -- Increase to reduce costs and avoid rate limits
+            debounce = 600, -- Increase to reduce costs and avoid rate limits
+            name = 'Openrouter',
             optional = {
-                max_tokens = 256,
+                max_tokens = 128,
                 top_p = 0.9,
+                provider = {
+                     -- Prioritize throughput for faster completion
+                    sort = 'throughput',
+                },
             },
         },
     },
