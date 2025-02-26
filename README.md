@@ -958,9 +958,12 @@ local kind_icons = {
     claude = '󰋦',
     openai = '󱢆',
     codestral = '󱎥',
-    mistral = '󱎥',
     gemini = '',
-    groq = '',
+    Groq = '',
+    Openrouter = '󱂇',
+    Ollama = '󰳆',
+    ['Llama.cpp'] = '󰳆',
+    Deepseek = ''
     -- FALLBACK
     fallback = '',
 }
@@ -1008,9 +1011,12 @@ local kind_icons = {
     claude = '󰋦',
     openai = '󱢆',
     codestral = '󱎥',
-    mistral = '󱎥',
     gemini = '',
-    groq = '',
+    Groq = '',
+    Openrouter = '󱂇',
+    Ollama = '󰳆',
+    ['Llama.cpp'] = '󰳆',
+    Deepseek = ''
 }
 
 require('blink-cmp').setup {
