@@ -23,7 +23,8 @@
   - [Virtual Text](#virtual-text)
 - [FAQ](#faq)
   - [Customize `cmp` ui](#customize-cmp-ui)
-  - [Significant Input Delay When Moving to a New Line](#significant-input-delay-when-moving-to-a-new-line)
+  - [Customize `blink` ui](#customize-blink-ui)
+  - [Significant Input Delay When Moving to a New Line with `nvim-cmp`](#significant-input-delay-when-moving-to-a-new-line-with-nvim-cmp)
   - [Integration with `lazyvim`](#integration-with-lazyvim)
 - [Enhancement](#enhancement)
   - [RAG (Experimental)](#rag-experimental)
@@ -941,28 +942,89 @@ Example usage: `Minuet virtualtext toggle`, `Minuet virtualtext enable`,
 
 ## Customize `cmp` ui
 
-You can configure the icons of `minuet` by using the following snippet
-(referenced from [cmp's
+You can configure the icons of completion items returned by `minuet` by using
+the following snippet (referenced from [cmp's
 wiki](https://github.com/hrsh7th/nvim-cmp/wiki/Menu-Appearance#basic-customisations)):
 
+<details>
+
 ```lua
-local cmp = require('cmp')
+local kind_icons = {
+    Number = '󰎠',
+    Array = '',
+    Variable = '',
+    -- and other icons
+    -- LLM Provider icons
+    claude = '󰋦',
+    openai = '󱢆',
+    codestral = '󱎥',
+    mistral = '󱎥',
+    gemini = '',
+    groq = '',
+    -- FALLBACK
+    fallback = '',
+}
+
+local source_icons = {
+    minuet = '󱗻',
+    nvim_lsp = '',
+    lsp = '',
+    buffer = '',
+    luasnip = '',
+    snippets = '',
+    path = '',
+    git = '',
+    tags = '',
+    -- FALLBACK
+    fallback = '󰜚',
+}
+
+local cmp = require 'cmp'
 cmp.setup {
-  formatting = {
-    format = function(entry, vim_item)
-      -- Kind icons
-      vim_item.kind = string.format('%s %s', kind_icons[vim_item.kind], vim_item.kind) -- This concatenates the icons with the name of the item kind
-      -- Source
-      vim_item.menu = ({
-        minuet = "󱗻"
-      })[entry.source.name]
-      return vim_item
-    end
-  },
+    formatting = {
+        format = function(entry, vim_item)
+            -- Kind icons
+            -- This concatenates the icons with the name of the item kind
+            vim_item.kind = string.format('%s %s', kind_icons[vim_item.kind] or kind_icons.fallback, vim_item.kind)
+            -- Source
+            vim_item.menu = source_icons[entry.source.name] or source_icons.fallback
+            return vim_item
+        end,
+    },
 }
 ```
 
-## Significant Input Delay When Moving to a New Line
+</details>
+
+## Customize `blink` ui
+
+You can configure the icons of completion items returned by `minuet` by the following snippet:
+
+<details>
+
+```lua
+local kind_icons = {
+    -- LLM Provider icons
+    claude = '󰋦',
+    openai = '󱢆',
+    codestral = '󱎥',
+    mistral = '󱎥',
+    gemini = '',
+    groq = '',
+}
+
+require('blink-cmp').setup {
+    appearance = {
+        use_nvim_cmp_as_default = true,
+        nerd_font_variant = 'normal',
+        kind_icons = kind_icons
+    },
+}
+```
+
+</details>
+
+## Significant Input Delay When Moving to a New Line with `nvim-cmp`
 
 When using Minuet with auto-complete enabled, you may occasionally experience a
 noticeable delay when pressing `<CR>` to move to the next line. This occurs
