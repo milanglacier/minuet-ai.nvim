@@ -108,13 +108,12 @@ function M:get_completions(ctx, callback)
                 table.insert(items, {
                     label = item_label,
                     insertText = result,
+                    kind_name = config.provider_options[config.provider].name or config.provider,
+                    kind_hl = 'BlinkCmpItemKindMinuet',
                     documentation = {
                         kind = 'markdown',
                         value = '```' .. (vim.bo.ft or '') .. '\n' .. result .. '\n```',
                     },
-                    -- TODO: use the provider name as kind name like nvim-cmp
-                    -- when blink supports non-lsp kind name.
-                    kind = vim.lsp.protocol.CompletionItemKind.Text,
                 })
             end
             callback {
