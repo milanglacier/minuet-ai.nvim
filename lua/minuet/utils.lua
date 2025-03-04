@@ -373,7 +373,13 @@ function M.no_stream_decode(response, exit_code, data_file, provider, get_text_f
     local result = table.concat(response:result(), '\n')
     local success, json = pcall(vim.json.decode, result)
     if not success then
-        M.notify('Failed to parse ' .. provider .. ' API response as json', 'error', vim.log.levels.INFO)
+        if result ~= '' then
+            M.notify(
+                'Failed to parse ' .. provider .. ' API response as json: ' .. vim.inspect(result),
+                'error',
+                vim.log.levels.INFO
+            )
+        end
         return
     end
 
