@@ -188,7 +188,10 @@ local function trigger(bufnr)
 
     provider.complete(context, function(data)
         if timestamp ~= internal.current_completion_timestamp then
-            utils.notify('Completion items arrived, but too late, aborted', 'debug', 'info')
+            if data and next(data) then
+                -- Notify if outdated (and non-empty) completion items arrive
+                utils.notify('Completion items arrived, but too late, aborted', 'debug', 'info')
+            end
             return
         end
 
