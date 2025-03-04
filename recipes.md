@@ -112,7 +112,11 @@ require("vectorcode").setup({
     -- number of retrieved documents
     n_query = 1,
 })
-local has_vc, vectorcode_cacher = pcall(require, "vectorcode.cacher")
+local has_vc, vectorcode_config = pcall(require, "vectorcode.config")
+local vectorcode_cacher = nil
+if has_vc then
+    vectorcode_cacher = vectorcode_config.get_cacher_backend()
+end
 
 gemini = {
     model = 'gemini-2.0-flash',
@@ -175,7 +179,11 @@ require("vectorcode").setup({
     -- number of retrieved documents
     n_query = 1,
 })
-local has_vc, vectorcode_cacher = pcall(require, "vectorcode.cacher")
+local has_vc, vectorcode_config = pcall(require, "vectorcode.config")
+local vectorcode_cacher = nil
+if has_vc then
+    vectorcode_cacher = vectorcode_config.get_cacher_backend()
+end
 
 provider_options = {
     openai_fim_compatible = { -- or codestral
@@ -183,8 +191,10 @@ provider_options = {
         template = {
             prompt = function(pref, suff)
                 local prompt_message = ''
-                for _, file in ipairs(vectorcode_cacher.query_from_cache(0)) do
-                    prompt_message = prompt_message .. '<|file_sep|>' .. file.path .. '\n' .. file.document
+                if has_vc then
+                    for _, file in ipairs(vectorcode_cacher.query_from_cache(0)) do
+                        prompt_message = prompt_message .. '<|file_sep|>' .. file.path .. '\n' .. file.document
+                    end
                 end
                 return prompt_message .. '<|fim_prefix|>' .. pref .. '<|fim_suffix|>' .. suff .. '<|fim_middle|>'
             end,
