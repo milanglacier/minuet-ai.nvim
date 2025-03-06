@@ -3,11 +3,22 @@ local utils = require 'minuet.utils'
 
 local M = {}
 
+local notified_on_using_chat_endpoint = false
+
 M.is_available = function()
     local config = require('minuet').config
     local options = config.provider_options.openai_fim_compatible
     if options.end_point == '' or options.api_key == '' or options.name == '' then
         return false
+    end
+
+    if options.end_point:find 'chat' and not notified_on_using_chat_endpoint then
+        utils.notify(
+            'The chat endpoint is likely being used for non-chat completion. Please try to use /completion instead.',
+            'warn',
+            vim.log.levels.WARN
+        )
+        notified_on_using_chat_endpoint = true
     end
 
     return utils.get_api_key(options.api_key) and true or false
