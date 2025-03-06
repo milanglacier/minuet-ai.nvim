@@ -809,11 +809,14 @@ provider_options = {
 
 ## DeepInfra-FIM
 
-This uses deepinfra text API. This request uses the
-text completion API, not chat completion, so system prompts and few-shot
-examples are not applicable.
+This utilizes the DeepInfra Text API. The request employs the text completion
+API rather than the chat completion API, meaning system prompts and few-shot
+examples can only be applied by using special model-specific tokens
+(e.g., <|im_start|>). To use chat completion, please refer to [OpenAI
+compatible](#OpenAI-compatible).
 
-<detail>
+<details>
+
 Refer to the [DeepInfra API documentation](https://deepinfra.com/docs/deep_infra_api) section of
 the DeepInfra documentation for details.
 
@@ -839,7 +842,7 @@ provider_options = {
 },
 ```
 
-</detail>
+</details>
 
 # Commands
 
