@@ -14,6 +14,7 @@
     - [Experimental Configuration](#experimental-configuration)
   - [OpenAI-compatible](#openai-compatible)
   - [OpenAI-FIM-compatible](#openai-fim-compatible)
+  - [DeppInfra-FIM](#deepinfra-fim)
 - [Commands](#commands)
   - [`Minuet change_provider`, `Minuet change_model`](#minuet-change_provider-minuet-change_model)
   - [`Minuet change_preset`](#minuet-change_preset)
@@ -805,6 +806,40 @@ provider_options = {
 ```
 
 </details>
+
+## DeepInfra-FIM
+
+This uses deepinfra text API. This request uses the
+text completion API, not chat completion, so system prompts and few-shot
+examples are not applicable.
+
+<detail>
+Refer to the [DeepInfra API documentation](https://deepinfra.com/docs/deep_infra_api) section of
+the DeepInfra documentation for details.
+
+This is an example for using it with Qwen 2.5 Coder Instruct:
+
+```lua
+provider_options = {
+    deepinfra_fim = {
+        model = "Qwen/Qwen2.5-Coder-32B-Instruct",
+        template = {
+            prompt = "See [Prompt Section for default value]",
+        },
+        api_key = "DEEPINFRA_API_KEY",
+        name = "DeepInfra FIM",
+        stream = true,
+        optional = {
+            stop = nil,
+            max_new_tokens = 1024,
+            temperature = 0.7,
+        },
+        n_completions = 2
+    },
+},
+```
+
+</detail>
 
 # Commands
 
