@@ -40,6 +40,10 @@ by Ollama. If your use case requires special tokens not covered by Ollama's
 default template, first set `suffix = false` and then incorporate the special
 tokens within the prompt function.
 
+Another note: For DeepInfra users: The DeepInfra API does not support the
+`suffix` parameter. Instead, use the `prompt` as the `input` and include all
+desired content there.
+
 # Chat LLM Prompt Structure
 
 ## Default Template

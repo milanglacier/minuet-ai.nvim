@@ -235,4 +235,78 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     end
 end
 
+function M.complete_deepinfra_fim_base(options, get_text_fn, context, callback)
+    local config = require('minuet').config
+
+    M.terminate_all_jobs()
+
+    local data = {}
+
+    data.input = options.template.prompt(context.lines_before, context.lines_after)
+    data.stream = options.stream
+    data = vim.tbl_deep_extend('force', data, options.optional or {})
+
+    local data_file = utils.make_tmp_file(data)
+
+    if data_file == nil then
+        return
+    end
+
+    -- Construct the endpoint with the model
+    local end_point = 'https://api.deepinfra.com/v1/inference/' .. options.model
+
+    local items = {}
+    local n_completions = config.n_completions
+
+    for _ = 1, n_completions do
+        local args = {
+            '-L',
+            end_point,
+            '-H',
+            'Content-Type: application/json',
+            '-H',
+            'Accept: application/json',
+            '-H',
+            'Authorization: Bearer ' .. utils.get_api_key(options.api_key),
+            '--max-time',
+            tostring(config.request_timeout),
+            '-d',
+            '@' .. data_file,
+        }
+
+        if config.proxy then
+            table.insert(args, '--proxy')
+            table.insert(args, config.proxy)
+        end
+
+        ---@diagnostic disable-next-line: missing-fields
+        local new_job = Job:new {
+            command = 'curl',
+            args = args,
+            on_exit = vim.schedule_wrap(function(job, exit_code)
+                M.remove_job(job)
+
+                local result
+
+                if options.stream then
+                    result = utils.stream_decode(job, exit_code, data_file, options.name, get_text_fn)
+                else
+                    result = utils.no_stream_decode(job, exit_code, data_file, options.name, get_text_fn)
+                end
+
+                if result then
+                    table.insert(items, result)
+                end
+
+                items = M.filter_context_sequences_in_items(items, context.lines_after)
+                items = utils.remove_spaces(items)
+                callback(items)
+            end),
+        }
+
+        M.register_job(new_job)
+        new_job:start()
+    end
+end
+
 return M
