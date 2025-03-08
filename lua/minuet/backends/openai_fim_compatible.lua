@@ -12,7 +12,7 @@ M.is_available = function()
         return false
     end
 
-    if options.end_point:find 'chat' and not notified_on_using_chat_endpoint then
+    if not notified_on_using_chat_endpoint and options.end_point:find 'chat' then
         utils.notify(
             'The chat endpoint is likely being used for non-chat completion. Please try to use /completion instead.',
             'warn',

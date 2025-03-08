@@ -12,7 +12,7 @@ M.is_available = function()
         return false
     end
 
-    if not options.end_point:find 'chat' and not notified_on_using_chat_endpoint then
+    if not notified_on_using_chat_endpoint and not options.end_point:find 'chat' then
         utils.notify('Please make sure your endpoint supports `/chat/completion`', 'warn', vim.log.levels.WARN)
         notified_on_using_chat_endpoint = true
     end
