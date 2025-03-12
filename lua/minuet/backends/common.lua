@@ -2,6 +2,7 @@ local M = {}
 local utils = require 'minuet.utils'
 local Job = require 'plenary.job'
 local uv = vim.uv or vim.loop
+local api = vim.api
 
 -- currently running completion jobs, basically forked curl processes
 M.current_jobs = {}
@@ -10,6 +11,7 @@ M.current_jobs = {}
 function M.register_job(job)
     table.insert(M.current_jobs, job)
     utils.notify('Registered completion job', 'debug')
+    api.nvim_exec_autocmds('User', { pattern = 'MinuetRequestStarted' })
 end
 
 ---@param job Job
@@ -18,6 +20,7 @@ function M.remove_job(job)
         if j.pid == job.pid then
             table.remove(M.current_jobs, i)
             utils.notify('Completion job ' .. job.pid .. ' finished and removed from current_jobs', 'debug')
+            api.nvim_exec_autocmds('User', { pattern = 'MinuetRequestFinished' })
             break
         end
     end
