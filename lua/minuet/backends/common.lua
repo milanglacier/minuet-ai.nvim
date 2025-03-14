@@ -2,7 +2,6 @@ local M = {}
 local utils = require 'minuet.utils'
 local Job = require 'plenary.job'
 local uv = vim.uv or vim.loop
-local api = vim.api
 
 -- currently running completion jobs, basically forked curl processes
 M.current_jobs = {}
@@ -11,7 +10,6 @@ M.current_jobs = {}
 function M.register_job(job)
     table.insert(M.current_jobs, job)
     utils.notify('Registered completion job', 'debug')
-    api.nvim_exec_autocmds('User', { pattern = 'MinuetRequestStarted' })
 end
 
 ---@param job Job
@@ -20,7 +18,6 @@ function M.remove_job(job)
         if j.pid == job.pid then
             table.remove(M.current_jobs, i)
             utils.notify('Completion job ' .. job.pid .. ' finished and removed from current_jobs', 'debug')
-            api.nvim_exec_autocmds('User', { pattern = 'MinuetRequestFinished' })
             break
         end
     end
@@ -127,11 +124,25 @@ function M.complete_openai_base(options, context, callback)
         table.insert(args, config.proxy)
     end
 
+    local provider_name = 'openai_compatible'
+    utils.fire_event('RequestInit', {
+        provider = provider_name,
+        name = options.name,
+        n_requests = 1,
+    })
+
     local new_job = Job:new {
         command = 'curl',
         args = args,
         on_exit = vim.schedule_wrap(function(job, exit_code)
             M.remove_job(job)
+
+            utils.fire_event('RequestFinished', {
+                provider = provider_name,
+                name = options.name,
+                n_requests = 1,
+                request_idx = 1,
+            })
 
             local items_raw
 
@@ -158,6 +169,14 @@ function M.complete_openai_base(options, context, callback)
     }
 
     M.register_job(new_job)
+
+    utils.fire_event('RequestStarted', {
+        provider = provider_name,
+        name = options.name,
+        n_requests = 1,
+        request_idx = 1,
+    })
+
     new_job:start()
 end
 
@@ -188,7 +207,13 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     local items = {}
     local n_completions = config.n_completions
 
-    for _ = 1, n_completions do
+    local provider_name = 'openai_fim_compatible'
+    utils.fire_event('RequestInit', {
+        provider = provider_name,
+        name = options.name,
+        n_requests = n_completions,
+    })
+    for request_idx = 1, n_completions do
         local args = {
             '-L',
             options.end_point,
@@ -215,6 +240,13 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
             on_exit = vim.schedule_wrap(function(job, exit_code)
                 M.remove_job(job)
 
+                utils.fire_event('RequestFinished', {
+                    provider = provider_name,
+                    name = options.name,
+                    n_requests = n_completions,
+                    request_idx = request_idx,
+                })
+
                 local result
 
                 if options.stream then
@@ -234,6 +266,14 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
         }
 
         M.register_job(new_job)
+
+        utils.fire_event('RequestStarted', {
+            provider = provider_name,
+            name = options.name,
+            n_requests = n_completions,
+            request_idx = request_idx,
+        })
+
         new_job:start()
     end
 end
