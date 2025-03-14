@@ -177,6 +177,38 @@ function M.make_cmp_context(blink_context)
     return self
 end
 
+---@class LSPPositionParams
+---@field context {triggerKind: number}
+---@field position {character: number, line: number}
+---@field textDocument {uri: string}
+
+---@param params LSPPositionParams
+function M.make_cmp_context_from_lsp_params(params)
+    local bufnr
+    local self = {}
+    if params.textDocument.uri == 'file://' then
+        bufnr = 0
+    else
+        bufnr = vim.uri_to_bufnr(params.textDocument.uri)
+    end
+
+    local row = params.position.line
+    local col = math.max(params.position.character - 1, 0)
+    self.cursor = {
+        row = row,
+        line = row,
+        col = col,
+    }
+
+    local current_line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1] or ''
+    local cursor_before_line = vim.fn.strcharpart(current_line, 0, col)
+    local cursor_after_line = vim.fn.strcharpart(current_line, col)
+
+    self.cursor_before_line = cursor_before_line
+    self.cursor_after_line = cursor_after_line
+    return self
+end
+
 --- Get the context around the cursor position for code completion
 ---@param cmp_context table The completion context object containing cursor position and line info
 ---@return table Context information with the following fields:

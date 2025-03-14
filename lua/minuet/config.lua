@@ -133,6 +133,21 @@ local M = {
     blink = {
         enable_auto_complete = true,
     },
+    -- LSP is recommended only for built-in completion. If you are using
+    -- `cmp` or `blink`, utilizing LSP for code completion from Minuet is *not*
+    -- recommended.
+    lsp = {
+        enabled_ft = {},
+        -- Filetypes excluded from LSP activation. Useful when `enabled_ft` = { '*' }
+        disabled_ft = {},
+        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
+        enabled_auto_trigger_ft = {},
+        -- Filetypes excluded from autotriggering. Useful when `enabled_auto_trigger_ft` = { '*' }
+        disabled_auto_trigger_ft = {},
+        -- if true, when the user is using blink or nvim-cmp, warn the user
+        -- that they should use the native source instead.
+        warn_on_blink_or_cmp = true,
+    },
     virtualtext = {
         -- Specify the filetypes to enable automatic virtual text completion,
         -- e.g., { 'python', 'lua' }. Note that you can still invoke manual
