@@ -256,9 +256,32 @@ Therefore, consider the following options:
 Users might call `vim.lsp.completion.enable {autotrigger = true}` during the
 `LspAttach` event when the client supports completion. However, this is not the
 desired behavior for Minuet. As an LLM completion source, Minuet can face
-significant rate limits during automatic triggering. Consequently, Minuet
-disables auto trigger by default unless the user enables it in
-`config.lsp.enabled_auto_trigger_ft`.
+significant rate limits during automatic triggering.
+
+Therefore, it's recommended to enable Minuet for automatic triggering using the
+`config.lsp.enabled_auto_trigger_ft` setting.
+
+For users who uses `LspAttach` event, it is recommeded to verify that the
+server is not the Minuet server before enabling autotrigger. An example
+configuration is shown below:
+
+```lua
+vim.api.nvim_create_autocmd('LspAttach', {
+    callback = function(args)
+        local client_id = args.data.client_id
+        local bufnr = args.buf
+        local client = vim.lsp.get_client_by_id(client_id)
+        if not client then
+            return
+        end
+
+        if client.server_capabilities.completionProvider and client.name ~= 'minuet' then
+            vim.lsp.completion.enable(true, client_id, bufnr, { autotrigger = true })
+        end
+    end,
+    desc = 'Enable built-in auto completion',
+})
+```
 
 </details>
 
