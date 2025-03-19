@@ -142,6 +142,9 @@ function M.complete_openai_base(options, context, callback)
                 name = options.name,
                 n_requests = 1,
                 request_idx = 1,
+                job = function()
+                    return job
+                end,
             })
 
             local items_raw
@@ -169,15 +172,17 @@ function M.complete_openai_base(options, context, callback)
     }
 
     M.register_job(new_job)
+    new_job:start()
 
     utils.fire_event('RequestStarted', {
         provider = provider_name,
         name = options.name,
         n_requests = 1,
         request_idx = 1,
+        job = function()
+            return new_job
+        end,
     })
-
-    new_job:start()
 end
 
 function M.complete_openai_fim_base(options, get_text_fn, context, callback)
@@ -245,6 +250,9 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                     name = options.name,
                     n_requests = n_completions,
                     request_idx = request_idx,
+                    job = function()
+                        return job
+                    end,
                 })
 
                 local result
@@ -266,15 +274,17 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
         }
 
         M.register_job(new_job)
+        new_job:start()
 
         utils.fire_event('RequestStarted', {
             provider = provider_name,
             name = options.name,
             n_requests = n_completions,
             request_idx = request_idx,
+            job = function()
+                return new_job
+            end,
         })
-
-        new_job:start()
     end
 end
 

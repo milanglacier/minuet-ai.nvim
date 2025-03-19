@@ -120,6 +120,9 @@ function M.complete(context, callback)
                 name = options.name,
                 n_requests = 1,
                 request_idx = 1,
+                job = function()
+                    return job
+                end,
             })
 
             local items_raw
@@ -145,15 +148,17 @@ function M.complete(context, callback)
     }
 
     common.register_job(new_job)
+    new_job:start()
 
     utils.fire_event('RequestStarted', {
         provider = provider_name,
         name = options.name,
         n_requests = 1,
         request_idx = 1,
+        job = function()
+            return new_job
+        end,
     })
-
-    new_job:start()
 end
 
 return M
