@@ -2,6 +2,16 @@
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Quick Start](#quick-start)
+  - [Virtual Text Setup](#virtual-text-setup)
+  - [Nvim-cmp setup](#nvim-cmp-setup)
+  - [Blink-cmp Setup](#blink-cmp-setup)
+  - [Built-in Completion setup](#built-in-completion-setup)
+  - [LLM Provider Examples](#llm-provider-examples)
+    - [Openrouter llama-3.3-70b](#openrouter-llama-33-70b)
+    - [Deepseek](#deepseek)
+    - [Ollama Qwen-2.5-coder:7b](#ollama-qwen-25-coder7b)
+    - [Llama.cpp Qwen-2.5-coder:1.5b](#llamacpp-qwen-25-coder15b)
 - [Selecting a Provider or Model](#selecting-a-provider-or-model)
 - [Configuration](#configuration)
 - [API Keys](#api-keys)
@@ -50,7 +60,8 @@ Just as dancers move during a minuet.
 - Customizable configuration options.
 - Streaming support to enable completion delivery even with slower LLMs.
 - No proprietary binary running in the background. Just curl and your preferred LLM provider.
-- Support `nvim-cmp`, `blink-cmp`, `virtual text`, `builtin-completion` frontend.
+- Support `nvim-cmp`, `blink-cmp`, `virtual text`, `built-in completion` frontend.
+- Act as an **in-process LSP** server to provide completions (opt-in feature).
 
 **With nvim-cmp / blink-cmp frontend**:
 
@@ -99,7 +110,9 @@ specs = {
 
 `Minuet` is available on luarocks.org. Simply run `Rocks install minuet-ai.nvim` to install it like any other luarocks package.
 
-**Setting up with virtual text**:
+# Quick Start
+
+## Virtual Text Setup
 
 ```lua
 require('minuet').setup {
@@ -123,7 +136,7 @@ require('minuet').setup {
 }
 ```
 
-**Setting up with nvim-cmp**:
+## Nvim-cmp setup
 
 <details>
 
@@ -159,7 +172,7 @@ require('cmp').setup {
 
 </details>
 
-**Setting up with blink-cmp**:
+## Blink-cmp Setup
 
 <details>
 
@@ -188,9 +201,7 @@ require('blink-cmp').setup {
 
 </details>
 
-**Setting up with builtin-completion**:
-
-Minuet now can act as an in-process LSP for built-in completion.
+## Built-in Completion setup
 
 <details>
 
@@ -245,9 +256,9 @@ disables completion by default unless the user enables it in
 
 </details>
 
-**LLM Provider Examples**:
+## LLM Provider Examples
 
-**Openrouter (`Llama-3.3-70b`)**:
+### Openrouter llama-3.3-70b
 
 <details>
 
@@ -278,7 +289,7 @@ require('minuet').setup {
 
 </details>
 
-**Deepseek**:
+### Deepseek
 
 <details>
 
@@ -318,7 +329,7 @@ require('minuet').setup {
 
 </details>
 
-**Ollama (`qwen-2.5-coder:7b`)**:
+### Ollama Qwen-2.5-coder:7b
 
 <details>
 
@@ -349,7 +360,7 @@ require('minuet').setup {
 
 </details>
 
-**Llama.cpp (`qwen-2.5-coder:1.5b`)**:
+### Llama.cpp Qwen-2.5-coder:1.5b
 
 <details>
 
