@@ -36,7 +36,7 @@ function M:init(options)
                 self.processing = false
                 self.n_requests = data.n_requests
                 self.n_finished_requests = 0
-                self.name = data.name
+                self.name = data.name or data.provider
             elseif request.match == 'MinuetRequestStarted' then
                 self.processing = true
             elseif request.match == 'MinuetRequestFinished' then
