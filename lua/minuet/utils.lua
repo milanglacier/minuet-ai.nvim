@@ -193,7 +193,7 @@ function M.make_cmp_context_from_lsp_params(params)
     end
 
     local row = params.position.line
-    local col = math.max(params.position.character - 1, 0)
+    local col = math.max(params.position.character, 0)
     self.cursor = {
         row = row,
         line = row,
