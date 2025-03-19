@@ -1,3 +1,11 @@
+# Version 0.4.0 (2025-03-18)
+
+## Features
+
+- Introduced in-process LSP support for built-in completion.
+- For `blink-cmp`, the completion item's `kind_name` now reflects the LLM provider name.
+- Improve error handling for both stream and non-stream JSON decoding, providing more informative messages.
+
 # Version 0.3.3 (2025-02-18)
 
 ## Documentation
