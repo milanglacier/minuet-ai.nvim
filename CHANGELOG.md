@@ -1,3 +1,14 @@
+# Version 0.4.1 (2025-03-19)
+
+## Breaking Change
+
+- **lsp**: Don't explicitly disable auto trigger for filetypes not in `enabled_auto_trigger_ft`.
+
+## Fixes
+
+- **lsp**: Fix cursor column position when trying to get current line content.
+- **lsp**: Early return on throttle.
+
 # Version 0.4.0 (2025-03-18)
 
 ## Features
