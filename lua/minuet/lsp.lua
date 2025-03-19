@@ -232,20 +232,18 @@ function M.start_server(args)
                 vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
                 utils.notify('Minuet LSP is enabled for auto triggering', 'verbose', vim.log.levels.INFO)
             else
-                vim.defer_fn(function()
-                    -- NOTE: Auto-triggering is explicitly disabled for
-                    -- filetypes that are not enabled auto triggering. This is
-                    -- because some users uses the `LspAttach` event to
-                    -- determine if a LSP supports completion, then enabling
-                    -- auto-triggering if it does.
-                    --
-                    -- Minuet, as a LLM completion source, can be subject to
-                    -- substantial rate limits during auto-triggering.
-                    -- Therefore, completion is disabled by default unless
-                    -- explicitly enabled by the user.
-                    vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = false })
-                    utils.notify('Minuet LSP is disabled for auto triggering', 'verbose', vim.log.levels.INFO)
-                end, 200)
+                -- NOTE: Auto-triggering is explicitly disabled for
+                -- filetypes that are not enabled auto triggering. This is
+                -- because some users uses the `LspAttach` event to
+                -- determine if a LSP supports completion, then enabling
+                -- auto-triggering if it does.
+                --
+                -- Minuet, as a LLM completion source, can be subject to
+                -- substantial rate limits during auto-triggering.
+                -- Therefore, completion is disabled by default unless
+                -- explicitly enabled by the user.
+                vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = false })
+                utils.notify('Minuet LSP is disabled for auto triggering', 'verbose', vim.log.levels.INFO)
             end
         end,
     }
