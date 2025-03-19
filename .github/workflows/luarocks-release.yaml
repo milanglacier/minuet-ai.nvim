@@ -29,4 +29,5 @@ jobs:
             - Support for multiple AI providers (OpenAI, Claude, Gemini, Codestral, Ollama, and OpenAI-compatible services).
             - Customizable configuration options.
             - Streaming support to enable completion delivery even with slower LLMs.
-            - Support `nvim-cmp`, `blink-cmp`, `virtual text` frontend.
+            - Support `nvim-cmp`, `blink-cmp`, `virtual text`, `built-in completion` frontend.
+            - Act as an **in-process LSP** server to provide completions (opt-in feature).
