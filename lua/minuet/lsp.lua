@@ -243,8 +243,11 @@ function M.start_server(args)
                 -- substantial rate limits during auto-triggering.
                 -- Therefore, completion is disabled by default unless
                 -- explicitly enabled by the user.
-                vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = false })
-                utils.notify('Minuet LSP is disabled for auto triggering', 'verbose', vim.log.levels.INFO)
+                vim.defer_fn(function()
+                    vim.lsp.completion.enable(false, client.id, bufnr)
+                    vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = false })
+                    utils.notify('Minuet LSP is disabled for auto triggering', 'verbose', vim.log.levels.INFO)
+                end, 300)
             end
         end,
     }
