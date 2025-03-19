@@ -77,18 +77,32 @@ M.complete = function(context, callback)
         table.insert(args, config.proxy)
     end
 
+    local provider_name = 'Clause'
+    utils.fire_event('RequestInit', {
+        provider = provider_name,
+        name = options.name,
+        n_requests = 1,
+    })
+
     local new_job = Job:new {
         command = 'curl',
         args = args,
         on_exit = vim.schedule_wrap(function(job, exit_code)
             common.remove_job(job)
 
+            utils.fire_event('RequestFinished', {
+                provider = provider_name,
+                name = options.name,
+                n_requests = 1,
+                request_idx = 1,
+            })
+
             local items_raw
 
             if options.stream then
-                items_raw = utils.stream_decode(job, exit_code, data_file, 'Claude', M.get_text_fn_stream)
+                items_raw = utils.stream_decode(job, exit_code, data_file, provider_name, M.get_text_fn_stream)
             else
-                items_raw = utils.no_stream_decode(job, exit_code, data_file, 'Claude', M.get_text_fn_no_steam)
+                items_raw = utils.no_stream_decode(job, exit_code, data_file, provider_name, M.get_text_fn_no_steam)
             end
 
             if not items_raw then
@@ -96,7 +110,7 @@ M.complete = function(context, callback)
                 return
             end
 
-            local items = common.parse_completion_items(items_raw, 'Claude')
+            local items = common.parse_completion_items(items_raw, provider_name)
 
             items = common.filter_context_sequences_in_items(items, context.lines_after)
 
@@ -107,6 +121,14 @@ M.complete = function(context, callback)
     }
 
     common.register_job(new_job)
+
+    utils.fire_event('RequestStarted', {
+        provider = provider_name,
+        name = options.name,
+        n_requests = 1,
+        request_idx = 1,
+    })
+
     new_job:start()
 end
 
