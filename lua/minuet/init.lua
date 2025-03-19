@@ -176,6 +176,8 @@ vim.api.nvim_create_user_command('Minuet', function(args)
         toggle = require('minuet.virtualtext').action.toggle_auto_trigger,
     }
 
+    actions.lsp = require('minuet.lsp').actions
+
     actions.change_provider = setmetatable({}, {
         __index = function(_, key)
             return function()
@@ -213,6 +215,15 @@ end, {
             }
         end
 
+        if cmdline:find 'lsp' then
+            return {
+                'attach',
+                'detach',
+                'enable_auto_trigger',
+                'disable_auto_trigger',
+            }
+        end
+
         if cmdline:find 'change_provider' then
             if not M.config then
                 return
@@ -232,7 +243,7 @@ end, {
             return presets
         end
 
-        return { 'cmp', 'virtualtext', 'blink', 'change_provider', 'change_model', 'change_preset' }
+        return { 'cmp', 'virtualtext', 'blink', 'lsp', 'change_provider', 'change_model', 'change_preset' }
     end,
 })
 

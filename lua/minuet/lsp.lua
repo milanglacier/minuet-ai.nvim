@@ -222,7 +222,10 @@ function M.start_server(args)
 
             utils.notify('Minuet LSP attached to current buffer', 'verbose', vim.log.levels.INFO)
 
-            if
+            if vim.b[bufnr].minuet_lsp_enable_auto_trigger then
+                vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
+                utils.notify('Minuet LSP is enabled for auto triggering', 'verbose', vim.log.levels.INFO)
+            elseif
                 (vim.tbl_contains(auto_trigger_ft, ft) or vim.tbl_contains(auto_trigger_ft, '*'))
                 and not vim.tbl_contains(disable_trigger_ft, ft)
             then
@@ -285,6 +288,70 @@ function M.setup()
             desc = 'Starts the minuet LSP server',
             group = M.augroup,
         })
+    end
+end
+
+M.actions = {}
+
+M.actions.attach = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local lsps = vim.lsp.get_clients { name = 'minuet', bufnr = bufnr }
+
+    if #lsps and #lsps > 0 then
+        utils.notify('Minuet LSP already attached to current buffer', 'verbose', vim.log.levels.INFO)
+        return
+    end
+
+    M.start_server { buf = bufnr }
+end
+
+M.actions.detach = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local lsps = vim.lsp.get_clients { name = 'minuet', bufnr = bufnr }
+
+    if #lsps == 0 then
+        utils.notify('Minuet LSP not attached to current buffer', 'verbose', vim.log.levels.INFO)
+        return
+    end
+
+    for _, client in ipairs(lsps) do
+        vim.lsp.buf_detach_client(bufnr, client.id)
+    end
+
+    utils.notify('Minuet LSP detached from current buffer', 'verbose', vim.log.levels.INFO)
+end
+
+M.actions.enable_auto_trigger = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local lsps = vim.lsp.get_clients { name = 'minuet', bufnr = bufnr }
+
+    if #lsps == 0 then
+        vim.b[bufnr].minuet_lsp_enable_auto_trigger = true
+        M.actions.attach()
+        return
+    end
+
+    for _, client in ipairs(lsps) do
+        vim.lsp.completion.enable(false, client.id, bufnr)
+        vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
+    end
+
+    utils.notify('Minuet LSP is enabled for auto triggering', 'verbose', vim.log.levels.INFO)
+end
+
+M.actions.disable_auto_trigger = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    vim.b[bufnr].minuet_lsp_enable_auto_trigger = nil
+    local lsps = vim.lsp.get_clients { name = 'minuet', bufnr = bufnr }
+
+    if #lsps == 0 then
+        return
+    end
+
+    for _, client in ipairs(lsps) do
+        vim.lsp.completion.enable(false, client.id, bufnr)
+        vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = false })
+        utils.notify('Minuet LSP is disabled for auto triggering', 'verbose', vim.log.levels.INFO)
     end
 end
 

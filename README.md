@@ -29,6 +29,7 @@
   - [`Minuet change_preset`](#minuet-change_preset)
   - [`Minuet blink`, `Minuet cmp`](#minuet-blink-minuet-cmp)
   - [`Minuet virtualtext`](#minuet-virtualtext)
+  - [`Minuet lsp`](#minuet-lsp)
 - [API](#api)
   - [Virtual Text](#virtual-text)
 - [FAQ](#faq)
@@ -1002,6 +1003,15 @@ Enable or disable the automatic display of `virtual-text` completion in the
 
 Example usage: `Minuet virtualtext toggle`, `Minuet virtualtext enable`,
 `Minuet virtualtext disable`.
+
+## `Minuet lsp`
+
+The Minuet LSP command provides commands for managing the in-process LSP server:
+
+- `:Minuet lsp attach`: Attach the Minuet LSP server to the **current buffer**.
+- `:Minuet lsp detach`: Detach the Minuet LSP server from the **current buffer**.
+- `:Minuet lsp enable_auto_trigger`: Enable automatic completion triggering using `vim.lsp.completion.enable` for **current buffer**.
+- `:Minuet lsp disable_auto_trigger`: Disable automatic completion triggering for **current buffer**.
 
 # API
 
