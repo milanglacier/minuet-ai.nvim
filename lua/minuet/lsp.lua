@@ -152,6 +152,7 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
                 notify_callback(id)
             end
         end)
+        return true, id
     end
 
     if config.debounce > 0 then
