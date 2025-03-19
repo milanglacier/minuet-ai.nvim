@@ -1280,3 +1280,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [continue.dev](https://www.continue.dev): not a neovim plugin, but I find a lot LLM models from here.
 - [copilot.lua](https://github.com/zbirenbaum/copilot.lua): Reference for the virtual text frontend.
 - [llama.vim](https://github.com/ggml-org/llama.vim): Reference for CLI parameters used to launch the llama-cpp server.
+- [crates.nvim](https://github.com/saecki/crates.nvim): Reference for in-process LSP implemtation to provide completion.
