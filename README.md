@@ -218,10 +218,15 @@ source rather than through LSP for two main reasons:
 1. `blink-cmp` and `nvim-cmp` offer better sorting and async management when
    Minuet is utilized as a separate source rather than alongside a regular LSP
    such as `clangd`.
-2. With `blink-cmp` and `nvim-cmp` native sources, you can manually invoke
-   Minuet completion. However, when Minuet operates as an LSP server, it is
-   impossible to determine whether completion is triggered automatically or
-   manually.
+2. With `blink-cmp` and `nvim-cmp` native sources, it's possible to configure
+   Minuet for manual completion only, disabling automatic completion. However,
+   when Minuet operates as an LSP server, it is impossible to determine whether
+   completion is triggered automatically or manually.
+
+   The LSP protocol specification defines three `triggerKind` values:
+   `Invoked`, `TriggerCharacter`, and `TriggerForIncompleteCompletions`.
+   However, none of these specifically differentiates between manual and
+   automatic completion requests.
 
 ```lua
 require('minuet').setup {
