@@ -825,8 +825,8 @@ provider_options = {
 ## OpenAI-FIM-compatible
 
 Use any provider compatible with OpenAI's completion API. This request uses the
-text completion API, not chat completion, so system prompts and few-shot
-examples are not applicable.
+text `/completions` endpoint, **not** `/chat/completions` endpoint, so system
+prompts and few-shot examples are not applicable.
 
 For example, you can set the `end_point` to
 `http://localhost:11434/v1/completions` to use `ollama`, or set it to
