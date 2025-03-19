@@ -50,11 +50,15 @@ Just as dancers move during a minuet.
 - Customizable configuration options.
 - Streaming support to enable completion delivery even with slower LLMs.
 - No proprietary binary running in the background. Just curl and your preferred LLM provider.
-- Support `nvim-cmp`, `blink-cmp`, `virtual text` frontend.
+- Support `nvim-cmp`, `blink-cmp`, `virtual text`, `builtin-completion` frontend.
 
 **With nvim-cmp / blink-cmp frontend**:
 
 ![example-cmp](./assets/example-cmp.png)
+
+**With builtin completion frontend** (requires nvim 0.11+):
+
+![example-builtin-completion](./assets/example-builtin-completion.jpg)
 
 **With virtual text frontend**:
 
@@ -181,6 +185,63 @@ require('blink-cmp').setup {
     completion = { trigger = { prefetch_on_insert = false } },
 }
 ```
+
+</details>
+
+**Setting up with builtin-completion**:
+
+Minuet now can act as an in-process LSP for built-in completion.
+
+<details>
+
+**Requirements:**
+
+- Neovim version 0.11 or higher is necessary for built-in completion.
+
+**Recommendation:**
+
+For users of `blink-cmp` and `nvim-cmp`, it is recommended to use the native
+source rather than through LSP for two main reasons:
+
+1. `blink-cmp` and `nvim-cmp` offer better sorting and async management when
+   Minuet is utilized as a separate source rather than alongside a regular LSP
+   such as `clangd`.
+2. With `blink-cmp` and `nvim-cmp` native sources, you can manually invoke
+   Minuet completion. However, when Minuet operates as an LSP server, it is
+   impossible to determine whether completion is triggered automatically or
+   manually.
+
+```lua
+require('minuet').setup {
+    lsp = {
+        enabled_ft = { 'toml', 'lua', 'cpp' },
+        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
+        enabled_auto_trigger_ft = { 'cpp', 'lua' },
+    }
+}
+```
+
+For manual completion, ensure `vim.bo.omnifunc` is set to
+`v:lua.vim.lsp.omnifunc`, and use `<C-x><C-o>` in insert mode.
+
+**Note**: An upstream issue ([tracked
+here](https://github.com/neovim/neovim/issues/32972)) may cause unexpected
+indentation behavior when accepting multi-line completions.
+
+Therefore, consider the following options:
+
+1. Ensure `config.add_single_line_entry = true` and only accept single-line completions.
+2. Avoid using Minuet and built-in completion with languages where indentation
+   affects semantics, such as Python.
+
+**Additional Note:**
+
+Note: Users might call `vim.lsp.completion.enable {autotrigger = true}` during
+the `LspAttach` event when the client supports completion. However, this is not
+the desired behavior for Minuet. As an LLM completion source, Minuet can face
+significant rate limits during automatic triggering. Consequently, Minuet
+disables completion by default unless the user enables it in
+`config.lsp.enabled_auto_trigger_ft`.
 
 </details>
 
@@ -379,6 +440,21 @@ default_config = {
     },
     blink = {
         enable_auto_complete = true,
+    },
+    -- LSP is recommended only for built-in completion. If you are using
+    -- `cmp` or `blink`, utilizing LSP for code completion from Minuet is *not*
+    -- recommended.
+    lsp = {
+        enabled_ft = {},
+        -- Filetypes excluded from LSP activation. Useful when `enabled_ft` = { '*' }
+        disabled_ft = {},
+        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
+        enabled_auto_trigger_ft = {},
+        -- Filetypes excluded from autotriggering. Useful when `enabled_auto_trigger_ft` = { '*' }
+        disabled_auto_trigger_ft = {},
+        -- if true, when the user is using blink or nvim-cmp, warn the user
+        -- that they should use the native source instead.
+        warn_on_blink_or_cmp = true,
     },
     virtualtext = {
         -- Specify the filetypes to enable automatic virtual text completion,

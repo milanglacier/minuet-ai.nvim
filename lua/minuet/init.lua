@@ -16,6 +16,7 @@ function M.setup(config)
     end
 
     require('minuet.virtualtext').setup()
+    require('minuet.lsp').setup()
     require 'minuet.deprecate'
 end
 
