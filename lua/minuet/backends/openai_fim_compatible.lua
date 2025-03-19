@@ -14,7 +14,7 @@ M.is_available = function()
 
     if not notified_on_using_chat_endpoint and options.end_point:find 'chat' then
         utils.notify(
-            'The chat endpoint is likely being used for non-chat completion. Please try to use /completion instead.',
+            'You are using the `/chat/completions` endpoint, which is likely not designed for FIM code completion. Please use the `/completions` endpoint instead.',
             'warn',
             vim.log.levels.WARN
         )
