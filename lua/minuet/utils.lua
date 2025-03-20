@@ -520,4 +520,10 @@ M.list_dedup = function(list)
     return items_cleaned
 end
 
+--- fire an event
+function M.fire_event(event, opts)
+    opts = opts or {}
+    vim.api.nvim_exec_autocmds('User', { pattern = 'Minuet' .. event, data = opts })
+end
+
 return M
