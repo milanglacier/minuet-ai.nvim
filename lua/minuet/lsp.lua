@@ -126,8 +126,10 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
                     },
                     kind = vim.lsp.protocol.CompletionItemKind.Text,
                     -- for nvim-cmp
-                    kind_text = config.provider_options[config.provider].name or config.provider,
-                    kind_hl = 'LspKindMinuet',
+                    cmp = {
+                        kind_text = config.provider_options[config.provider].name or config.provider,
+                        kind_hl = 'LspKindMinuet',
+                    },
                     -- for blink-cmp
                     kind_name = config.provider_options[config.provider].name or config.provider,
                     kind_hl_group = 'LspKindMinuet',
