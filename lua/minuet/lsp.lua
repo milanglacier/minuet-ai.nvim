@@ -125,6 +125,7 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
                         value = '```' .. (vim.bo.ft or '') .. '\n' .. result .. '\n```',
                     },
                     kind = vim.lsp.protocol.CompletionItemKind.Text,
+                    detail = config.provider_options[config.provider].name or config.provider,
                     -- for nvim-cmp
                     cmp = {
                         kind_text = config.provider_options[config.provider].name or config.provider,
