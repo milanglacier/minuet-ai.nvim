@@ -256,7 +256,6 @@ function M.setup()
             'Blink or Nvim-cmp detected, it is recommended to use the native source instead of lsp',
             vim.log.levels.WARN
         )
-        return
     end
 
     vim.api.nvim_clear_autocmds { group = M.augroup }
