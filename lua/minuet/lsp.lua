@@ -101,7 +101,7 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
 
             local max_label_width = 80
 
-            local multi_lines_indicators = ' [...]'
+            local multi_lines_indicators = ' ⏎'
 
             local items = {}
             for _, result in ipairs(new_data) do

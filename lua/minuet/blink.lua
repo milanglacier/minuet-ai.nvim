@@ -91,7 +91,7 @@ function M:get_completions(ctx, callback)
                 max_label_width = 60
             end
 
-            local multi_lines_indicators = ' [...]'
+            local multi_lines_indicators = ' ⏎'
 
             local items = {}
             for _, result in ipairs(new_data) do
