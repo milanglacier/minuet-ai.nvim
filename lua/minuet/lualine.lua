@@ -18,7 +18,7 @@ local spinner_symbols = {
     '⠇',
     '⠏',
 }
-local spinner_symbols_len = 10
+local spinner_symbols_len = #spinner_symbols
 
 -- Initializer
 function M:init(options)
