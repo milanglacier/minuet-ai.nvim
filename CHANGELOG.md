@@ -1,3 +1,20 @@
+# Version 0.4.2 (2025-03-21)
+
+## Breaking Change
+
+- change multi-lines indicators to unicode character `⏎`.
+
+## Features
+
+- **lsp**: change multi lines indicators to unicode character `⏎`.
+- Lualine integration: add spinner component.
+- **lsp**: add detail field to show provider name.
+- **Minuet Event**: add three user events during its request workflow.
+
+## Fixes
+
+- **lsp**: handle request where params.context is not provided (for mini.completion).
+
 # Version 0.4.1 (2025-03-19)
 
 ## Breaking Change
