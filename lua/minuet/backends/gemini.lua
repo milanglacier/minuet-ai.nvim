@@ -103,11 +103,13 @@ function M.complete(context, callback)
     end
 
     local provider_name = 'Gemini'
+    local timestamp = os.time()
 
     utils.run_event('MinuetRequestStartedPre', {
         provider = provider_name,
         name = provider_name,
         n_requests = 1,
+        timestamp = timestamp,
     })
 
     local new_job = Job:new {
@@ -121,9 +123,7 @@ function M.complete(context, callback)
                 name = provider_name,
                 n_requests = 1,
                 request_idx = 1,
-                job = function()
-                    return job
-                end,
+                timestamp = timestamp,
             })
 
             local items_raw
@@ -156,9 +156,7 @@ function M.complete(context, callback)
         name = provider_name,
         n_requests = 1,
         request_idx = 1,
-        job = function()
-            return new_job
-        end,
+        timestamp = timestamp,
     })
 end
 

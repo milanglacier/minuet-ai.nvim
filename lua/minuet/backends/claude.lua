@@ -78,11 +78,13 @@ M.complete = function(context, callback)
     end
 
     local provider_name = 'Claude'
+    local timestamp = os.time()
 
     utils.run_event('MinuetRequestStartedPre', {
         provider = provider_name,
         name = provider_name,
         n_requests = 1,
+        timestamp = timestamp,
     })
 
     local new_job = Job:new {
@@ -96,9 +98,7 @@ M.complete = function(context, callback)
                 name = provider_name,
                 n_requests = 1,
                 request_idx = 1,
-                job = function()
-                    return job
-                end,
+                timestamp = timestamp,
             })
 
             local items_raw
@@ -132,9 +132,7 @@ M.complete = function(context, callback)
         name = options.name,
         n_requests = 1,
         request_idx = 1,
-        job = function()
-            return new_job
-        end,
+        timestamp = timestamp,
     })
 end
 

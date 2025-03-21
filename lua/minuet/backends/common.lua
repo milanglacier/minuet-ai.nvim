@@ -125,11 +125,13 @@ function M.complete_openai_base(options, context, callback)
     end
 
     local provider_name = 'openai_compatible'
+    local timestamp = os.time()
 
     utils.run_event('MinuetRequestStartedPre', {
         provider = provider_name,
         name = options.name,
         n_requests = 1,
+        timestamp = timestamp,
     })
 
     local new_job = Job:new {
@@ -143,9 +145,7 @@ function M.complete_openai_base(options, context, callback)
                 name = options.name,
                 n_requests = 1,
                 request_idx = 1,
-                job = function()
-                    return job
-                end,
+                timestamp = timestamp,
             })
 
             local items_raw
@@ -180,9 +180,7 @@ function M.complete_openai_base(options, context, callback)
         name = options.name,
         n_requests = 1,
         request_idx = 1,
-        job = function()
-            return new_job
-        end,
+        timestamp = timestamp,
     })
 end
 
@@ -214,11 +212,13 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     local n_completions = config.n_completions
 
     local provider_name = 'openai_fim_compatible'
+    local timestamp = os.time()
 
     utils.run_event('MinuetRequestStartedPre', {
         provider = provider_name,
         name = options.name,
         n_requests = n_completions,
+        timestamp = timestamp,
     })
 
     for request_idx = 1, n_completions do
@@ -253,9 +253,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                     name = options.name,
                     n_requests = n_completions,
                     request_idx = request_idx,
-                    job = function()
-                        return job
-                    end,
+                    timestamp = timestamp,
                 })
 
                 local result
@@ -284,9 +282,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
             name = options.name,
             n_requests = n_completions,
             request_idx = request_idx,
-            job = function()
-                return new_job
-            end,
+            timestamp = timestamp,
         })
     end
 end

@@ -520,7 +520,15 @@ M.list_dedup = function(list)
     return items_cleaned
 end
 
---- fire an event
+---@class minuet.EventData
+---@field provider string the name of the provider
+---@field name string the name of the subprovider for openai-compatible and openai-fim-compatible
+---@field n_requests number the number of requests launched during this event
+---@field request_idx? number the index of the current request
+---@field timestamp number the timestamp of the event at MminuetRequestStartedPre
+
+---@param event string The minuet event to run
+---@param opts minuet.EventData The minuet data event
 function M.run_event(event, opts)
     opts = opts or {}
     vim.api.nvim_exec_autocmds('User', { pattern = event, data = opts })
