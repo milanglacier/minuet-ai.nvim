@@ -124,11 +124,29 @@ function M.complete_openai_base(options, context, callback)
         table.insert(args, config.proxy)
     end
 
+    local provider_name = 'openai_compatible'
+    local timestamp = os.time()
+
+    utils.run_event('MinuetRequestStartedPre', {
+        provider = provider_name,
+        name = options.name,
+        n_requests = 1,
+        timestamp = timestamp,
+    })
+
     local new_job = Job:new {
         command = 'curl',
         args = args,
         on_exit = vim.schedule_wrap(function(job, exit_code)
             M.remove_job(job)
+
+            utils.run_event('MinuetRequestFinished', {
+                provider = provider_name,
+                name = options.name,
+                n_requests = 1,
+                request_idx = 1,
+                timestamp = timestamp,
+            })
 
             local items_raw
 
@@ -156,6 +174,14 @@ function M.complete_openai_base(options, context, callback)
 
     M.register_job(new_job)
     new_job:start()
+
+    utils.run_event('MinuetRequestStarted', {
+        provider = provider_name,
+        name = options.name,
+        n_requests = 1,
+        request_idx = 1,
+        timestamp = timestamp,
+    })
 end
 
 function M.complete_openai_fim_base(options, get_text_fn, context, callback)
@@ -185,7 +211,17 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     local items = {}
     local n_completions = config.n_completions
 
-    for _ = 1, n_completions do
+    local provider_name = 'openai_fim_compatible'
+    local timestamp = os.time()
+
+    utils.run_event('MinuetRequestStartedPre', {
+        provider = provider_name,
+        name = options.name,
+        n_requests = n_completions,
+        timestamp = timestamp,
+    })
+
+    for idx = 1, n_completions do
         local args = {
             '-L',
             options.end_point,
@@ -212,6 +248,14 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
             on_exit = vim.schedule_wrap(function(job, exit_code)
                 M.remove_job(job)
 
+                utils.run_event('MinuetRequestFinished', {
+                    provider = provider_name,
+                    name = options.name,
+                    n_requests = n_completions,
+                    request_idx = idx,
+                    timestamp = timestamp,
+                })
+
                 local result
 
                 if options.stream then
@@ -232,6 +276,14 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
 
         M.register_job(new_job)
         new_job:start()
+
+        utils.run_event('MinuetRequestStarted', {
+            provider = provider_name,
+            name = options.name,
+            n_requests = n_completions,
+            request_idx = idx,
+            timestamp = timestamp,
+        })
     end
 end
 

@@ -32,6 +32,8 @@
   - [`Minuet lsp`](#minuet-lsp)
 - [API](#api)
   - [Virtual Text](#virtual-text)
+  - [Lualine](#lualine)
+  - [Minuet Event](#minuet-event)
 - [FAQ](#faq)
   - [Customize `cmp` ui](#customize-cmp-ui)
   - [Customize `blink` ui](#customize-blink-ui)
@@ -1062,6 +1064,52 @@ The Minuet LSP command provides commands for managing the in-process LSP server:
     require('minuet.virtualtext').action.is_visible,
 }
 ```
+
+## Lualine
+
+Minuet provides a Lualine component that displays the current status of Minuet requests. This component shows:
+
+- The name of the active provider
+- The current request count (e.g., "1/3")
+- An animated spinner while processing
+
+To use the Minuet Lualine component, add it to your Lualine configuration:
+
+```lua
+require('lualine').setup {
+  sections = {
+    lualine_x = {
+      require('minuet.lualine'),
+      'encoding',
+      'fileformat',
+      'filetype',
+    },
+  },
+}
+```
+
+## Minuet Event
+
+Minuet emits three distinct events during its request workflow:
+
+- **MinuetRequestStartedPre**: Triggered before a completion request is
+  initiated. This allows for pre-request operations, such as logging or updating
+  the user interface.
+- **MinuetRequestStarted**: Triggered immediately after the completion request
+  is dispatched, signaling that the request is in progress.
+- **MinuetRequestFinished**: Triggered upon completion of the request.
+
+Each event includes a `data` field containing the following properties:
+
+- `provider`: A string indicating the provider type (e.g.,
+  'openai_compatible').
+- `name`: A string specifying the provider's name (e.g., 'OpenAI', 'Groq',
+  'Ollama').
+- `n_requests`: The number of requests encompassed in this completion cycle.
+- `request_idx` (optional): The index of the current request, applicable when
+  providers make multiple requests.
+- `timestamp`: A Unix timestamp representing the start of the request cycle
+  (corresponding to the `MinuetRequestStartedPre` event).
 
 # FAQ
 
