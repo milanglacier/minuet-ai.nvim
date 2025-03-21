@@ -24,7 +24,7 @@ local spinner_symbols_len = #spinner_symbols
 function M:init(options)
     M.super.init(self, options)
 
-    local group = vim.api.nvim_create_augroup('MinuetEvent', {})
+    local group = vim.api.nvim_create_augroup('MinuetLualine', { clear = true })
 
     vim.api.nvim_create_autocmd({ 'User' }, {
         pattern = 'MinuetRequestStartedPre',
