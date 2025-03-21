@@ -78,7 +78,11 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
             -- inserted, potentially leading to miscalculations of the word
             -- boundaries before and after the cursor, and thus, incorrect
             -- behavior.
-            if params.context.triggerKind ~= vim.lsp.protocol.CompletionTriggerKind.TriggerCharacter then
+            if
+                -- mini.completion does not provide context field
+                not params.context
+                or (params.context.triggerKind ~= vim.lsp.protocol.CompletionTriggerKind.TriggerCharacter)
+            then
                 data = vim.tbl_map(function(item)
                     return utils.prepend_to_complete_word(item, context.lines_before)
                 end, data)
