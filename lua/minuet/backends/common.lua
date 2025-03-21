@@ -163,18 +163,17 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
 
     M.terminate_all_jobs()
 
-    local data = {}
-
-    data.model = options.model
-    data.stream = options.stream
-    local context_before_cursor = context.lines_before
-    local context_after_cursor = context.lines_after
-
+    local data = {
+        model = options.model,
+        stream = options.stream,
+        prompt = options.template.prompt(context.lines_before, context.lines_after),
+        suffix = options.template.suffix and options.template.suffix(context.lines_before, context.lines_after) or nil,
+    }
     data = vim.tbl_deep_extend('force', data, options.optional or {})
 
-    data.prompt = options.template.prompt(context_before_cursor, context_after_cursor)
-    data.suffix = options.template.suffix and options.template.suffix(context_before_cursor, context_after_cursor)
-        or nil
+    if type(options.body_transform) == 'function' then
+        data = options.body_transform(data)
+    end
 
     local data_file = utils.make_tmp_file(data)
 
@@ -182,30 +181,50 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
         return
     end
 
+    local endpoint = options.end_point
+    local headers = {
+        ['Content-Type'] = 'application/json',
+        ['Accept'] = 'application/json',
+        ['Authorization'] = 'Bearer ' .. utils.get_api_key(options.api_key),
+    }
+
+    if type(options.header_transform) == 'function' then
+        endpoint, headers = options.header_transform(endpoint, headers)
+    end
+
+    local args = {
+        '-L',
+        endpoint,
+    }
+    for k, v in pairs(headers) do
+        table.insert(args, '-H')
+        table.insert(args, k .. ': ' .. v)
+    end
+    table.insert(args, '--max-time')
+    table.insert(args, tostring(config.request_timeout))
+    table.insert(args, '-d')
+    table.insert(args, '@' .. data_file)
+
+    if config.proxy then
+        table.insert(args, '--proxy')
+        table.insert(args, config.proxy)
+    end
+
+    local effective_get_text_fn
+    if type(options.get_text_fn) == 'table' then
+        if options.stream then
+            effective_get_text_fn = options.get_text_fn.stream or get_text_fn
+        else
+            effective_get_text_fn = options.get_text_fn.no_stream or get_text_fn
+        end
+    else
+        effective_get_text_fn = get_text_fn
+    end
+
     local items = {}
     local n_completions = config.n_completions
 
     for _ = 1, n_completions do
-        local args = {
-            '-L',
-            options.end_point,
-            '-H',
-            'Content-Type: application/json',
-            '-H',
-            'Accept: application/json',
-            '-H',
-            'Authorization: Bearer ' .. utils.get_api_key(options.api_key),
-            '--max-time',
-            tostring(config.request_timeout),
-            '-d',
-            '@' .. data_file,
-        }
-
-        if config.proxy then
-            table.insert(args, '--proxy')
-            table.insert(args, config.proxy)
-        end
-
         local new_job = Job:new {
             command = 'curl',
             args = args,
@@ -215,16 +234,16 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                 local result
 
                 if options.stream then
-                    result = utils.stream_decode(job, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.stream_decode(job, exit_code, data_file, options.name, effective_get_text_fn)
                 else
-                    result = utils.no_stream_decode(job, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.no_stream_decode(job, exit_code, data_file, options.name, effective_get_text_fn)
                 end
 
                 if result then
                     table.insert(items, result)
                 end
 
-                items = M.filter_context_sequences_in_items(items, context_after_cursor)
+                items = M.filter_context_sequences_in_items(items, context.lines_after)
                 items = utils.remove_spaces(items)
                 callback(items)
             end),
