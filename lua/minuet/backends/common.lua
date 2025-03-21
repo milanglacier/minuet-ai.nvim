@@ -221,7 +221,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
         timestamp = timestamp,
     })
 
-    for request_idx = 1, n_completions do
+    for idx = 1, n_completions do
         local args = {
             '-L',
             options.end_point,
@@ -252,7 +252,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                     provider = provider_name,
                     name = options.name,
                     n_requests = n_completions,
-                    request_idx = request_idx,
+                    request_idx = idx,
                     timestamp = timestamp,
                 })
 
@@ -281,7 +281,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
             provider = provider_name,
             name = options.name,
             n_requests = n_completions,
-            request_idx = request_idx,
+            request_idx = idx,
             timestamp = timestamp,
         })
     end
