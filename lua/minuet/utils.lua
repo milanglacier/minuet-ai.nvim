@@ -521,9 +521,9 @@ M.list_dedup = function(list)
 end
 
 --- fire an event
-function M.fire_event(event, opts)
+function M.run_event(event, opts)
     opts = opts or {}
-    vim.api.nvim_exec_autocmds('User', { pattern = 'Minuet' .. event, data = opts })
+    vim.api.nvim_exec_autocmds('User', { pattern = event, data = opts })
 end
 
 return M

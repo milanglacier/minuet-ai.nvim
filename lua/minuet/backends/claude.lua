@@ -77,10 +77,11 @@ M.complete = function(context, callback)
         table.insert(args, config.proxy)
     end
 
-    local provider_name = 'Clause'
-    utils.fire_event('RequestInit', {
+    local provider_name = 'Claude'
+
+    utils.run_event('MinuetRequestStartedPre', {
         provider = provider_name,
-        name = options.name,
+        name = provider_name,
         n_requests = 1,
     })
 
@@ -90,9 +91,9 @@ M.complete = function(context, callback)
         on_exit = vim.schedule_wrap(function(job, exit_code)
             common.remove_job(job)
 
-            utils.fire_event('RequestFinished', {
+            utils.run_event('MinuetRequestFinished', {
                 provider = provider_name,
-                name = options.name,
+                name = provider_name,
                 n_requests = 1,
                 request_idx = 1,
                 job = function()
@@ -126,7 +127,7 @@ M.complete = function(context, callback)
     common.register_job(new_job)
     new_job:start()
 
-    utils.fire_event('RequestStarted', {
+    utils.run_event('MinuetRequestStarted', {
         provider = provider_name,
         name = options.name,
         n_requests = 1,

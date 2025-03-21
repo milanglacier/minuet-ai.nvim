@@ -125,7 +125,8 @@ function M.complete_openai_base(options, context, callback)
     end
 
     local provider_name = 'openai_compatible'
-    utils.fire_event('RequestInit', {
+
+    utils.run_event('MinuetRequestStartedPre', {
         provider = provider_name,
         name = options.name,
         n_requests = 1,
@@ -137,7 +138,7 @@ function M.complete_openai_base(options, context, callback)
         on_exit = vim.schedule_wrap(function(job, exit_code)
             M.remove_job(job)
 
-            utils.fire_event('RequestFinished', {
+            utils.run_event('MinuetRequestFinished', {
                 provider = provider_name,
                 name = options.name,
                 n_requests = 1,
@@ -174,7 +175,7 @@ function M.complete_openai_base(options, context, callback)
     M.register_job(new_job)
     new_job:start()
 
-    utils.fire_event('RequestStarted', {
+    utils.run_event('MinuetRequestStarted', {
         provider = provider_name,
         name = options.name,
         n_requests = 1,
@@ -213,11 +214,13 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     local n_completions = config.n_completions
 
     local provider_name = 'openai_fim_compatible'
-    utils.fire_event('RequestInit', {
+
+    utils.run_event('MinuetRequestStartedPre', {
         provider = provider_name,
         name = options.name,
         n_requests = n_completions,
     })
+
     for request_idx = 1, n_completions do
         local args = {
             '-L',
@@ -245,7 +248,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
             on_exit = vim.schedule_wrap(function(job, exit_code)
                 M.remove_job(job)
 
-                utils.fire_event('RequestFinished', {
+                utils.run_event('MinuetRequestFinished', {
                     provider = provider_name,
                     name = options.name,
                     n_requests = n_completions,
@@ -276,7 +279,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
         M.register_job(new_job)
         new_job:start()
 
-        utils.fire_event('RequestStarted', {
+        utils.run_event('MinuetRequestStarted', {
             provider = provider_name,
             name = options.name,
             n_requests = n_completions,

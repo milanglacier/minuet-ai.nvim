@@ -24,26 +24,35 @@ local spinner_symbols_len = 10
 function M:init(options)
     M.super.init(self, options)
 
-    local group = vim.api.nvim_create_augroup('MinuetHooks', {})
+    local group = vim.api.nvim_create_augroup('MinuetEvent', {})
 
     vim.api.nvim_create_autocmd({ 'User' }, {
-        pattern = 'MinuetRequest*',
+        pattern = 'MinuetRequestStartedPre',
         group = group,
         callback = function(request)
             local data = request.data
+            self.processing = false
+            self.n_requests = data.n_requests
+            self.n_finished_requests = 0
+            self.name = data.name
+        end,
+    })
 
-            if request.match == 'MinuetRequestInit' then
+    vim.api.nvim_create_autocmd({ 'User' }, {
+        pattern = 'MinuetRequestStarted',
+        group = group,
+        callback = function()
+            self.processing = true
+        end,
+    })
+
+    vim.api.nvim_create_autocmd({ 'User' }, {
+        pattern = 'MinuetRequestFinished',
+        group = group,
+        callback = function()
+            self.n_finished_requests = self.n_finished_requests + 1
+            if self.n_finished_requests == self.n_requests then
                 self.processing = false
-                self.n_requests = data.n_requests
-                self.n_finished_requests = 0
-                self.name = data.name or data.provider
-            elseif request.match == 'MinuetRequestStarted' then
-                self.processing = true
-            elseif request.match == 'MinuetRequestFinished' then
-                self.n_finished_requests = self.n_finished_requests + 1
-                if self.n_finished_requests == self.n_requests then
-                    self.processing = false
-                end
             end
         end,
     })

@@ -103,9 +103,10 @@ function M.complete(context, callback)
     end
 
     local provider_name = 'Gemini'
-    utils.fire_event('RequestInit', {
+
+    utils.run_event('MinuetRequestStartedPre', {
         provider = provider_name,
-        name = options.name,
+        name = provider_name,
         n_requests = 1,
     })
 
@@ -115,9 +116,9 @@ function M.complete(context, callback)
         on_exit = vim.schedule_wrap(function(job, exit_code)
             common.remove_job(job)
 
-            utils.fire_event('RequestFinished', {
+            utils.run_event('MinuetRequestFinished', {
                 provider = provider_name,
-                name = options.name,
+                name = provider_name,
                 n_requests = 1,
                 request_idx = 1,
                 job = function()
@@ -150,9 +151,9 @@ function M.complete(context, callback)
     common.register_job(new_job)
     new_job:start()
 
-    utils.fire_event('RequestStarted', {
+    utils.run_event('MinuetRequestStarted', {
         provider = provider_name,
-        name = options.name,
+        name = provider_name,
         n_requests = 1,
         request_idx = 1,
         job = function()
