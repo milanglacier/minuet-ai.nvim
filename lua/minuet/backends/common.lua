@@ -261,26 +261,6 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     })
 
     for idx = 1, n_completions do
-        local args = {
-            '-L',
-            options.end_point,
-            '-H',
-            'Content-Type: application/json',
-            '-H',
-            'Accept: application/json',
-            '-H',
-            'Authorization: Bearer ' .. utils.get_api_key(options.api_key),
-            '--max-time',
-            tostring(config.request_timeout),
-            '-d',
-            '@' .. data_file,
-        }
-
-        if config.proxy then
-            table.insert(args, '--proxy')
-            table.insert(args, config.proxy)
-        end
-
         local new_job = Job:new {
             command = 'curl',
             args = args,
