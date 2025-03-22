@@ -102,17 +102,35 @@ function M.complete(context, callback)
         table.insert(args, config.proxy)
     end
 
+    local provider_name = 'Gemini'
+    local timestamp = os.time()
+
+    utils.run_event('MinuetRequestStartedPre', {
+        provider = provider_name,
+        name = provider_name,
+        n_requests = 1,
+        timestamp = timestamp,
+    })
+
     local new_job = Job:new {
         command = 'curl',
         args = args,
         on_exit = vim.schedule_wrap(function(job, exit_code)
             common.remove_job(job)
 
+            utils.run_event('MinuetRequestFinished', {
+                provider = provider_name,
+                name = provider_name,
+                n_requests = 1,
+                request_idx = 1,
+                timestamp = timestamp,
+            })
+
             local items_raw
             if options.stream then
-                items_raw = utils.stream_decode(job, exit_code, data_file, 'Gemini', M.get_text_fn)
+                items_raw = utils.stream_decode(job, exit_code, data_file, provider_name, M.get_text_fn)
             else
-                items_raw = utils.no_stream_decode(job, exit_code, data_file, 'Gemini', M.get_text_fn)
+                items_raw = utils.no_stream_decode(job, exit_code, data_file, provider_name, M.get_text_fn)
             end
 
             if not items_raw then
@@ -120,7 +138,7 @@ function M.complete(context, callback)
                 return
             end
 
-            local items = common.parse_completion_items(items_raw, 'Gemini')
+            local items = common.parse_completion_items(items_raw, provider_name)
 
             items = common.filter_context_sequences_in_items(items, context.lines_after)
 
@@ -132,6 +150,14 @@ function M.complete(context, callback)
 
     common.register_job(new_job)
     new_job:start()
+
+    utils.run_event('MinuetRequestStarted', {
+        provider = provider_name,
+        name = provider_name,
+        n_requests = 1,
+        request_idx = 1,
+        timestamp = timestamp,
+    })
 end
 
 return M
