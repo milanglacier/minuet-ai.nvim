@@ -6,7 +6,7 @@
   - [Virtual Text Setup](#virtual-text-setup)
   - [Nvim-cmp setup](#nvim-cmp-setup)
   - [Blink-cmp Setup](#blink-cmp-setup)
-  - [Built-in Completion setup](#built-in-completion-setup)
+  - [Built-in Completion, Mini.Completion, and LSP Setup](#built-in-completion-minicompletion-and-lsp-setup)
   - [LLM Provider Examples](#llm-provider-examples)
     - [Openrouter llama-3.3-70b](#openrouter-llama-33-70b)
     - [Deepseek](#deepseek)
@@ -204,13 +204,30 @@ require('blink-cmp').setup {
 
 </details>
 
-## Built-in Completion setup
+## Built-in Completion, Mini.Completion, and LSP Setup
 
 <details>
 
 **Requirements:**
 
 - Neovim version 0.11 or higher is necessary for built-in completion.
+
+```lua
+require('minuet').setup {
+    lsp = {
+        enabled_ft = { 'toml', 'lua', 'cpp' },
+        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
+        enabled_auto_trigger_ft = { 'cpp', 'lua' },
+    }
+}
+```
+
+The `enabled_auto_trigger_ft` setting is relevant only for built-in completion.
+`Mini.Completion` users can ignore this option, as Mini.Completion uses **all**
+available LSPs for **auto-triggered** completion.
+
+For manually triggered completion, ensure `vim.bo.omnifunc` is set to
+`v:lua.vim.lsp.omnifunc` and use `<C-x><C-o>` in Insert mode.
 
 **Recommendation:**
 
@@ -229,19 +246,6 @@ source rather than through LSP for two main reasons:
    `Invoked`, `TriggerCharacter`, and `TriggerForIncompleteCompletions`.
    However, none of these specifically differentiates between manual and
    automatic completion requests.
-
-```lua
-require('minuet').setup {
-    lsp = {
-        enabled_ft = { 'toml', 'lua', 'cpp' },
-        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
-        enabled_auto_trigger_ft = { 'cpp', 'lua' },
-    }
-}
-```
-
-For manual completion, ensure `vim.bo.omnifunc` is set to
-`v:lua.vim.lsp.omnifunc`, and use `<C-x><C-o>` in insert mode.
 
 **Note**: An upstream issue ([tracked
 here](https://github.com/neovim/neovim/issues/32972)) may cause unexpected
