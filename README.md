@@ -35,8 +35,8 @@
   - [Lualine](#lualine)
   - [Minuet Event](#minuet-event)
 - [FAQ](#faq)
-  - [Customize `cmp` ui](#customize-cmp-ui)
-  - [Customize `blink` ui](#customize-blink-ui)
+  - [Customize `cmp` ui for source icon and kind icon](#customize-cmp-ui-for-source-icon-and-kind-icon)
+  - [Customize `blink` ui for source icon and kind icon](#customize-blink-ui-for-source-icon-and-kind-icon)
   - [Significant Input Delay When Moving to a New Line with `nvim-cmp`](#significant-input-delay-when-moving-to-a-new-line-with-nvim-cmp)
   - [Integration with `lazyvim`](#integration-with-lazyvim)
 - [Enhancement](#enhancement)
@@ -63,7 +63,8 @@ Just as dancers move during a minuet.
 - Customizable configuration options.
 - Streaming support to enable completion delivery even with slower LLMs.
 - No proprietary binary running in the background. Just curl and your preferred LLM provider.
-- Support `nvim-cmp`, `blink-cmp`, `virtual text`, `built-in completion` frontend.
+- Support `virtual-text`, `nvim-cmp`, `blink-cmp`, `built-in`,
+  `mini.completion` frontend.
 - Act as an **in-process LSP** server to provide completions (opt-in feature).
 
 **With nvim-cmp / blink-cmp frontend**:
@@ -1117,7 +1118,7 @@ Each event includes a `data` field containing the following properties:
 
 # FAQ
 
-## Customize `cmp` ui
+## Customize `cmp` ui for source icon and kind icon
 
 You can configure the icons of completion items returned by `minuet` by using
 the following snippet (referenced from [cmp's
@@ -1176,11 +1177,13 @@ cmp.setup {
 
 </details>
 
-## Customize `blink` ui
+## Customize `blink` ui for source icon and kind icon
 
 You can configure the icons of completion items returned by `minuet` by the following snippet:
 
 <details>
+
+To customize the kind icons:
 
 ```lua
 local kind_icons = {
@@ -1202,6 +1205,60 @@ require('blink-cmp').setup {
         nerd_font_variant = 'normal',
         kind_icons = kind_icons
     },
+}
+
+```
+
+To customize the source icons:
+
+```lua
+local source_icons = {
+    minuet = '󱗻',
+    orgmode = '',
+    otter = '󰼁',
+    nvim_lsp = '',
+    lsp = '',
+    buffer = '',
+    luasnip = '',
+    snippets = '',
+    path = '',
+    git = '',
+    tags = '',
+    cmdline = '󰘳',
+    latex_symbols = '',
+    cmp_nvim_r = '󰟔',
+    codeium = '󰩂',
+    -- FALLBACK
+    fallback = '󰜚',
+}
+
+require('blink-cmp').setup {
+    appearance = {
+        use_nvim_cmp_as_default = true,
+        nerd_font_variant = 'normal',
+        kind_icons = kind_icons
+    },
+    completion = {
+        menu = {
+            draw = {
+                columns = {
+                    { 'label', 'label_description', gap = 1 },
+                    { 'kind_icon', 'kind' },
+                    { 'source_icon' },
+                },
+                components = {
+                    source_icon = {
+                        -- don't truncate source_icon
+                        ellipsis = false,
+                        text = function(ctx)
+                            return source_icons[ctx.source_name:lower()] or source_icons.fallback
+                        end,
+                        highlight = 'BlinkCmpSource',
+                    },
+                },
+            },
+        },
+    }
 }
 ```
 
