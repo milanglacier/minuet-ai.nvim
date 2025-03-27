@@ -71,22 +71,9 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
 
             -- The `blink.lua` comments explain the rationale for invoking
             -- `prepend_to_complete_word`.
-            --
-            -- Also note that, we avoid calling `prepend_to_complete_word` when
-            -- the trigger kind is `TriggerCharacter`. This is because, in such
-            -- cases, completion is invoked *before* the `trigger_character` is
-            -- inserted, potentially leading to miscalculations of the word
-            -- boundaries before and after the cursor, and thus, incorrect
-            -- behavior.
-            if
-                -- mini.completion does not provide context field
-                not params.context
-                or (params.context.triggerKind ~= vim.lsp.protocol.CompletionTriggerKind.TriggerCharacter)
-            then
-                data = vim.tbl_map(function(item)
-                    return utils.prepend_to_complete_word(item, context.lines_before)
-                end, data)
-            end
+            data = vim.tbl_map(function(item)
+                return utils.prepend_to_complete_word(item, context.lines_before)
+            end, data)
 
             if config.add_single_line_entry then
                 data = utils.add_single_line_entry(data)
