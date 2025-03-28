@@ -1,3 +1,17 @@
+# Version 0.5.0 (2025-03-28)
+
+## Breaking Changes
+
+- Modified the Gemini provider's default prompt strategy to use the new
+  **Prefix First** structure.
+- Other providers will continue to use their previous default prompt
+  configurations.
+
+## Features
+
+- lsp: always `prepend_to_complete_word` without checking `TriggerCharacter`
+- Add a new "Prefix-First" prompt structure for chat LLMs.
+
 # Version 0.4.2 (2025-03-21)
 
 ## Breaking Change
@@ -81,3 +95,7 @@
 # Version 0.1 (2025-02-02)
 
 - Initial release
+
+```
+
+```
