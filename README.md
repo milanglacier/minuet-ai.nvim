@@ -21,7 +21,6 @@
   - [Claude](#claude)
   - [Codestral](#codestral)
   - [Gemini](#gemini)
-    - [Experimental Configuration](#experimental-configuration)
   - [OpenAI-compatible](#openai-compatible)
   - [OpenAI-FIM-compatible](#openai-fim-compatible)
 - [Commands](#commands)
@@ -581,7 +580,13 @@ default_config = {
         -- see the documentation in each provider in the following part.
     },
     -- see the documentation in the `Prompt` section
-    default_template = {
+    default_system = {
+        template = '...',
+        prompt = '...',
+        guidelines = '...',
+        n_completion_template = '...',
+    },
+    default_system_prefix_first = {
         template = '...',
         prompt = '...',
         guidelines = '...',
@@ -593,6 +598,8 @@ default_config = {
     },
     default_few_shots = { '...' },
     default_chat_input = { '...' },
+    default_few_shots_prefix_first = { '...' },
+    default_chat_input_prefix_first = { '...' },
     -- Config options for `Minuet change_preset` command
     presets = {}
 }
@@ -813,14 +820,6 @@ provider_options = {
 ```
 
 </details>
-
-### Experimental Configuration
-
-Gemini appears to perform better with an alternative input structure, unlike
-other chat-based LLMs. This observation is currently experimental and requires
-further validation. For details on the experimental prompt setup currently in
-use by the maintainer, please refer to the [prompt
-documentation](./prompt.md#an-experimental-configuration-setup-for-gemini).
 
 ## OpenAI-compatible
 

@@ -3,11 +3,11 @@
   - [Default Template](#default-template)
   - [Default Prompt](#default-prompt)
   - [Default Guidelines](#default-guidelines)
-  - [Default `n_completions` template](#default--n-completions--template)
+  - [Default `n_completions` template](#default-n_completions-template)
   - [Default Few Shots Examples](#default-few-shots-examples)
   - [Default Chat Input Example](#default-chat-input-example)
   - [Customization](#customization)
-  - [An Experimental Configuration Setup for Gemini](#an-experimental-configuration-setup-for-gemini)
+  - [A Practical Example](#a-practical-example)
 
 # FIM LLM Prompt Structure
 
@@ -42,11 +42,45 @@ tokens within the prompt function.
 
 # Chat LLM Prompt Structure
 
+We utilize two distinct strategies when constructing prompts:
+
+1. **Prefix First Style**: This involves including the code preceding the
+   cursor initially, followed by the code succeeding the cursor. This approach
+   is used only for the **Gemini** provider.
+
+2. **Suffix First Style**: This method involves including the code following
+   the cursor initially, and then the code preceding the cursor. It is employed
+   for **other** providers such as OpenAI, OpenAI-Compatible, and Claude.
+
+To access the **Suffix First Style** default prompt, use:
+
+1. `require('minuet.config').default_system`
+1. `require('minuet.config').default_few_shots`
+1. `require('minuet.config').default_chat_input`
+
+To access the **Prefix First Style** default prompt, use:
+
+1. `require('minuet.config').default_system_prefix_first`
+1. `require('minuet.config').default_few_shots_prefix_first`
+1. `require('minuet.config').default_chat_input_prefix_first`
+
 ## Default Template
 
 `{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}`
 
 ## Default Prompt
+
+**Prefix First Style**:
+
+You are the backend of an AI-powered code completion engine. Your task is to
+provide code suggestions based on the user's input. The user's code will be
+enclosed in markers:
+
+- `<contextAfterCursor>`: Code context after the cursor
+- `<cursorPosition>`: Current cursor location
+- `<contextBeforeCursor>`: Code context before the cursor
+
+**Suffix First Style**:
 
 You are the backend of an AI-powered code completion engine. Your task is to
 provide code suggestions based on the user's input. The user's code will be
@@ -81,6 +115,7 @@ Guidelines:
 ## Default Few Shots Examples
 
 ```lua
+-- suffix first style
 local default_few_shots = {
     {
         role = 'user',
@@ -114,6 +149,22 @@ def fibonacci(n):
 ]],
     },
 }
+
+-- prefix first style
+local default_few_shots_prefix_first = {
+    {
+        role = 'user',
+        content = [[
+# language: python
+<contextBeforeCursor>
+def fibonacci(n):
+    <cursorPosition>
+<contextAfterCursor>
+
+fib(5)]],
+    },
+    default_few_shots[2],
+}
 ```
 
 ## Default Chat Input Example
@@ -122,7 +173,27 @@ The chat input represents the final prompt delivered to the LLM for completion.
 Its template follows a structured format similar to the system prompt and can
 be customized as follows:
 
-`{{{language}}}\n{{{tab}}}\n<contextAfterCursor>\n{{{context_after_cursor}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>`
+**Suffix First Style**:
+
+```
+{{{language}}}
+{{{tab}}}
+<contextAfterCursor>
+{{{context_after_cursor}}}
+<contextBeforeCursor>
+{{{context_before_cursor}}}<cursorPosition>
+```
+
+**Prefix First Style**:
+
+```
+{{{language}}}
+{{{tab}}}
+<contextBeforeCursor>
+{{{context_before_cursor}}}<cursorPosition>
+<contextAfterCursor>
+{{{context_after_cursor}}}
+```
 
 Components:
 
@@ -207,17 +278,13 @@ require('minuet').setup {
 There's no need to replicate unchanged fields. The system will automatically
 merge modified fields with default values using the `tbl_deep_extend` function.
 
-## An Experimental Configuration Setup for Gemini
+## A Practical Example
 
-Some observations suggest that Gemini might perform better with a `Prefix-Suffix`
-structured input format, specifically `Before-Cursor -> Cursor-Pos -> After-Cursor`.
+Here, we present a practical example for configuring the prompt for Gemini,
+aiming to reuse existing components of the default prompt wherever possible.
 
-This contrasts with other chat-based LLMs, which may yield better results with
-the inverse structure: `After-Cursor -> Before-Cursor -> Cursor-Pos`.
-
-This finding remains experimental and requires further validation.
-
-Below is the current configuration used by the maintainer for Gemini:
+Please note that you should not copy-paste this into your configuration, as it
+represents the **default setting** applied to Gemini.
 
 ```lua
 local gemini_prompt = [[
@@ -251,6 +318,7 @@ local gemini_chat_input_template =
 gemini_few_shots[2] = require('minuet.config').default_few_shots[2]
 
 require('minuet').setup {
+    provider = 'gemini',
     provider_options = {
         gemini = {
             system = {

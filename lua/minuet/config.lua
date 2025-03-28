@@ -1,4 +1,4 @@
-local default_prompt = [[
+local default_prompt_prefix_first = [[
 You are the backend of an AI-powered code completion engine. Your task is to
 provide code suggestions based on the user's input. The user's code will be
 enclosed in markers:
@@ -6,6 +6,10 @@ enclosed in markers:
 - `<contextAfterCursor>`: Code context after the cursor
 - `<cursorPosition>`: Current cursor location
 - `<contextBeforeCursor>`: Code context before the cursor
+]]
+
+local default_prompt = default_prompt_prefix_first
+    .. [[
 
 Note that the user's code will be prompted in reverse order: first the code
 after the cursor, then the code before the cursor.
@@ -55,6 +59,21 @@ def fibonacci(n):
 <endCompletion>
 ]],
     },
+}
+
+local default_few_shots_prefix_first = {
+    {
+        role = 'user',
+        content = [[
+# language: python
+<contextBeforeCursor>
+def fibonacci(n):
+    <cursorPosition>
+<contextAfterCursor>
+
+fib(5)]],
+    },
+    default_few_shots[2],
 }
 
 local n_completion_template = '8. Provide at most %d completion items.'
@@ -119,6 +138,10 @@ local default_chat_input = {
         return context_after_cursor
     end,
 }
+
+local default_chat_input_prefix_first = vim.deepcopy(default_chat_input)
+default_chat_input_prefix_first.template =
+    '{{{language}}}\n{{{tab}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>\n<contextAfterCursor>\n{{{context_after_cursor}}}'
 
 local M = {
     -- Enable or disable auto-completion. Note that you still need to add
@@ -231,9 +254,18 @@ M.default_system = {
     n_completion_template = n_completion_template,
 }
 
+M.default_system_prefix_first = {
+    template = default_system_template,
+    prompt = default_prompt_prefix_first,
+    guidelines = default_guidelines,
+    n_completion_template = n_completion_template,
+}
+
 M.default_chat_input = default_chat_input
+M.default_chat_input_prefix_first = default_chat_input_prefix_first
 
 M.default_few_shots = default_few_shots
+M.default_few_shots_prefix_first = default_few_shots_prefix_first
 
 M.default_fim_template = {
     prompt = default_fim_prompt,
@@ -293,9 +325,9 @@ M.provider_options = {
     gemini = {
         model = 'gemini-2.0-flash',
         api_key = 'GEMINI_API_KEY',
-        system = M.default_system,
-        chat_input = M.default_chat_input,
-        few_shots = M.default_few_shots,
+        system = M.default_system_prefix_first,
+        chat_input = M.default_chat_input_prefix_first,
+        few_shots = M.default_few_shots_prefix_first,
         stream = true,
         optional = {},
     },
