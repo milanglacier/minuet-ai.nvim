@@ -654,7 +654,14 @@ Note that `minuet` employs two distinct prompt systems:
 
 # Providers
 
-You need to set the field 'provider' in the config.
+You need to set the field `provider` in the config, the default provider is
+`codestral`. For example:
+
+```lua
+require('minuet').setup {
+    provider = 'gemini'
+}
+```
 
 ## OpenAI
 
