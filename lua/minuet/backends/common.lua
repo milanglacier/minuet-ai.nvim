@@ -269,7 +269,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                 end
 
                 items = M.filter_context_sequences_in_items(items, context_after_cursor)
-                items = utils.remove_spaces(items)
+                items = utils.remove_spaces(items, true)
                 callback(items)
             end),
         }

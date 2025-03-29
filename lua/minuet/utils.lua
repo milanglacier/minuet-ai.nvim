@@ -314,15 +314,17 @@ end
 
 --- Remove the trailing and leading spaces for each string in the table
 ---@param items_table table[string]
-function M.remove_spaces(items_table)
+---@param no_trim_leading_newline? boolean
+function M.remove_spaces(items_table, no_trim_leading_newline)
     local new = {}
+    local start_pattern = no_trim_leading_newline and '^[ \t]+' or '^%s+'
 
     for _, item in ipairs(items_table) do
         if item:find '%S' then -- only include entries that contains non-whitespace
             -- replace the trailing spaces
             item = item:gsub('%s+$', '')
             -- replace the leading spaces
-            item = item:gsub('^%s+', '')
+            item = item:gsub(start_pattern, '')
             table.insert(new, item)
         end
     end
