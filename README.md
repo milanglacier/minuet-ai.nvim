@@ -654,6 +654,8 @@ Note that `minuet` employs two distinct prompt systems:
 
 # Providers
 
+You need to set the field 'provider' in the config.
+
 ## OpenAI
 
 <details>
