@@ -107,18 +107,17 @@ Firstly, type `:VectorCode register`, this command sets the autocmd to
 periodically update RAG queries for the current buffer you are editing.
 
 ```lua
-
-require("vectorcode").setup({
+require('vectorcode').setup {
     -- number of retrieved documents
     n_query = 1,
-})
-local has_vc, vectorcode_config = pcall(require, "vectorcode.config")
+}
+local has_vc, vectorcode_config = pcall(require, 'vectorcode.config')
 local vectorcode_cacher = nil
 if has_vc then
     vectorcode_cacher = vectorcode_config.get_cacher_backend()
 end
 
-gemini = {
+local gemini = {
     model = 'gemini-2.0-flash',
     system = {
         template = '{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}\n{{{repo_context}}}',
@@ -131,11 +130,7 @@ gemini = {
             if has_vc then
                 local cache_result = vectorcode_cacher.query_from_cache(0)
                 for _, file in ipairs(cache_result) do
-                    prompt_message = prompt_message
-                        .. '<file_separator>'
-                        .. file.path
-                        .. '\n'
-                        .. file.document
+                    prompt_message = prompt_message .. '<file_separator>' .. file.path .. '\n' .. file.document
                 end
             end
             if prompt_message ~= '' then
@@ -143,6 +138,13 @@ gemini = {
             end
             return prompt_message
         end,
+    },
+}
+
+require('minuet').setup {
+    provider = 'gemini',
+    provider_options = {
+        gemini = gemini,
     },
 }
 ```
