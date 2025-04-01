@@ -848,14 +848,14 @@ The following config is the default.
 ```lua
 provider_options = {
     openai_compatible = {
-        model = 'llama-3.3-70b-versatile',
+        model = 'qwen/qwen2.5-32b-instruct',
         system = "see [Prompt] section for the default value",
         few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
-        end_point = 'https://api.groq.com/openai/v1/chat/completions',
-        api_key = 'GROQ_API_KEY',
-        name = 'Groq',
         stream = true,
+        end_point = 'https://openrouter.ai/api/v1/chat/completions',
+        api_key = 'OPENROUTER_API_KEY',
+        name = 'Openrouter',
         optional = {
             stop = nil,
             max_tokens = nil,

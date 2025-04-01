@@ -309,13 +309,13 @@ M.provider_options = {
         },
     },
     openai_compatible = {
-        model = 'llama-3.3-70b-versatile',
+        model = 'qwen/qwen2.5-32b-instruct',
         system = M.default_system,
         chat_input = M.default_chat_input,
         few_shots = M.default_few_shots,
-        end_point = 'https://api.groq.com/openai/v1/chat/completions',
-        api_key = 'GROQ_API_KEY',
-        name = 'Groq',
+        end_point = 'https://openrouter.ai/api/v1/chat/completions',
+        api_key = 'OPENROUTER_API_KEY',
+        name = 'Openrouter',
         stream = true,
         optional = {
             stop = nil,
