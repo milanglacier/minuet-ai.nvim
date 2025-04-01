@@ -1,4 +1,4 @@
-- [Minuet AI](#minuet-ai)
+- [Minuet](#minuet)
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -8,7 +8,7 @@
   - [Blink-cmp Setup](#blink-cmp-setup)
   - [Built-in Completion, Mini.Completion, and LSP Setup](#built-in-completion-minicompletion-and-lsp-setup)
   - [LLM Provider Examples](#llm-provider-examples)
-    - [Openrouter llama-3.3-70b](#openrouter-llama-33-70b)
+    - [Openrouter Qwen2.5 32B Instruct](#openrouter-qwen25-32b-instruct)
     - [Deepseek](#deepseek)
     - [Ollama Qwen-2.5-coder:7b](#ollama-qwen-25-coder7b)
     - [Llama.cpp Qwen-2.5-coder:1.5b](#llamacpp-qwen-25-coder15b)
@@ -44,11 +44,11 @@
 - [Contributing](#contributing)
 - [Acknowledgement](#acknowledgement)
 
-# Minuet AI
+# Minuet
 
-Minuet AI: Dance with Intelligence in Your Code 💃.
+Minuet: Dance with Intelligence in Your Code 💃.
 
-`Minuet-ai` brings the grace and harmony of a minuet to your coding process.
+`Minuet` brings the grace and harmony of a minuet to your coding process.
 Just as dancers move during a minuet.
 
 # Features
@@ -293,7 +293,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 ## LLM Provider Examples
 
-### Openrouter llama-3.3-70b
+### Openrouter Qwen2.5 32B Instruct
 
 <details>
 
@@ -307,7 +307,7 @@ require('minuet').setup {
         openai_compatible = {
             api_key = 'OPENROUTER_API_KEY',
             end_point = 'https://openrouter.ai/api/v1/chat/completions',
-            model = 'meta-llama/llama-3.3-70b-instruct',
+            model = 'qwen/qwen2.5-32b-instruct',
             name = 'Openrouter',
             optional = {
                 max_tokens = 128,
