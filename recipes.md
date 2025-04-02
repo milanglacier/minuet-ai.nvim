@@ -117,6 +117,9 @@ if has_vc then
     vectorcode_cacher = vectorcode_config.get_cacher_backend()
 end
 
+-- roughly equate to 2000 tokens for LLM
+local RAG_Context_Window_Size = 8000
+
 local gemini = {
     model = 'gemini-2.0-flash',
     system = {
@@ -133,6 +136,9 @@ local gemini = {
                     prompt_message = prompt_message .. '<file_separator>' .. file.path .. '\n' .. file.document
                 end
             end
+
+            prompt_message = vim.fn.strcharpart(prompt_message, 0, RAG_Context_Window_Size)
+
             if prompt_message ~= '' then
                 prompt_message = '<repo_context>\n' .. prompt_message .. '\n</repo_context>'
             end
@@ -147,6 +153,7 @@ require('minuet').setup {
         gemini = gemini,
     },
 }
+
 ```
 
 ## FIM LLMs
@@ -177,15 +184,18 @@ Firstly, type `:VectorCode regiester`, this command starts the timer to
 periodically update RAG queries for the current buffer you are editing.
 
 ```lua
-require("vectorcode").setup({
+require('vectorcode').setup {
     -- number of retrieved documents
     n_query = 1,
-})
-local has_vc, vectorcode_config = pcall(require, "vectorcode.config")
+}
+local has_vc, vectorcode_config = pcall(require, 'vectorcode.config')
 local vectorcode_cacher = nil
 if has_vc then
     vectorcode_cacher = vectorcode_config.get_cacher_backend()
 end
+
+-- roughly equate to 2000 tokens for LLM
+local RAG_Context_Window_Size = 8000
 
 provider_options = {
     openai_fim_compatible = { -- or codestral
@@ -198,6 +208,9 @@ provider_options = {
                         prompt_message = prompt_message .. '<|file_sep|>' .. file.path .. '\n' .. file.document
                     end
                 end
+
+                prompt_message = vim.fn.strcharpart(prompt_message, 0, RAG_Context_Window_Size)
+
                 return prompt_message .. '<|fim_prefix|>' .. pref .. '<|fim_suffix|>' .. suff .. '<|fim_middle|>'
             end,
             suffix = false,
