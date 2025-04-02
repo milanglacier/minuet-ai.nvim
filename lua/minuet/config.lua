@@ -108,6 +108,8 @@ end
 ---@field tab minuet.ChatInputFunction function to add indentation style comment
 ---@field context_before_cursor minuet.ChatInputFunction function to process text before cursor
 ---@field context_after_cursor minuet.ChatInputFunction function to process text after cursor
+
+---@type minuet.ChatInput
 local default_chat_input = {
     template = '{{{language}}}\n{{{tab}}}\n<contextAfterCursor>\n{{{context_after_cursor}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>',
     language = function(_, _, _)
@@ -136,7 +138,7 @@ local default_chat_input = {
     end,
 }
 
----@class minuet.ChatInput
+---@type minuet.ChatInput
 local default_chat_input_prefix_first = vim.deepcopy(default_chat_input)
 default_chat_input_prefix_first.template =
     '{{{language}}}\n{{{tab}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>\n<contextAfterCursor>\n{{{context_after_cursor}}}'

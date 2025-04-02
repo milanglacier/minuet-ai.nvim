@@ -151,11 +151,11 @@ end
 -- blink-cmp, so blink might not be installed, so we create another class here
 -- and use it instead.
 
---- @class blinkCmpContext
+--- @class minuet.BlinkCmpContext
 --- @field line string
 --- @field cursor number[]
 
----@param blink_context blinkCmpContext?
+---@param blink_context minuet.BlinkCmpContext?
 function M.make_cmp_context(blink_context)
     local self = {}
     local cursor
@@ -177,12 +177,12 @@ function M.make_cmp_context(blink_context)
     return self
 end
 
----@class LSPPositionParams
+---@class minuet.LSPPositionParams
 ---@field context {triggerKind: number}
 ---@field position {character: number, line: number}
 ---@field textDocument {uri: string}
 
----@param params LSPPositionParams
+---@param params minuet.LSPPositionParams
 function M.make_cmp_context_from_lsp_params(params)
     local bufnr
     local self = {}
