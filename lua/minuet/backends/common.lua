@@ -195,11 +195,12 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     data.stream = options.stream
     local context_before_cursor = context.lines_before
     local context_after_cursor = context.lines_after
+    local opts = context.opts
 
     data = vim.tbl_deep_extend('force', data, options.optional or {})
 
-    data.prompt = options.template.prompt(context_before_cursor, context_after_cursor)
-    data.suffix = options.template.suffix and options.template.suffix(context_before_cursor, context_after_cursor)
+    data.prompt = options.template.prompt(context_before_cursor, context_after_cursor, opts)
+    data.suffix = options.template.suffix and options.template.suffix(context_before_cursor, context_after_cursor, opts)
         or nil
 
     local data_file = utils.make_tmp_file(data)

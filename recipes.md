@@ -191,7 +191,7 @@ provider_options = {
     openai_fim_compatible = { -- or codestral
         model = 'qwen-2.5-coder:7b',
         template = {
-            prompt = function(pref, suff)
+            prompt = function(pref, suff, _)
                 local prompt_message = ''
                 if has_vc then
                     for _, file in ipairs(vectorcode_cacher.query_from_cache(0)) do

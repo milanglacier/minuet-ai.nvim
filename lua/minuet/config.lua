@@ -81,7 +81,7 @@ local n_completion_template = '8. Provide at most %d completion items.'
 -- use {{{ and }}} to wrap placeholders, which will be further processesed in other function
 local default_system_template = '{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}'
 
-local default_fim_prompt = function(context_before_cursor, _)
+local default_fim_prompt = function(context_before_cursor, _, _)
     local utils = require 'minuet.utils'
     local language = utils.add_language_comment()
     local tab = utils.add_tab_comment()
@@ -90,7 +90,7 @@ local default_fim_prompt = function(context_before_cursor, _)
     return context_before_cursor
 end
 
-local default_fim_suffix = function(_, context_after_cursor)
+local default_fim_suffix = function(_, context_after_cursor, _)
     return context_after_cursor
 end
 
@@ -99,7 +99,7 @@ end
 ---@field is_incomplete_after boolean
 
 ---@alias minuet.ChatInputFunction fun(context_before_cursor: string, context_after_cursor: string, opts: minuet.ChatInputExtraInfo): string
----@alias minuet.FIMInputFunction minuet.ChatInputFunction
+---@alias minuet.FIMTemplateFunction minuet.ChatInputFunction
 
 --- Configuration for formatting chat input to the LLM
 ---@class minuet.ChatInput
@@ -265,6 +265,12 @@ M.default_chat_input_prefix_first = default_chat_input_prefix_first
 M.default_few_shots = default_few_shots
 M.default_few_shots_prefix_first = default_few_shots_prefix_first
 
+--- Configuration for FIM template
+---@class minuet.FIMTemplate
+---@field prompt minuet.FIMTemplateFunction
+---@field suffix minuet.FIMTemplateFunction | boolean
+
+---@type minuet.FIMTemplate
 M.default_fim_template = {
     prompt = default_fim_prompt,
     suffix = default_fim_suffix,

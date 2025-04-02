@@ -17,8 +17,8 @@ The prompt sent to the FIM LLM follows this structure:
 provider_options = {
     openai_fim_compatible = {
         template = {
-            prompt = function(context_before_cursor, context_after_cursor) end,
-            suffix = function(context_before_cursor, context_after_cursor) end,
+            prompt = function(context_before_cursor, context_after_cursor, opts) end,
+            suffix = function(context_before_cursor, context_after_cursor, opts) end,
         }
     }
 }
@@ -29,6 +29,15 @@ The template contains two main functions:
 - `prompt`: the default is to return language and the indentation style,
   followed by the `context_before_cursor` verbatim.
 - `suffix`: the default is to return `context_after_cursor` verbatim.
+
+Both `prompt` and `suffix` must be implemented as functions that accept the
+following three parameters and return a string:
+
+- `context_before_cursor`: The text content before the cursor
+- `context_after_cursor`: The text content after the cursor
+- `opts`: A table containing flags about context truncation:
+  - `is_incomplete_before`: True if content before cursor was truncated
+  - `is_incomplete_after`: True if content after cursor was truncated
 
 Both functions can be customized to provide additional context to the LLM. The
 `suffix` function can be disabled by setting `suffix = false`, which will
