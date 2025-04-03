@@ -108,7 +108,7 @@ function M.add_language_comment()
     end
 
     -- escape % in comment string
-    local commentstring = vim.bo.commentstring:gsub('^%% ', '%%%% '):gsub('%%$', '%%%%')
+    local commentstring = vim.bo.commentstring:gsub('%%', '%%%%'):gsub('%%%%s', '%%s')
 
     return string.format(commentstring, string.format('language: %s', vim.bo.ft))
 end
@@ -128,7 +128,7 @@ function M.add_tab_comment()
             return '# ' .. tab_comment
         end
 
-        local commentstring = vim.bo.commentstring:gsub('^%% ', '%%%% '):gsub('%%$', '%%%%')
+        local commentstring = vim.bo.commentstring:gsub('%%', '%%%%'):gsub('%%%%s', '%%s')
 
         return string.format(commentstring, tab_comment)
     end
@@ -139,7 +139,7 @@ function M.add_tab_comment()
             return '# ' .. tab_comment
         end
 
-        local commentstring = vim.bo.commentstring:gsub('^%% ', '%%%% '):gsub('%%$', '%%%%')
+        local commentstring = vim.bo.commentstring:gsub('%%', '%%%%'):gsub('%%%%s', '%%s')
 
         return string.format(commentstring, tab_comment)
     end
