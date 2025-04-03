@@ -58,7 +58,7 @@ require('minuet').setup {
             -- Therefore, we must disable it and manually populate the special
             -- tokens required for FIM completion.
             template = {
-                prompt = function(context_before_cursor, context_after_cursor)
+                prompt = function(context_before_cursor, context_after_cursor, _)
                     return '<|fim_prefix|>'
                         .. context_before_cursor
                         .. '<|fim_suffix|>'
@@ -71,6 +71,12 @@ require('minuet').setup {
     },
 }
 ```
+
+> [!NOTE]
+> Special tokens such as `<|fim_prefix|>` vary across different models. The
+> example code provided uses the tokens specific to `Qwen-2.5-coder`. If you
+> intend to use a different model, ensure the `llama-cpp` template is updated
+> to reflect the corresponding special tokens for your chosen model.
 
 ## **Acknowledgment**
 
