@@ -202,11 +202,55 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     data.prompt = options.template.prompt(context_before_cursor, context_after_cursor, opts)
     data.suffix = options.template.suffix and options.template.suffix(context_before_cursor, context_after_cursor, opts)
         or nil
+  
+    if type(options.body_transform) == 'function' then
+        data = options.body_transform(data)
+    end
 
     local data_file = utils.make_tmp_file(data)
 
     if data_file == nil then
         return
+    end
+
+    local endpoint = options.end_point
+    local headers = {
+        ['Content-Type'] = 'application/json',
+        ['Accept'] = 'application/json',
+        ['Authorization'] = 'Bearer ' .. utils.get_api_key(options.api_key),
+    }
+
+    if type(options.header_transform) == 'function' then
+        endpoint, headers = options.header_transform(endpoint, headers)
+    end
+
+    local args = {
+        '-L',
+        endpoint,
+    }
+    for k, v in pairs(headers) do
+        table.insert(args, '-H')
+        table.insert(args, k .. ': ' .. v)
+    end
+    table.insert(args, '--max-time')
+    table.insert(args, tostring(config.request_timeout))
+    table.insert(args, '-d')
+    table.insert(args, '@' .. data_file)
+
+    if config.proxy then
+        table.insert(args, '--proxy')
+        table.insert(args, config.proxy)
+    end
+
+    local effective_get_text_fn
+    if type(options.get_text_fn) == 'table' then
+        if options.stream then
+            effective_get_text_fn = options.get_text_fn.stream or get_text_fn
+        else
+            effective_get_text_fn = options.get_text_fn.no_stream or get_text_fn
+        end
+    else
+        effective_get_text_fn = get_text_fn
     end
 
     local items = {}
@@ -223,26 +267,6 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     })
 
     for idx = 1, n_completions do
-        local args = {
-            '-L',
-            options.end_point,
-            '-H',
-            'Content-Type: application/json',
-            '-H',
-            'Accept: application/json',
-            '-H',
-            'Authorization: Bearer ' .. utils.get_api_key(options.api_key),
-            '--max-time',
-            tostring(config.request_timeout),
-            '-d',
-            '@' .. data_file,
-        }
-
-        if config.proxy then
-            table.insert(args, '--proxy')
-            table.insert(args, config.proxy)
-        end
-
         local new_job = Job:new {
             command = 'curl',
             args = args,
@@ -260,9 +284,9 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                 local result
 
                 if options.stream then
-                    result = utils.stream_decode(job, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.stream_decode(job, exit_code, data_file, options.name, effective_get_text_fn)
                 else
-                    result = utils.no_stream_decode(job, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.no_stream_decode(job, exit_code, data_file, options.name, effective_get_text_fn)
                 end
 
                 if result then
@@ -271,6 +295,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
 
                 items = M.filter_context_sequences_in_items(items, context_after_cursor)
                 items = utils.remove_spaces(items, true)
+
                 callback(items)
             end),
         }
