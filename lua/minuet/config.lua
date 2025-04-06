@@ -1,4 +1,4 @@
-local default_prompt = [[
+local default_prompt_prefix_first = [[
 You are the backend of an AI-powered code completion engine. Your task is to
 provide code suggestions based on the user's input. The user's code will be
 enclosed in markers:
@@ -6,6 +6,10 @@ enclosed in markers:
 - `<contextAfterCursor>`: Code context after the cursor
 - `<cursorPosition>`: Current cursor location
 - `<contextBeforeCursor>`: Code context before the cursor
+]]
+
+local default_prompt = default_prompt_prefix_first
+    .. [[
 
 Note that the user's code will be prompted in reverse order: first the code
 after the cursor, then the code before the cursor.
@@ -57,12 +61,27 @@ def fibonacci(n):
     },
 }
 
+local default_few_shots_prefix_first = {
+    {
+        role = 'user',
+        content = [[
+# language: python
+<contextBeforeCursor>
+def fibonacci(n):
+    <cursorPosition>
+<contextAfterCursor>
+
+fib(5)]],
+    },
+    default_few_shots[2],
+}
+
 local n_completion_template = '8. Provide at most %d completion items.'
 
 -- use {{{ and }}} to wrap placeholders, which will be further processesed in other function
 local default_system_template = '{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}'
 
-local default_fim_prompt = function(context_before_cursor, _)
+local default_fim_prompt = function(context_before_cursor, _, _)
     local utils = require 'minuet.utils'
     local language = utils.add_language_comment()
     local tab = utils.add_tab_comment()
@@ -71,17 +90,26 @@ local default_fim_prompt = function(context_before_cursor, _)
     return context_before_cursor
 end
 
-local default_fim_suffix = function(_, context_after_cursor)
+local default_fim_suffix = function(_, context_after_cursor, _)
     return context_after_cursor
 end
 
+---@class minuet.ChatInputExtraInfo
+---@field is_incomplete_before boolean
+---@field is_incomplete_after boolean
+
+---@alias minuet.ChatInputFunction fun(context_before_cursor: string, context_after_cursor: string, opts: minuet.ChatInputExtraInfo): string
+---@alias minuet.FIMTemplateFunction minuet.ChatInputFunction
+
 --- Configuration for formatting chat input to the LLM
----@class ChatInput
+---@class minuet.ChatInput
 ---@field template string Template string with placeholders for context parts
----@field language function Function to add language comment based on filetype
----@field tab function Function to add indentation style comment
----@field context_before_cursor function Function to process text before cursor
----@field context_after_cursor function Function to process text after cursor
+---@field language minuet.ChatInputFunction function to add language comment based on filetype
+---@field tab minuet.ChatInputFunction function to add indentation style comment
+---@field context_before_cursor minuet.ChatInputFunction function to process text before cursor
+---@field context_after_cursor minuet.ChatInputFunction function to process text after cursor
+
+---@type minuet.ChatInput
 local default_chat_input = {
     template = '{{{language}}}\n{{{tab}}}\n<contextAfterCursor>\n{{{context_after_cursor}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>',
     language = function(_, _, _)
@@ -92,11 +120,6 @@ local default_chat_input = {
         local utils = require 'minuet.utils'
         return utils.add_tab_comment()
     end,
-    --- Process text content before the cursor position
-    ---@param context_before_cursor string The text content before cursor
-    ---@param _ any Unused parameter
-    ---@param opts table Options containing is_incomplete_before flag
-    ---@return string Processed text, with first line removed if context is incomplete
     context_before_cursor = function(context_before_cursor, _, opts)
         if opts.is_incomplete_before then
             -- Remove first line when context is incomplete at start
@@ -105,11 +128,6 @@ local default_chat_input = {
         end
         return context_before_cursor
     end,
-    --- Process text content after the cursor position
-    ---@param _ any Unused parameter
-    ---@param context_after_cursor string The text content after cursor
-    ---@param opts table Options containing is_incomplete_after flag
-    ---@return string Processed text, with last line removed if context is incomplete
     context_after_cursor = function(_, context_after_cursor, opts)
         if opts.is_incomplete_after then
             -- Remove last line when context is incomplete at end
@@ -119,6 +137,11 @@ local default_chat_input = {
         return context_after_cursor
     end,
 }
+
+---@type minuet.ChatInput
+local default_chat_input_prefix_first = vim.deepcopy(default_chat_input)
+default_chat_input_prefix_first.template =
+    '{{{language}}}\n{{{tab}}}\n<contextBeforeCursor>\n{{{context_before_cursor}}}<cursorPosition>\n<contextAfterCursor>\n{{{context_after_cursor}}}'
 
 local M = {
     -- Enable or disable auto-completion. Note that you still need to add
@@ -231,10 +254,25 @@ M.default_system = {
     n_completion_template = n_completion_template,
 }
 
+M.default_system_prefix_first = {
+    template = default_system_template,
+    prompt = default_prompt_prefix_first,
+    guidelines = default_guidelines,
+    n_completion_template = n_completion_template,
+}
+
 M.default_chat_input = default_chat_input
+M.default_chat_input_prefix_first = default_chat_input_prefix_first
 
 M.default_few_shots = default_few_shots
+M.default_few_shots_prefix_first = default_few_shots_prefix_first
 
+--- Configuration for FIM template
+---@class minuet.FIMTemplate
+---@field prompt minuet.FIMTemplateFunction
+---@field suffix minuet.FIMTemplateFunction | boolean
+
+---@type minuet.FIMTemplate
 M.default_fim_template = {
     prompt = default_fim_prompt,
     suffix = default_fim_suffix,
@@ -277,13 +315,13 @@ M.provider_options = {
         },
     },
     openai_compatible = {
-        model = 'llama-3.3-70b-versatile',
+        model = 'qwen/qwen2.5-32b-instruct',
         system = M.default_system,
         chat_input = M.default_chat_input,
         few_shots = M.default_few_shots,
-        end_point = 'https://api.groq.com/openai/v1/chat/completions',
-        api_key = 'GROQ_API_KEY',
-        name = 'Groq',
+        end_point = 'https://openrouter.ai/api/v1/chat/completions',
+        api_key = 'OPENROUTER_API_KEY',
+        name = 'Openrouter',
         stream = true,
         optional = {
             stop = nil,
@@ -293,9 +331,9 @@ M.provider_options = {
     gemini = {
         model = 'gemini-2.0-flash',
         api_key = 'GEMINI_API_KEY',
-        system = M.default_system,
-        chat_input = M.default_chat_input,
-        few_shots = M.default_few_shots,
+        system = M.default_system_prefix_first,
+        chat_input = M.default_chat_input_prefix_first,
+        few_shots = M.default_few_shots_prefix_first,
         stream = true,
         optional = {},
     },

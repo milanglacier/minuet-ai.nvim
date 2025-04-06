@@ -1,4 +1,4 @@
-- [Minuet AI](#minuet-ai)
+- [Minuet](#minuet)
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -6,9 +6,9 @@
   - [Virtual Text Setup](#virtual-text-setup)
   - [Nvim-cmp setup](#nvim-cmp-setup)
   - [Blink-cmp Setup](#blink-cmp-setup)
-  - [Built-in Completion setup](#built-in-completion-setup)
+  - [Built-in Completion, Mini.Completion, and LSP Setup](#built-in-completion-minicompletion-and-lsp-setup)
   - [LLM Provider Examples](#llm-provider-examples)
-    - [Openrouter llama-3.3-70b](#openrouter-llama-33-70b)
+    - [Openrouter Qwen2.5 32B Instruct](#openrouter-qwen25-32b-instruct)
     - [Deepseek](#deepseek)
     - [Ollama Qwen-2.5-coder:7b](#ollama-qwen-25-coder7b)
     - [Llama.cpp Qwen-2.5-coder:1.5b](#llamacpp-qwen-25-coder15b)
@@ -21,7 +21,6 @@
   - [Claude](#claude)
   - [Codestral](#codestral)
   - [Gemini](#gemini)
-    - [Experimental Configuration](#experimental-configuration)
   - [OpenAI-compatible](#openai-compatible)
   - [OpenAI-FIM-compatible](#openai-fim-compatible)
 - [Commands](#commands)
@@ -35,8 +34,8 @@
   - [Lualine](#lualine)
   - [Minuet Event](#minuet-event)
 - [FAQ](#faq)
-  - [Customize `cmp` ui](#customize-cmp-ui)
-  - [Customize `blink` ui](#customize-blink-ui)
+  - [Customize `cmp` ui for source icon and kind icon](#customize-cmp-ui-for-source-icon-and-kind-icon)
+  - [Customize `blink` ui for source icon and kind icon](#customize-blink-ui-for-source-icon-and-kind-icon)
   - [Significant Input Delay When Moving to a New Line with `nvim-cmp`](#significant-input-delay-when-moving-to-a-new-line-with-nvim-cmp)
   - [Integration with `lazyvim`](#integration-with-lazyvim)
 - [Enhancement](#enhancement)
@@ -45,11 +44,11 @@
 - [Contributing](#contributing)
 - [Acknowledgement](#acknowledgement)
 
-# Minuet AI
+# Minuet
 
-Minuet AI: Dance with Intelligence in Your Code 💃.
+Minuet: Dance with Intelligence in Your Code 💃.
 
-`Minuet-ai` brings the grace and harmony of a minuet to your coding process.
+`Minuet` brings the grace and harmony of a minuet to your coding process.
 Just as dancers move during a minuet.
 
 # Features
@@ -63,7 +62,8 @@ Just as dancers move during a minuet.
 - Customizable configuration options.
 - Streaming support to enable completion delivery even with slower LLMs.
 - No proprietary binary running in the background. Just curl and your preferred LLM provider.
-- Support `nvim-cmp`, `blink-cmp`, `virtual text`, `built-in completion` frontend.
+- Support `virtual-text`, `nvim-cmp`, `blink-cmp`, `built-in`,
+  `mini.completion` frontend.
 - Act as an **in-process LSP** server to provide completions (opt-in feature).
 
 **With nvim-cmp / blink-cmp frontend**:
@@ -204,13 +204,30 @@ require('blink-cmp').setup {
 
 </details>
 
-## Built-in Completion setup
+## Built-in Completion, Mini.Completion, and LSP Setup
 
 <details>
 
 **Requirements:**
 
 - Neovim version 0.11 or higher is necessary for built-in completion.
+
+```lua
+require('minuet').setup {
+    lsp = {
+        enabled_ft = { 'toml', 'lua', 'cpp' },
+        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
+        enabled_auto_trigger_ft = { 'cpp', 'lua' },
+    }
+}
+```
+
+The `enabled_auto_trigger_ft` setting is relevant only for built-in completion.
+`Mini.Completion` users can ignore this option, as Mini.Completion uses **all**
+available LSPs for **auto-triggered** completion.
+
+For manually triggered completion, ensure `vim.bo.omnifunc` is set to
+`v:lua.vim.lsp.omnifunc` and use `<C-x><C-o>` in Insert mode.
 
 **Recommendation:**
 
@@ -229,19 +246,6 @@ source rather than through LSP for two main reasons:
    `Invoked`, `TriggerCharacter`, and `TriggerForIncompleteCompletions`.
    However, none of these specifically differentiates between manual and
    automatic completion requests.
-
-```lua
-require('minuet').setup {
-    lsp = {
-        enabled_ft = { 'toml', 'lua', 'cpp' },
-        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
-        enabled_auto_trigger_ft = { 'cpp', 'lua' },
-    }
-}
-```
-
-For manual completion, ensure `vim.bo.omnifunc` is set to
-`v:lua.vim.lsp.omnifunc`, and use `<C-x><C-o>` in insert mode.
 
 **Note**: An upstream issue ([tracked
 here](https://github.com/neovim/neovim/issues/32972)) may cause unexpected
@@ -289,7 +293,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 ## LLM Provider Examples
 
-### Openrouter llama-3.3-70b
+### Openrouter Qwen2.5 32B Instruct
 
 <details>
 
@@ -303,7 +307,7 @@ require('minuet').setup {
         openai_compatible = {
             api_key = 'OPENROUTER_API_KEY',
             end_point = 'https://openrouter.ai/api/v1/chat/completions',
-            model = 'meta-llama/llama-3.3-70b-instruct',
+            model = 'qwen/qwen2.5-32b-instruct',
             name = 'Openrouter',
             optional = {
                 max_tokens = 128,
@@ -433,7 +437,7 @@ require('minuet').setup {
             -- Therefore, we must disable it and manually populate the special
             -- tokens required for FIM completion.
             template = {
-                prompt = function(context_before_cursor, context_after_cursor)
+                prompt = function(context_before_cursor, context_after_cursor, _)
                     return '<|fim_prefix|>'
                         .. context_before_cursor
                         .. '<|fim_suffix|>'
@@ -446,6 +450,11 @@ require('minuet').setup {
     },
 }
 ```
+
+**NOTE**: Special tokens such as `<|fim_prefix|>` vary across different models.
+The example code provided uses the tokens specific to `Qwen-2.5-coder`. If you
+intend to use a different model, ensure the `llama-cpp` template is updated to
+reflect the corresponding special tokens for your chosen model.
 
 For additional example bash scripts to run llama.cpp based on your local
 computing power, please refer to [recipes.md](./recipes.md).
@@ -576,7 +585,13 @@ default_config = {
         -- see the documentation in each provider in the following part.
     },
     -- see the documentation in the `Prompt` section
-    default_template = {
+    default_system = {
+        template = '...',
+        prompt = '...',
+        guidelines = '...',
+        n_completion_template = '...',
+    },
+    default_system_prefix_first = {
         template = '...',
         prompt = '...',
         guidelines = '...',
@@ -588,6 +603,8 @@ default_config = {
     },
     default_few_shots = { '...' },
     default_chat_input = { '...' },
+    default_few_shots_prefix_first = { '...' },
+    default_chat_input_prefix_first = { '...' },
     -- Config options for `Minuet change_preset` command
     presets = {}
 }
@@ -641,6 +658,15 @@ Note that `minuet` employs two distinct prompt systems:
 2. A separate system designed for Codestral and OpenAI-FIM-compatible models
 
 # Providers
+
+You need to set the field `provider` in the config, the default provider is
+`codestral`. For example:
+
+```lua
+require('minuet').setup {
+    provider = 'gemini'
+}
+```
 
 ## OpenAI
 
@@ -809,14 +835,6 @@ provider_options = {
 
 </details>
 
-### Experimental Configuration
-
-Gemini appears to perform better with an alternative input structure, unlike
-other chat-based LLMs. This observation is currently experimental and requires
-further validation. For details on the experimental prompt setup currently in
-use by the maintainer, please refer to the [prompt
-documentation](./prompt.md#an-experimental-configuration-setup-for-gemini).
-
 ## OpenAI-compatible
 
 Use any providers compatible with OpenAI's chat completion API.
@@ -835,14 +853,14 @@ The following config is the default.
 ```lua
 provider_options = {
     openai_compatible = {
-        model = 'llama-3.3-70b-versatile',
+        model = 'qwen/qwen2.5-32b-instruct',
         system = "see [Prompt] section for the default value",
         few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
-        end_point = 'https://api.groq.com/openai/v1/chat/completions',
-        api_key = 'GROQ_API_KEY',
-        name = 'Groq',
         stream = true,
+        end_point = 'https://openrouter.ai/api/v1/chat/completions',
+        api_key = 'OPENROUTER_API_KEY',
+        name = 'Openrouter',
         optional = {
             stop = nil,
             max_tokens = nil,
@@ -1182,7 +1200,7 @@ Each event includes a `data` field containing the following properties:
 
 # FAQ
 
-## Customize `cmp` ui
+## Customize `cmp` ui for source icon and kind icon
 
 You can configure the icons of completion items returned by `minuet` by using
 the following snippet (referenced from [cmp's
@@ -1241,11 +1259,13 @@ cmp.setup {
 
 </details>
 
-## Customize `blink` ui
+## Customize `blink` ui for source icon and kind icon
 
 You can configure the icons of completion items returned by `minuet` by the following snippet:
 
 <details>
+
+To customize the kind icons:
 
 ```lua
 local kind_icons = {
@@ -1267,6 +1287,60 @@ require('blink-cmp').setup {
         nerd_font_variant = 'normal',
         kind_icons = kind_icons
     },
+}
+
+```
+
+To customize the source icons:
+
+```lua
+local source_icons = {
+    minuet = '󱗻',
+    orgmode = '',
+    otter = '󰼁',
+    nvim_lsp = '',
+    lsp = '',
+    buffer = '',
+    luasnip = '',
+    snippets = '',
+    path = '',
+    git = '',
+    tags = '',
+    cmdline = '󰘳',
+    latex_symbols = '',
+    cmp_nvim_r = '󰟔',
+    codeium = '󰩂',
+    -- FALLBACK
+    fallback = '󰜚',
+}
+
+require('blink-cmp').setup {
+    appearance = {
+        use_nvim_cmp_as_default = true,
+        nerd_font_variant = 'normal',
+        kind_icons = kind_icons
+    },
+    completion = {
+        menu = {
+            draw = {
+                columns = {
+                    { 'label', 'label_description', gap = 1 },
+                    { 'kind_icon', 'kind' },
+                    { 'source_icon' },
+                },
+                components = {
+                    source_icon = {
+                        -- don't truncate source_icon
+                        ellipsis = false,
+                        text = function(ctx)
+                            return source_icons[ctx.source_name:lower()] or source_icons.fallback
+                        end,
+                        highlight = 'BlinkCmpSource',
+                    },
+                },
+            },
+        },
+    }
 }
 ```
 

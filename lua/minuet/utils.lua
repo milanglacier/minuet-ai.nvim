@@ -98,64 +98,70 @@ function M.get_or_eval_value(val)
     return val()
 end
 
+---@return string
 function M.add_language_comment()
     if vim.bo.ft == nil or vim.bo.ft == '' then
         return ''
     end
 
-    if vim.bo.commentstring == nil or vim.bo.commentstring == '' then
-        return '# language: ' .. vim.bo.ft
+    local language_string = 'language: ' .. vim.bo.ft
+    local commentstring = vim.bo.commentstring
+
+    if commentstring == nil or commentstring == '' then
+        return '# ' .. language_string
     end
 
-    -- escape % in comment string
-    local commentstring = vim.bo.commentstring:gsub('^%% ', '%%%% '):gsub('%%$', '%%%%')
+    -- Directly replace %s with the comment
+    if commentstring:find '%%s' then
+        language_string = commentstring:gsub('%%s', language_string)
+        return language_string
+    end
 
-    return string.format(commentstring, string.format('language: %s', vim.bo.ft))
+    -- Fallback to prepending comment if no %s found
+    return commentstring .. ' ' .. language_string
 end
 
+---@return string
 function M.add_tab_comment()
     if vim.bo.ft == nil or vim.bo.ft == '' then
         return ''
     end
 
-    local tab_comment
+    local tab_string
     local tabwidth = vim.bo.softtabstop > 0 and vim.bo.softtabstop or vim.bo.shiftwidth
+    local commentstring = vim.bo.commentstring
 
     if vim.bo.expandtab and tabwidth > 0 then
-        tab_comment = 'indentation: use ' .. tabwidth .. ' spaces for a tab'
-
-        if vim.bo.commentstring == nil or vim.bo.commentstring == '' then
-            return '# ' .. tab_comment
-        end
-
-        local commentstring = vim.bo.commentstring:gsub('^%% ', '%%%% '):gsub('%%$', '%%%%')
-
-        return string.format(commentstring, tab_comment)
+        tab_string = 'indentation: use ' .. tabwidth .. ' spaces for a tab'
+    elseif not vim.bo.expandtab then
+        tab_string = 'indentation: use \t for a tab'
+    else
+        return ''
     end
 
-    if not vim.bo.expandtab then
-        tab_comment = 'indentation: use \t for a tab'
-        if vim.bo.commentstring == nil or vim.bo.commentstring == '' then
-            return '# ' .. tab_comment
-        end
-
-        local commentstring = vim.bo.commentstring:gsub('^%% ', '%%%% '):gsub('%%$', '%%%%')
-
-        return string.format(commentstring, tab_comment)
+    if commentstring == nil or commentstring == '' then
+        return '# ' .. tab_string
     end
 
-    return ''
+    -- Directly replace %s with the comment
+    if commentstring:find '%%s' then
+        tab_string = commentstring:gsub('%%s', tab_string)
+        return tab_string
+    end
+
+    -- Fallback to prepending comment if no %s found
+    return commentstring .. ' ' .. tab_string
 end
 
 -- Copied from blink.cmp.Context. Because we might use nvim-cmp instead of
 -- blink-cmp, so blink might not be installed, so we create another class here
 -- and use it instead.
 
---- @class blinkCmpContext
+--- @class minuet.BlinkCmpContext
 --- @field line string
 --- @field cursor number[]
 
----@param blink_context blinkCmpContext?
+---@param blink_context minuet.BlinkCmpContext?
 function M.make_cmp_context(blink_context)
     local self = {}
     local cursor
@@ -177,12 +183,12 @@ function M.make_cmp_context(blink_context)
     return self
 end
 
----@class LSPPositionParams
+---@class minuet.LSPPositionParams
 ---@field context {triggerKind: number}
 ---@field position {character: number, line: number}
 ---@field textDocument {uri: string}
 
----@param params LSPPositionParams
+---@param params minuet.LSPPositionParams
 function M.make_cmp_context_from_lsp_params(params)
     local bufnr
     local self = {}
@@ -314,15 +320,17 @@ end
 
 --- Remove the trailing and leading spaces for each string in the table
 ---@param items_table table[string]
-function M.remove_spaces(items_table)
+---@param keep_leading_newline? boolean
+function M.remove_spaces(items_table, keep_leading_newline)
     local new = {}
+    local start_pattern = keep_leading_newline and '^[ \t]+' or '^%s+'
 
     for _, item in ipairs(items_table) do
         if item:find '%S' then -- only include entries that contains non-whitespace
             -- replace the trailing spaces
             item = item:gsub('%s+$', '')
             -- replace the leading spaces
-            item = item:gsub('^%s+', '')
+            item = item:gsub(start_pattern, '')
             table.insert(new, item)
         end
     end

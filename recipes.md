@@ -58,7 +58,7 @@ require('minuet').setup {
             -- Therefore, we must disable it and manually populate the special
             -- tokens required for FIM completion.
             template = {
-                prompt = function(context_before_cursor, context_after_cursor)
+                prompt = function(context_before_cursor, context_after_cursor, _)
                     return '<|fim_prefix|>'
                         .. context_before_cursor
                         .. '<|fim_suffix|>'
@@ -71,6 +71,12 @@ require('minuet').setup {
     },
 }
 ```
+
+> [!NOTE]
+> Special tokens such as `<|fim_prefix|>` vary across different models. The
+> example code provided uses the tokens specific to `Qwen-2.5-coder`. If you
+> intend to use a different model, ensure the `llama-cpp` template is updated
+> to reflect the corresponding special tokens for your chosen model.
 
 ## **Acknowledgment**
 
@@ -107,18 +113,20 @@ Firstly, type `:VectorCode register`, this command sets the autocmd to
 periodically update RAG queries for the current buffer you are editing.
 
 ```lua
-
-require("vectorcode").setup({
+require('vectorcode').setup {
     -- number of retrieved documents
     n_query = 1,
-})
-local has_vc, vectorcode_config = pcall(require, "vectorcode.config")
+}
+local has_vc, vectorcode_config = pcall(require, 'vectorcode.config')
 local vectorcode_cacher = nil
 if has_vc then
     vectorcode_cacher = vectorcode_config.get_cacher_backend()
 end
 
-gemini = {
+-- roughly equate to 2000 tokens for LLM
+local RAG_Context_Window_Size = 8000
+
+local gemini = {
     model = 'gemini-2.0-flash',
     system = {
         template = '{{{prompt}}}\n{{{guidelines}}}\n{{{n_completion_template}}}\n{{{repo_context}}}',
@@ -131,13 +139,12 @@ gemini = {
             if has_vc then
                 local cache_result = vectorcode_cacher.query_from_cache(0)
                 for _, file in ipairs(cache_result) do
-                    prompt_message = prompt_message
-                        .. '<file_separator>'
-                        .. file.path
-                        .. '\n'
-                        .. file.document
+                    prompt_message = prompt_message .. '<file_separator>' .. file.path .. '\n' .. file.document
                 end
             end
+
+            prompt_message = vim.fn.strcharpart(prompt_message, 0, RAG_Context_Window_Size)
+
             if prompt_message ~= '' then
                 prompt_message = '<repo_context>\n' .. prompt_message .. '\n</repo_context>'
             end
@@ -145,6 +152,14 @@ gemini = {
         end,
     },
 }
+
+require('minuet').setup {
+    provider = 'gemini',
+    provider_options = {
+        gemini = gemini,
+    },
+}
+
 ```
 
 ## FIM LLMs
@@ -175,27 +190,33 @@ Firstly, type `:VectorCode regiester`, this command starts the timer to
 periodically update RAG queries for the current buffer you are editing.
 
 ```lua
-require("vectorcode").setup({
+require('vectorcode').setup {
     -- number of retrieved documents
     n_query = 1,
-})
-local has_vc, vectorcode_config = pcall(require, "vectorcode.config")
+}
+local has_vc, vectorcode_config = pcall(require, 'vectorcode.config')
 local vectorcode_cacher = nil
 if has_vc then
     vectorcode_cacher = vectorcode_config.get_cacher_backend()
 end
 
+-- roughly equate to 2000 tokens for LLM
+local RAG_Context_Window_Size = 8000
+
 provider_options = {
     openai_fim_compatible = { -- or codestral
         model = 'qwen-2.5-coder:7b',
         template = {
-            prompt = function(pref, suff)
+            prompt = function(pref, suff, _)
                 local prompt_message = ''
                 if has_vc then
                     for _, file in ipairs(vectorcode_cacher.query_from_cache(0)) do
                         prompt_message = prompt_message .. '<|file_sep|>' .. file.path .. '\n' .. file.document
                     end
                 end
+
+                prompt_message = vim.fn.strcharpart(prompt_message, 0, RAG_Context_Window_Size)
+
                 return prompt_message .. '<|fim_prefix|>' .. pref .. '<|fim_suffix|>' .. suff .. '<|fim_middle|>'
             end,
             suffix = false,

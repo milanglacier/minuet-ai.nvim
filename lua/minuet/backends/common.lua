@@ -189,14 +189,20 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
 
     M.terminate_all_jobs()
 
-    local data = {
-        model = options.model,
-        stream = options.stream,
-        prompt = options.template.prompt(context.lines_before, context.lines_after),
-        suffix = options.template.suffix and options.template.suffix(context.lines_before, context.lines_after) or nil,
-    }
+    local data = {}
+
+    data.model = options.model
+    data.stream = options.stream
+    local context_before_cursor = context.lines_before
+    local context_after_cursor = context.lines_after
+    local opts = context.opts
+
     data = vim.tbl_deep_extend('force', data, options.optional or {})
 
+    data.prompt = options.template.prompt(context_before_cursor, context_after_cursor, opts)
+    data.suffix = options.template.suffix and options.template.suffix(context_before_cursor, context_after_cursor, opts)
+        or nil
+  
     if type(options.body_transform) == 'function' then
         data = options.body_transform(data)
     end
@@ -287,8 +293,9 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                     table.insert(items, result)
                 end
 
-                items = M.filter_context_sequences_in_items(items, context.lines_after)
-                items = utils.remove_spaces(items)
+                items = M.filter_context_sequences_in_items(items, context_after_cursor)
+                items = utils.remove_spaces(items, true)
+
                 callback(items)
             end),
         }
