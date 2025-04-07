@@ -542,4 +542,27 @@ function M.run_event(event, opts)
     vim.api.nvim_exec_autocmds('User', { pattern = event, data = opts })
 end
 
+function M.make_curl_args(end_point, headers, data_file)
+    local config = require('minuet').config
+    local args = {
+        '-L',
+        end_point,
+    }
+    for k, v in pairs(headers) do
+        table.insert(args, '-H')
+        table.insert(args, k .. ': ' .. v)
+    end
+    table.insert(args, '--max-time')
+    table.insert(args, tostring(config.request_timeout))
+    table.insert(args, '-d')
+    table.insert(args, '@' .. data_file)
+
+    if config.proxy then
+        table.insert(args, '--proxy')
+        table.insert(args, config.proxy)
+    end
+
+    return args
+end
+
 return M

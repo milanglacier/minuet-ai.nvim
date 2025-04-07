@@ -878,8 +878,11 @@ text `/completions` endpoint, **not** `/chat/completions` endpoint, so system
 prompts and few-shot examples are not applicable.
 
 For example, you can set the `end_point` to
-`http://localhost:11434/v1/completions` to use `ollama`, or set it to
+`http://localhost:11434/v1/completions` to use `ollama`,
 `http://localhost:8012/v1/completions` to use `llama.cpp`.
+
+For additional guidance on configuring DeepInfra and other non-OpenAI
+compatible FIM APIs, please consult [recipes.md](recipes.md).
 
 Cmdline completion is available for models supported by these providers:
 `deepseek`, `ollama`, and `siliconflow`.
@@ -918,6 +921,10 @@ provider_options = {
             prompt = "See [Prompt Section for default value]",
             suffix = "See [Prompt Section for default value]",
         },
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
+        -- Custom function to extract LLM-generated text from JSON output
+        get_text_fn = {}
         optional = {
             stop = nil,
             max_tokens = nil,

@@ -289,6 +289,10 @@ M.provider_options = {
             stop = nil, -- the identifier to stop the completion generation
             max_tokens = nil,
         },
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
+        -- Custom function to extract LLM-generated text from JSON output
+        get_text_fn = {},
     },
     openai = {
         model = 'gpt-4o-mini',
@@ -348,6 +352,10 @@ M.provider_options = {
             stop = nil,
             max_tokens = nil,
         },
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
+        -- Custom function to extract LLM-generated text from JSON output
+        get_text_fn = {},
     },
 }
 
