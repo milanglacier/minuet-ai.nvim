@@ -246,19 +246,22 @@ provider_options = {
 # Using Non-OpenAI-Compatible FIM APIs with DeepInfra
 
 The `openai_fim_compatible` backend supports advanced customization to
-seamlessly integrate with alternative providers. The following options are
-available for fine-tuning API interactions:
+integrate with alternative providers.
 
-- **`transform`**: A list of functions that accept a table containing these fields:
+- **`transform`**: A list of functions that accept a table containing fields
+  listed below. Each function processes and returns a transformed version of
+  these attributes.
 
-  - `end_point`
-  - `headers`
-  - `body`
-    Each function processes and returns a transformed version of these attributes.
+  - `end_point`: The API endpoint for the completion request.
+  - `headers`: HTTP headers for the request.
+  - `body`: The request body for the API.
 
 - **`get_text_fn`**: Can now be configured as a table with two keys:
-  - `stream` → Function to parse streaming responses.
-  - `no_stream` → Function to extract text from non-streaming responses.
+  - `stream`: Function to extract text from streaming responses.
+  - `no_stream`: Function to extract text from non-streaming responses.
+
+Below is an example configuration for integrating the `openai_fim_compatible`
+backend with the DeepInfra FIM API and Qwen-2.5-Coder-32B-Instruct model.
 
 ```lua
 openai_fim_compatible = {
