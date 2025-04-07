@@ -60,8 +60,6 @@ local function make_request_data()
 end
 
 function M.complete(context, callback)
-    local config = require('minuet').config
-
     common.terminate_all_jobs()
 
     local options, data = make_request_data()
@@ -82,25 +80,16 @@ function M.complete(context, callback)
         return
     end
 
-    local args = {
-        string.format(
-            'https://generativelanguage.googleapis.com/v1beta/models/%s:%skey=%s',
-            options.model,
-            options.stream and 'streamGenerateContent?alt=sse&' or 'generateContent?',
-            utils.get_api_key(options.api_key)
-        ),
-        '-H',
-        'Content-Type: application/json',
-        '--max-time',
-        tostring(config.request_timeout),
-        '-d',
-        '@' .. data_file,
+    local end_point = string.format(
+        'https://generativelanguage.googleapis.com/v1beta/models/%s:%skey=%s',
+        options.model,
+        options.stream and 'streamGenerateContent?alt=sse&' or 'generateContent?',
+        utils.get_api_key(options.api_key)
+    )
+    local headers = {
+        ['Content-Type'] = 'application/json',
     }
-
-    if config.proxy then
-        table.insert(args, '--proxy')
-        table.insert(args, config.proxy)
-    end
+    local args = utils.make_curl_args(end_point, headers, data_file)
 
     local provider_name = 'Gemini'
     local timestamp = os.time()

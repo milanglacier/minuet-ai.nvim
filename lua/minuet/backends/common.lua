@@ -107,22 +107,11 @@ function M.complete_openai_base(options, context, callback)
         return
     end
 
-    local args = {
-        options.end_point,
-        '-H',
-        'Content-Type: application/json',
-        '-H',
-        'Authorization: Bearer ' .. utils.get_api_key(options.api_key),
-        '--max-time',
-        tostring(config.request_timeout),
-        '-d',
-        '@' .. data_file,
+    local headers = {
+        ['Content-Type'] = 'application/json',
+        ['Authorization'] = 'Bearer ' .. utils.get_api_key(options.api_key),
     }
-
-    if config.proxy then
-        table.insert(args, '--proxy')
-        table.insert(args, config.proxy)
-    end
+    local args = utils.make_curl_args(options.end_point, headers, data_file)
 
     local provider_name = 'openai_compatible'
     local timestamp = os.time()

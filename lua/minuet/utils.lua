@@ -542,6 +542,10 @@ function M.run_event(event, opts)
     vim.api.nvim_exec_autocmds('User', { pattern = event, data = opts })
 end
 
+---@param end_point string
+---@param headers table<string, string>
+---@param data_file string
+---@return string[]
 function M.make_curl_args(end_point, headers, data_file)
     local config = require('minuet').config
     local args = {

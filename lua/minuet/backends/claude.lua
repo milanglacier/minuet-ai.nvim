@@ -39,8 +39,6 @@ function M.get_text_fn_stream(json)
 end
 
 M.complete = function(context, callback)
-    local config = require('minuet').config
-
     common.terminate_all_jobs()
 
     local options, data = make_request_data()
@@ -58,24 +56,12 @@ M.complete = function(context, callback)
         return
     end
 
-    local args = {
-        'https://api.anthropic.com/v1/messages',
-        '-H',
-        'Content-Type: application/json',
-        '-H',
-        'x-api-key: ' .. utils.get_api_key(options.api_key),
-        '-H',
-        'anthropic-version: 2023-06-01',
-        '--max-time',
-        tostring(config.request_timeout),
-        '-d',
-        '@' .. data_file,
+    local headers = {
+        ['Content-Type'] = 'application/json',
+        ['x-api-key'] = utils.get_api_key(options.api_key),
+        ['anthropic-version'] = '2023-06-01',
     }
-
-    if config.proxy then
-        table.insert(args, '--proxy')
-        table.insert(args, config.proxy)
-    end
+    local args = utils.make_curl_args('https://api.anthropic.com/v1/messages', headers, data_file)
 
     local provider_name = 'Claude'
     local timestamp = os.time()
