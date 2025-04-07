@@ -286,10 +286,10 @@ openai_fim_compatible = {
     transform = {
         function(args)
             args.end_point = args.end_point .. args.body.model
-            args.body = {
-                input = args.body.prompt,
-                stream = args.body.stream,
-            }
+            args.body.model = nil
+            args.body.input = args.body.prompt
+            args.body.prompt = nil
+            args.body.suffix = nil
             return args
         end,
     },
