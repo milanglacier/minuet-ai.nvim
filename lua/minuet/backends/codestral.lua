@@ -27,12 +27,15 @@ M.complete = function(context, callback)
 
     options.name = 'Codestral'
 
-    common.complete_openai_fim_base(
-        options,
-        options.stream and M.get_text_fn_stream or M.get_text_fn_no_stream,
-        context,
-        callback
-    )
+    local get_text_fn = options.stream and M.get_text_fn_stream or M.get_text_fn_no_stream
+
+    if options.get_text_fn.stream then
+        get_text_fn = options.get_text_fn.stream
+    elseif options.get_text_fn.no_stream then
+        get_text_fn = options.get_text_fn.no_stream
+    end
+
+    common.complete_openai_fim_base(options, get_text_fn, context, callback)
 end
 
 return M

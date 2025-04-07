@@ -41,7 +41,16 @@ end
 M.complete = function(context, callback)
     local config = require('minuet').config
     local options = vim.deepcopy(config.provider_options.openai_fim_compatible)
-    common.complete_openai_fim_base(options, M.get_text_fn, context, callback)
+
+    local get_text_fn = M.get_text_fn
+
+    if options.get_text_fn.stream then
+        get_text_fn = options.get_text_fn.stream
+    elseif options.get_text_fn.no_stream then
+        get_text_fn = options.get_text_fn.no_stream
+    end
+
+    common.complete_openai_fim_base(options, get_text_fn, context, callback)
 end
 
 return M

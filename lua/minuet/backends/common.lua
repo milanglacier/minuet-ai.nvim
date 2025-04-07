@@ -202,56 +202,31 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     data.prompt = options.template.prompt(context_before_cursor, context_after_cursor, opts)
     data.suffix = options.template.suffix and options.template.suffix(context_before_cursor, context_after_cursor, opts)
         or nil
-  
-    if type(options.body_transform) == 'function' then
-        data = options.body_transform(data)
-    end
 
-    local data_file = utils.make_tmp_file(data)
-
-    if data_file == nil then
-        return
-    end
-
-    local endpoint = options.end_point
+    local end_point = options.end_point
     local headers = {
         ['Content-Type'] = 'application/json',
         ['Accept'] = 'application/json',
         ['Authorization'] = 'Bearer ' .. utils.get_api_key(options.api_key),
     }
 
-    if type(options.header_transform) == 'function' then
-        endpoint, headers = options.header_transform(endpoint, headers)
-    end
-
-    local args = {
-        '-L',
-        endpoint,
+    local transformed_data = {
+        end_point = end_point,
+        headers = headers,
+        body = data,
     }
-    for k, v in pairs(headers) do
-        table.insert(args, '-H')
-        table.insert(args, k .. ': ' .. v)
-    end
-    table.insert(args, '--max-time')
-    table.insert(args, tostring(config.request_timeout))
-    table.insert(args, '-d')
-    table.insert(args, '@' .. data_file)
 
-    if config.proxy then
-        table.insert(args, '--proxy')
-        table.insert(args, config.proxy)
+    for _, fun in ipairs(options.transform) do
+        transformed_data = fun(transformed_data)
     end
 
-    local effective_get_text_fn
-    if type(options.get_text_fn) == 'table' then
-        if options.stream then
-            effective_get_text_fn = options.get_text_fn.stream or get_text_fn
-        else
-            effective_get_text_fn = options.get_text_fn.no_stream or get_text_fn
-        end
-    else
-        effective_get_text_fn = get_text_fn
+    local data_file = utils.make_tmp_file(transformed_data.body)
+
+    if data_file == nil then
+        return
     end
+
+    local args = utils.make_curl_args(transformed_data.end_point, transformed_data.headers, data_file)
 
     local items = {}
     local n_completions = config.n_completions
@@ -284,9 +259,9 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                 local result
 
                 if options.stream then
-                    result = utils.stream_decode(job, exit_code, data_file, options.name, effective_get_text_fn)
+                    result = utils.stream_decode(job, exit_code, data_file, options.name, get_text_fn)
                 else
-                    result = utils.no_stream_decode(job, exit_code, data_file, options.name, effective_get_text_fn)
+                    result = utils.no_stream_decode(job, exit_code, data_file, options.name, get_text_fn)
                 end
 
                 if result then

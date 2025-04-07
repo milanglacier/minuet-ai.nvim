@@ -879,10 +879,10 @@ prompts and few-shot examples are not applicable.
 
 For example, you can set the `end_point` to
 `http://localhost:11434/v1/completions` to use `ollama`,
-`http://localhost:8012/v1/completions` to use `llama.cpp`,
-or `https://api.deepinfra.com/v1/inference/` for DeepInfra.
-Read the Advanced Customizing section below for setting up
-DeepInfra and other non-OpenAI compatible FIM APIs.
+`http://localhost:8012/v1/completions` to use `llama.cpp`.
+
+For additional guidance on configuring DeepInfra and other non-OpenAI
+compatible FIM APIs, please consult [recipes.md](recipes.md).
 
 Cmdline completion is available for models supported by these providers:
 `deepseek`, `ollama`, and `siliconflow`.
@@ -921,6 +921,10 @@ provider_options = {
             prompt = "See [Prompt Section for default value]",
             suffix = "See [Prompt Section for default value]",
         },
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
+        -- Custom function to extract LLM-generated text from JSON output
+        get_text_fn = {}
         optional = {
             stop = nil,
             max_tokens = nil,
@@ -941,72 +945,6 @@ provider_options = {
         },
     },
 }
-```
-
-</details>
-
-<details>
-<summary>Advanced Customizing</summary>
-
-The `openai_fim_compatible` backend also supports additional customization
-options to accommodate providers with varying API requirements:
-
-- **`header_transform`**: A function that takes the `endpoint`
-  (string) and `headers` (table) as arguments and returns a
-  modified `endpoint` and `headers`. Useful for providers
-  like DeepInfra that require the model name appended to the endpoint URL.
-- **`body_transform`**: A function that takes the request
-  `data` (table) and returns a modified version.
-  This allows renaming or restructuring fields
-  (e.g., renaming `prompt` to `input` for DeepInfra).
-- **`get_text_fn`**: Can now be a table with `stream` and `no_stream` keys,
-  each mapping to a function that extracts text from the provider's
-  JSON response.
-
-Below is an example configuration for using DeepInfra with the
-`Qwen/Qwen2.5-Coder-32B-Instruct` model, demonstrating the advanced
-customization options:
-
-```lua
-openai_fim_compatible = {
-    model = "Qwen/Qwen2.5-Coder-32B-Instruct",
-    end_point = "https://api.deepinfra.com/v1/inference/",
-    api_key = "DEEPINFRA_API_KEY",
-    name = "DeepInfra",
-    stream = true,
-    template = {
-        prompt = function(context_before_cursor, context_after_cursor)
-            return "<|fim_prefix|>"
-                .. context_before_cursor
-                .. "<|fim_suffix|>"
-                .. context_after_cursor
-                .. "<|fim_middle|>"
-        end,
-        suffix = false,
-    },
-    header_transform = function(endpoint, headers)
-        -- Append model name to endpoint as required by DeepInfra
-        return endpoint .. "Qwen/Qwen2.5-Coder-32B-Instruct", headers
-    end,
-    body_transform = function(data)
-        -- DeepInfra expects 'input' instead of 'prompt'
-        return {
-            input = data.prompt,
-            stream = data.stream,
-        }
-    end,
-    get_text_fn = {
-        no_stream = function(json)
-            -- DeepInfra non-streaming response format
-            return json.results[1].generated_text
-        end,
-        stream = function(json)
-            -- DeepInfra streaming response format
-            return json.token.text
-        end,
-    },
-    n_completions = 2, -- Request 2 completions
-},
 ```
 
 </details>

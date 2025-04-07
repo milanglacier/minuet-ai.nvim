@@ -1,3 +1,11 @@
+- [Launching the llama.cpp Server: Example Script](#launching-the-llamacpp-server-example-script) + [**For Systems with More Than 16GB VRAM**](#for-systems-with-more-than-16gb-vram) + [**For Systems with Less Than 16GB VRAM**](#for-systems-with-less-than-16gb-vram) + [**For Systems with Less Than 8GB VRAM**](#for-systems-with-less-than-8gb-vram)
+  - [Example minuet config](#example-minuet-config)
+  - [**Acknowledgment**](#acknowledgment)
+- [Integration with VectorCode](#integration-with-vectorcode)
+  - [Chat LLMs](#chat-llms)
+  - [FIM LLMs](#fim-llms)
+- [Using Non-OpenAI-Compatible FIM APIs with DeepInfra](#using-non-openai-compatible-fim-apis-with-deepinfra)
+
 # Launching the llama.cpp Server: Example Script
 
 This guide provides several configuration variants for the `qwen2.5-coder`
@@ -234,3 +242,60 @@ provider_options = {
 > comprehensive list of prompt structures tailored for various LLMs
 > (Qwen2.5-coder, deepseek-V3, Codestral, StarCoder2, etc.). Utilizing special
 > tokens help the models generate more accurate completions.
+
+# Using Non-OpenAI-Compatible FIM APIs with DeepInfra
+
+The `openai_fim_compatible` backend supports advanced customization to
+seamlessly integrate with alternative providers. The following options are
+available for fine-tuning API interactions:
+
+- **`transform`**: A list of functions that accept a table containing these fields:
+
+  - `end_point`
+  - `headers`
+  - `body`
+    Each function processes and returns a transformed version of these attributes.
+
+- **`get_text_fn`**: Can now be configured as a table with two keys:
+  - `stream` → Function to parse streaming responses.
+  - `no_stream` → Function to extract text from non-streaming responses.
+
+```lua
+openai_fim_compatible = {
+    model = "Qwen/Qwen2.5-Coder-32B-Instruct",
+    end_point = "https://api.deepinfra.com/v1/inference/",
+    api_key = "DEEPINFRA_API_KEY",
+    name = "DeepInfra",
+    stream = true,
+    template = {
+        prompt = function(context_before_cursor, context_after_cursor)
+            return "<|fim_prefix|>"
+                .. context_before_cursor
+                .. "<|fim_suffix|>"
+                .. context_after_cursor
+                .. "<|fim_middle|>"
+        end,
+        suffix = false,
+    },
+    transform = {
+        function(args)
+            args.end_point = args.end_point .. args.body.model
+            args.body = {
+                input = args.body.prompt,
+                stream = args.body.stream,
+            }
+            return args
+        end,
+    },
+    get_text_fn = {
+        no_stream = function(json)
+            -- DeepInfra non-streaming response format
+            return json.results[1].generated_text
+        end,
+        stream = function(json)
+            -- DeepInfra streaming response format
+            return json.token.text
+        end,
+    },
+}
+```
