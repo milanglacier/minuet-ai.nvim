@@ -1,4 +1,7 @@
-- [Launching the llama.cpp Server: Example Script](#launching-the-llamacpp-server-example-script) + [**For Systems with More Than 16GB VRAM**](#for-systems-with-more-than-16gb-vram) + [**For Systems with Less Than 16GB VRAM**](#for-systems-with-less-than-16gb-vram) + [**For Systems with Less Than 8GB VRAM**](#for-systems-with-less-than-8gb-vram)
+- [Launching the llama.cpp Server: Example Script](#launching-the-llamacpp-server-example-script)
+  - [**For Systems with More Than 16GB VRAM**](#for-systems-with-more-than-16gb-vram)
+    - [**For Systems with Less Than 16GB VRAM**](#for-systems-with-less-than-16gb-vram)
+  - [**For Systems with Less Than 8GB VRAM**](#for-systems-with-less-than-8gb-vram)
   - [Example minuet config](#example-minuet-config)
   - [**Acknowledgment**](#acknowledgment)
 - [Integration with VectorCode](#integration-with-vectorcode)
@@ -11,7 +14,7 @@
 This guide provides several configuration variants for the `qwen2.5-coder`
 based on local computing power, specifically the available VRAM.
 
-### **For Systems with More Than 16GB VRAM**
+## **For Systems with More Than 16GB VRAM**
 
 ```bash
 llama-server \
@@ -29,7 +32,7 @@ llama-server \
     --ctx-size 0 --cache-reuse 256
 ```
 
-### **For Systems with Less Than 8GB VRAM**
+## **For Systems with Less Than 8GB VRAM**
 
 ```bash
 llama-server \

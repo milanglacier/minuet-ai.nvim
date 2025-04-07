@@ -23,6 +23,7 @@
   - [Gemini](#gemini)
   - [OpenAI-compatible](#openai-compatible)
   - [OpenAI-FIM-compatible](#openai-fim-compatible)
+    - [Non-OpenAI-FIM-Compatible APIs](#non-openai-fim-compatible-apis)
 - [Commands](#commands)
   - [`Minuet change_provider`, `Minuet change_model`](#minuet-change_provider-minuet-change_model)
   - [`Minuet change_preset`](#minuet-change_preset)
@@ -881,9 +882,6 @@ For example, you can set the `end_point` to
 `http://localhost:11434/v1/completions` to use `ollama`,
 `http://localhost:8012/v1/completions` to use `llama.cpp`.
 
-For additional guidance on configuring DeepInfra and other non-OpenAI
-compatible FIM APIs, please consult [recipes.md](recipes.md).
-
 Cmdline completion is available for models supported by these providers:
 `deepseek`, `ollama`, and `siliconflow`.
 
@@ -948,6 +946,12 @@ provider_options = {
 ```
 
 </details>
+
+### Non-OpenAI-FIM-Compatible APIs
+
+For providers like **DeepInfra FIM**
+(`https://api.deepinfra.com/v1/inference/`), refer to
+[recipes.md](./recipes.md) for advanced configuration instructions.
 
 # Commands
 
