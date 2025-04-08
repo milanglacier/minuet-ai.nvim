@@ -44,9 +44,9 @@ M.complete = function(context, callback)
 
     local get_text_fn = M.get_text_fn
 
-    if options.get_text_fn.stream then
+    if options.get_text_fn.stream and options.stream then
         get_text_fn = options.get_text_fn.stream
-    elseif options.get_text_fn.no_stream then
+    elseif options.get_text_fn.no_stream and not options.stream then
         get_text_fn = options.get_text_fn.no_stream
     end
 
