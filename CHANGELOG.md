@@ -105,7 +105,3 @@
 # Version 0.1 (2025-02-02)
 
 - Initial release
-
-```
-
-```
