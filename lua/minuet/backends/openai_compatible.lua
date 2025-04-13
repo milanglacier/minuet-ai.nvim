@@ -1,4 +1,4 @@
-local common = require 'minuet.backends.common'
+local base = require 'minuet.backends.openai_base'
 local utils = require 'minuet.utils'
 
 local M = {}
@@ -33,7 +33,7 @@ end
 M.complete = function(context, callback)
     local config = require('minuet').config
     local options = vim.deepcopy(config.provider_options.openai_compatible)
-    common.complete_openai_base(options, context, callback)
+    base.complete_openai_base(options, context, callback)
 end
 
 return M

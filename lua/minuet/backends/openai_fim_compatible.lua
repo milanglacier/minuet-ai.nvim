@@ -1,4 +1,4 @@
-local common = require 'minuet.backends.common'
+local base = require 'minuet.backends.openai_base'
 local utils = require 'minuet.utils'
 
 local M = {}
@@ -50,7 +50,7 @@ M.complete = function(context, callback)
         get_text_fn = options.get_text_fn.no_stream
     end
 
-    common.complete_openai_fim_base(options, get_text_fn, context, callback)
+    base.complete_openai_fim_base(options, get_text_fn, context, callback)
 end
 
 return M

@@ -1,4 +1,4 @@
-local common = require 'minuet.backends.common'
+local base = require 'minuet.backends.openai_base'
 local utils = require 'minuet.utils'
 
 local M = {}
@@ -18,7 +18,7 @@ M.complete = function(context, callback)
     options.name = 'OpenAI'
     options.end_point = 'https://api.openai.com/v1/chat/completions'
 
-    common.complete_openai_base(options, context, callback)
+    base.complete_openai_base(options, context, callback)
 end
 
 return M
