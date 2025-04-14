@@ -10,6 +10,9 @@ M.models = {
         'o1',
         'o1-mini',
         'o3-mini',
+        'gpt-4.1',
+        'gpt-4.1-mini',
+        'gpt-4.1-nano',
     },
     claude = {
         'claude-3-5-sonnet-20241022',
@@ -33,6 +36,9 @@ M.models = {
     openai_compatible = {
         openrouter = {
             'deepseek/deepseek-chat-v3-0324',
+            'openai/gpt-4.1',
+            'openai/gpt-4.1-mini',
+            'openai/gpt-4.1-nano',
             'openai/gpt-4o',
             'openai/gpt-4o-search-preview',
             'openai/chatgpt-4o-latest',

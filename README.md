@@ -682,7 +682,7 @@ the following is the default configuration for OpenAI:
 ```lua
 provider_options = {
     openai = {
-        model = 'gpt-4o-mini',
+        model = 'gpt-4.1-mini',
         system = "see [Prompt] section for the default value",
         few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",

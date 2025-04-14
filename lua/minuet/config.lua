@@ -295,7 +295,7 @@ M.provider_options = {
         get_text_fn = {},
     },
     openai = {
-        model = 'gpt-4o-mini',
+        model = 'gpt-4.1-mini',
         api_key = 'OPENAI_API_KEY',
         system = M.default_system,
         few_shots = M.default_few_shots,
