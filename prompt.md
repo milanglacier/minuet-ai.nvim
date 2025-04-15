@@ -204,6 +204,12 @@ be customized as follows:
 {{{context_after_cursor}}}
 ```
 
+The chat input template can be provided either as a single string or as **a
+list of strings**. If supplied as a list, each string will be expanded using
+the template and its components. The resulting list will then be transformed
+into a multi-turn conversation, with roles alternating between `user` and
+`assistant`.
+
 Components:
 
 - `language`: The programming language user is working on

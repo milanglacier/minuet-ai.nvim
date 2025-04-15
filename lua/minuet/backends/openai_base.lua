@@ -1,5 +1,5 @@
 local M = {}
-local common = require('minuet.backends.common')
+local common = require 'minuet.backends.common'
 local utils = require 'minuet.utils'
 local Job = require 'plenary.job'
 
@@ -17,13 +17,18 @@ function M.complete_openai_base(options, context, callback)
     common.terminate_all_jobs()
 
     local ctx = utils.make_chat_llm_shot(context, options.chat_input)
+    if type(ctx) == 'string' then
+        ctx = common.create_chat_messages_from_list { ctx }
+    else
+        ctx = common.create_chat_messages_from_list(ctx)
+    end
 
     local few_shots = vim.deepcopy(utils.get_or_eval_value(options.few_shots))
 
     local system = utils.make_system_prompt(options.system, config.n_completions)
 
     table.insert(few_shots, 1, { role = 'system', content = system })
-    table.insert(few_shots, { role = 'user', content = ctx })
+    vim.list_extend(few_shots, ctx)
 
     local data = {
         model = options.model,
@@ -208,6 +213,5 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
         })
     end
 end
-
 
 return M

@@ -359,8 +359,14 @@ function M.prepend_to_complete_word(a, b)
     return a
 end
 
+---@param context table
+---@param template table
+---@return string|string[]
 function M.make_chat_llm_shot(context, template)
-    local input = template.template
+    local inputs = template.template
+    if type(inputs) == 'string' then
+        inputs = { inputs }
+    end
     local parts = {}
     local last_pos = 1
     local context_before_cursor = context.lines_before
@@ -369,33 +375,41 @@ function M.make_chat_llm_shot(context, template)
 
     -- Store the template value before clearing it
     template.template = nil
+    local results = {}
 
-    while true do
-        local start_pos, end_pos = input:find('{{{.-}}}', last_pos)
-        if not start_pos then
-            -- Add the remaining part of the string
-            table.insert(parts, input:sub(last_pos))
-            break
+    for _, input in ipairs(inputs) do
+        while true do
+            local start_pos, end_pos = input:find('{{{.-}}}', last_pos)
+            if not start_pos then
+                -- Add the remaining part of the string
+                table.insert(parts, input:sub(last_pos))
+                break
+            end
+
+            -- Add the text before the placeholder
+            table.insert(parts, input:sub(last_pos, start_pos - 1))
+
+            -- Extract placeholder key
+            local key = input:sub(start_pos + 3, end_pos - 3)
+
+            -- Get the replacement value if it exists
+            if template[key] then
+                local value = template[key](context_before_cursor, context_after_cursor, opts)
+                table.insert(parts, value)
+            end
+
+            last_pos = end_pos + 1
         end
 
-        -- Add the text before the placeholder
-        table.insert(parts, input:sub(last_pos, start_pos - 1))
-
-        -- Extract placeholder key
-        local key = input:sub(start_pos + 3, end_pos - 3)
-
-        -- Get the replacement value if it exists
-        if template[key] then
-            local value = template[key](context_before_cursor, context_after_cursor, opts)
-            table.insert(parts, value)
-        end
-
-        last_pos = end_pos + 1
+        local result = table.concat(parts)
+        table.insert(results, result)
     end
 
-    local result = table.concat(parts)
+    if #results == 1 then
+        results = results[1]
+    end
 
-    return result
+    return results
 end
 
 function M.no_stream_decode(response, exit_code, data_file, provider, get_text_fn)

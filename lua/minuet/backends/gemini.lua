@@ -17,31 +17,37 @@ function M.get_text_fn(json)
     return json.candidates[1].content.parts[1].text
 end
 
+function M.transform_openai_chat_to_gemini_chat(chat)
+    local new_chat = {}
+    for _, message in ipairs(chat) do
+        local gemini_message = {}
+        if message.role == 'user' then
+            gemini_message = {
+                role = 'user',
+                parts = {
+                    { text = message.content },
+                },
+            }
+        elseif message.role == 'assistant' then
+            gemini_message = {
+                role = 'model',
+                parts = {
+                    { text = message.content },
+                },
+            }
+        end
+        table.insert(new_chat, gemini_message)
+    end
+    return new_chat
+end
+
 local function make_request_data()
     local config = require('minuet').config
     local options = vim.deepcopy(config.provider_options.gemini)
 
-    local contents = {}
-
     local few_shots = utils.get_or_eval_value(options.few_shots)
 
-    for _, shot in ipairs(few_shots) do
-        if shot.role == 'user' then
-            table.insert(contents, {
-                role = 'user',
-                parts = {
-                    { text = shot.content },
-                },
-            })
-        elseif shot.role == 'assistant' then
-            table.insert(contents, {
-                role = 'model',
-                parts = {
-                    { text = shot.content },
-                },
-            })
-        end
-    end
+    few_shots = M.transform_openai_chat_to_gemini_chat(few_shots)
 
     local system = utils.make_system_prompt(options.system, config.n_completions)
 
@@ -51,7 +57,7 @@ local function make_request_data()
                 text = system,
             },
         },
-        contents = contents,
+        contents = few_shots,
     }
 
     request_data = vim.tbl_deep_extend('force', request_data, options.optional or {})
@@ -66,12 +72,15 @@ function M.complete(context, callback)
 
     local ctx = utils.make_chat_llm_shot(context, options.chat_input)
 
-    table.insert(data.contents, {
-        role = 'user',
-        parts = {
-            { text = ctx },
-        },
-    })
+    if type(ctx) == 'string' then
+        ctx = common.create_chat_messages_from_list { ctx }
+    else
+        ctx = common.create_chat_messages_from_list(ctx)
+    end
+
+    ctx = M.transform_openai_chat_to_gemini_chat(ctx)
+
+    vim.list_extend(data.contents, ctx)
 
     local data_file = utils.make_tmp_file(data)
 

@@ -72,4 +72,15 @@ function M.filter_context_sequences_in_items(items, context)
     return items
 end
 
+---@param str_list string[]
+---@return table
+function M.create_chat_messages_from_list(str_list)
+    local result = {}
+    local roles = { 'user', 'assistant' }
+    for i, content in ipairs(str_list) do
+        table.insert(result, { role = roles[(i - 1) % 2 + 1], content = content })
+    end
+    return result
+end
+
 return M
