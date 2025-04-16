@@ -17,11 +17,7 @@ function M.complete_openai_base(options, context, callback)
     common.terminate_all_jobs()
 
     local ctx = utils.make_chat_llm_shot(context, options.chat_input)
-    if type(ctx) == 'string' then
-        ctx = common.create_chat_messages_from_list { ctx }
-    else
-        ctx = common.create_chat_messages_from_list(ctx)
-    end
+    ctx = common.create_chat_messages_from_list(ctx)
 
     local few_shots = vim.deepcopy(utils.get_or_eval_value(options.few_shots))
 

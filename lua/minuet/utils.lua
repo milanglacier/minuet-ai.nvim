@@ -361,7 +361,7 @@ end
 
 ---@param context table
 ---@param template table
----@return string|string[]
+---@return string[]
 function M.make_chat_llm_shot(context, template)
     local inputs = template.template
     if type(inputs) == 'string' then
@@ -403,10 +403,6 @@ function M.make_chat_llm_shot(context, template)
 
         local result = table.concat(parts)
         table.insert(results, result)
-    end
-
-    if #results == 1 then
-        results = results[1]
     end
 
     return results

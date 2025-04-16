@@ -71,13 +71,7 @@ function M.complete(context, callback)
     local options, data = make_request_data()
 
     local ctx = utils.make_chat_llm_shot(context, options.chat_input)
-
-    if type(ctx) == 'string' then
-        ctx = common.create_chat_messages_from_list { ctx }
-    else
-        ctx = common.create_chat_messages_from_list(ctx)
-    end
-
+    ctx = common.create_chat_messages_from_list(ctx)
     ctx = M.transform_openai_chat_to_gemini_chat(ctx)
 
     vim.list_extend(data.contents, ctx)
