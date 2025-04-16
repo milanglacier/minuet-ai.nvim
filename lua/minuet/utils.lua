@@ -358,6 +358,7 @@ function M.prepend_to_complete_word(a, b)
 
     return a
 end
+JAMES = {}
 
 ---@param context table
 ---@param template table
@@ -367,8 +368,6 @@ function M.make_chat_llm_shot(context, template)
     if type(inputs) == 'string' then
         inputs = { inputs }
     end
-    local parts = {}
-    local last_pos = 1
     local context_before_cursor = context.lines_before
     local context_after_cursor = context.lines_after
     local opts = context.opts
@@ -378,6 +377,8 @@ function M.make_chat_llm_shot(context, template)
     local results = {}
 
     for _, input in ipairs(inputs) do
+        local parts = {}
+        local last_pos = 1
         while true do
             local start_pos, end_pos = input:find('{{{.-}}}', last_pos)
             if not start_pos then
