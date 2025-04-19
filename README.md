@@ -1102,7 +1102,7 @@ The Minuet LSP command provides commands for managing the in-process LSP server:
 
 Minuet provides a Lualine component that displays the current status of Minuet requests. This component shows:
 
-- The name of the active provider and model
+- The name of the active provider and/or model
 - The current request count (e.g., "1/3")
 - An animated spinner while processing
 
