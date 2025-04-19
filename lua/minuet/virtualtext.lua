@@ -154,7 +154,7 @@ local function update_preview(ctx)
         extmark.virt_text[1][1] = extmark.virt_text[1][1] .. ' ' .. annot
     end
 
-    extmark.hl_mode = 'combine'
+    extmark.hl_mode = 'replace'
 
     api.nvim_buf_set_extmark(0, internal.ns_id, cursor_line - 1, cursor_col - 1, extmark)
 
