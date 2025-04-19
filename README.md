@@ -8,7 +8,7 @@
   - [Blink-cmp Setup](#blink-cmp-setup)
   - [Built-in Completion, Mini.Completion, and LSP Setup](#built-in-completion-minicompletion-and-lsp-setup)
   - [LLM Provider Examples](#llm-provider-examples)
-    - [Openrouter Qwen2.5 32B Instruct](#openrouter-qwen25-32b-instruct)
+    - [Openrouter Deepseek-V3-0324](#openrouter-deepseek-v3-0324)
     - [Deepseek](#deepseek)
     - [Ollama Qwen-2.5-coder:7b](#ollama-qwen-25-coder7b)
     - [Llama.cpp Qwen-2.5-coder:1.5b](#llamacpp-qwen-25-coder15b)
@@ -298,7 +298,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 ## LLM Provider Examples
 
-### Openrouter Qwen2.5 32B Instruct
+### Openrouter Deepseek-V3-0324
 
 <details>
 
@@ -312,10 +312,10 @@ require('minuet').setup {
         openai_compatible = {
             api_key = 'OPENROUTER_API_KEY',
             end_point = 'https://openrouter.ai/api/v1/chat/completions',
-            model = 'qwen/qwen2.5-32b-instruct',
+            model = 'deepseek/deepseek-chat-v3-0324',
             name = 'Openrouter',
             optional = {
-                max_tokens = 128,
+                max_tokens = 56,
                 top_p = 0.9,
                 provider = {
                      -- Prioritize throughput for faster completion

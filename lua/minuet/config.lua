@@ -319,7 +319,7 @@ M.provider_options = {
         },
     },
     openai_compatible = {
-        model = 'qwen/qwen2.5-32b-instruct',
+        model = 'deepseek/deepseek-chat-v3-0324',
         system = M.default_system,
         chat_input = M.default_chat_input,
         few_shots = M.default_few_shots,
