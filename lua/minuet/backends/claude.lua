@@ -70,6 +70,7 @@ M.complete = function(context, callback)
     utils.run_event('MinuetRequestStartedPre', {
         provider = provider_name,
         name = provider_name,
+        model = options.model,
         n_requests = 1,
         timestamp = timestamp,
     })
@@ -83,6 +84,7 @@ M.complete = function(context, callback)
             utils.run_event('MinuetRequestFinished', {
                 provider = provider_name,
                 name = provider_name,
+                model = options.model,
                 n_requests = 1,
                 request_idx = 1,
                 timestamp = timestamp,
@@ -117,6 +119,7 @@ M.complete = function(context, callback)
     utils.run_event('MinuetRequestStarted', {
         provider = provider_name,
         name = options.name,
+        model = options.model,
         n_requests = 1,
         request_idx = 1,
         timestamp = timestamp,
