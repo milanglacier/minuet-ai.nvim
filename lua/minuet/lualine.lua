@@ -65,7 +65,7 @@ function M:update_status()
         local request = string.format('%s: %s/%s', self.name, self.n_finished_requests + 1, self.n_requests)
         return request .. ' ' .. spinner_symbols[self.spinner_index]
     else
-        return nil
+        return self.name
     end
 end
 
