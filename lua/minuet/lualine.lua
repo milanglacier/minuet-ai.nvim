@@ -79,7 +79,7 @@ end
 function M:update_status()
     if self.processing then
         self.spinner_index = (self.spinner_index % self.spinner_symbols_len) + 1
-        local request = string.format('%s: %s/%s', self.display_name, self.n_finished_requests + 1, self.n_requests)
+        local request = string.format('%s (%s/%s)', self.display_name, self.n_finished_requests + 1, self.n_requests)
         return request .. ' ' .. self.options.spinner_symbols[self.spinner_index]
     else
         return self.display_name
