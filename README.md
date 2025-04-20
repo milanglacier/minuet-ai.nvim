@@ -1107,7 +1107,7 @@ The Minuet LSP command provides commands for managing the in-process LSP server:
 
 Minuet provides a Lualine component that displays the current status of Minuet requests. This component shows:
 
-- The name of the active provider
+- The name of the active provider and/or model
 - The current request count (e.g., "1/3")
 - An animated spinner while processing
 
@@ -1117,7 +1117,17 @@ To use the Minuet Lualine component, add it to your Lualine configuration:
 require('lualine').setup {
   sections = {
     lualine_x = {
-      require('minuet.lualine'),
+    {
+      require("minuet.lualine"),
+      -- the symbols that are used to create spinner animation
+      spinner_symbols = {
+        '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏',
+      },
+      -- the name displayed in the lualine. Set to "provider", "model" or "both"
+      display_name = 'both',
+      -- separator between provider and model name for option "both"
+      provider_model_separator = ':',
+    }
       'encoding',
       'fileformat',
       'filetype',
