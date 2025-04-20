@@ -1113,7 +1113,7 @@ require('lualine').setup {
   sections = {
     lualine_x = {
     {
-      require("minuet-ai.lualine"),
+      require("minuet.lualine"),
       -- the symbols that are used to create spinner animation
       spinner_symbols = {
         '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏',
