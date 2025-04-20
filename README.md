@@ -1112,7 +1112,17 @@ To use the Minuet Lualine component, add it to your Lualine configuration:
 require('lualine').setup {
   sections = {
     lualine_x = {
-      require('minuet.lualine'),
+    {
+      require("minuet-ai.lualine"),
+      -- the symbols that are used to create spinner animation
+      spinner_symbols = {
+        '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏',
+      },
+      -- the name displayed in the lualine. Set to "provider", "model" or "both"
+      display_name = 'both',
+      -- separator between provider and model name for option "both"
+      provider_model_separator = ':',
+    }
       'encoding',
       'fileformat',
       'filetype',
