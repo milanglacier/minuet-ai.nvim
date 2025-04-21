@@ -52,6 +52,7 @@ function M.complete_openai_base(options, context, callback)
     utils.run_event('MinuetRequestStartedPre', {
         provider = provider_name,
         name = options.name,
+        model = options.model,
         n_requests = 1,
         timestamp = timestamp,
     })
@@ -64,6 +65,7 @@ function M.complete_openai_base(options, context, callback)
 
             utils.run_event('MinuetRequestFinished', {
                 provider = provider_name,
+                model = options.model,
                 name = options.name,
                 n_requests = 1,
                 request_idx = 1,
@@ -100,6 +102,7 @@ function M.complete_openai_base(options, context, callback)
     utils.run_event('MinuetRequestStarted', {
         provider = provider_name,
         name = options.name,
+        model = options.model,
         n_requests = 1,
         request_idx = 1,
         timestamp = timestamp,
@@ -159,6 +162,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     utils.run_event('MinuetRequestStartedPre', {
         provider = provider_name,
         name = options.name,
+        model = options.model,
         n_requests = n_completions,
         timestamp = timestamp,
     })
@@ -173,6 +177,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                 utils.run_event('MinuetRequestFinished', {
                     provider = provider_name,
                     name = options.name,
+                    model = options.model,
                     n_requests = n_completions,
                     request_idx = idx,
                     timestamp = timestamp,
@@ -203,6 +208,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
         utils.run_event('MinuetRequestStarted', {
             provider = provider_name,
             name = options.name,
+            model = options.model,
             n_requests = n_completions,
             request_idx = idx,
             timestamp = timestamp,
