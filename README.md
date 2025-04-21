@@ -1107,34 +1107,37 @@ The Minuet LSP command provides commands for managing the in-process LSP server:
 
 Minuet provides a Lualine component that displays the current status of Minuet requests. This component shows:
 
-- The name of the active provider and/or model
+- The name of the active provider and model
 - The current request count (e.g., "1/3")
 - An animated spinner while processing
 
 To use the Minuet Lualine component, add it to your Lualine configuration:
 
+<details>
+
 ```lua
 require('lualine').setup {
-  sections = {
-    lualine_x = {
-    {
-      require("minuet.lualine"),
-      -- the symbols that are used to create spinner animation
-      spinner_symbols = {
-        '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏',
-      },
-      -- the name displayed in the lualine. Set to "provider", "model" or "both"
-      display_name = 'both',
-      -- separator between provider and model name for option "both"
-      provider_model_separator = ':',
-    }
-      'encoding',
-      'fileformat',
-      'filetype',
+    sections = {
+        lualine_x = {
+            {
+                require 'minuet.lualine',
+                -- the follwing is the default configuration
+                -- the name displayed in the lualine. Set to "provider", "model" or "both"
+                -- display_name = 'both',
+                -- separator between provider and model name for option "both"
+                -- provider_model_separator = ':',
+                -- whether show display_name when no completion requests are active
+                -- display_on_idle = false,
+            },
+            'encoding',
+            'fileformat',
+            'filetype',
+        },
     },
-  },
 }
 ```
+
+</details>
 
 ## Minuet Event
 
@@ -1153,6 +1156,7 @@ Each event includes a `data` field containing the following properties:
   'openai_compatible').
 - `name`: A string specifying the provider's name (e.g., 'OpenAI', 'Groq',
   'Ollama').
+- `model`: A string containing the model name (e.g., 'gemini-2.0-flash').
 - `n_requests`: The number of requests encompassed in this completion cycle.
 - `request_idx` (optional): The index of the current request, applicable when
   providers make multiple requests.

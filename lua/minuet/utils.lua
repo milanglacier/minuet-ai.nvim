@@ -542,6 +542,7 @@ end
 ---@class minuet.EventData
 ---@field provider string the name of the provider
 ---@field name string the name of the subprovider for openai-compatible and openai-fim-compatible
+---@field model string the model name used during this event
 ---@field n_requests number the number of requests launched during this event
 ---@field request_idx? number the index of the current request
 ---@field timestamp number the timestamp of the event at MminuetRequestStartedPre

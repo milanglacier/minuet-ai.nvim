@@ -25,6 +25,8 @@ local default_options = {
     display_name = 'both',
     -- separator between provider and model name for option "both"
     provider_model_separator = ':',
+    -- whether show display_name when no completion requests are active
+    display_on_idle = false,
 }
 
 -- Initializer
@@ -45,6 +47,7 @@ function M:init(options)
             self.n_finished_requests = 0
             self.provider = data.name
             self.model = data.model
+
             if self.options.display_name == 'model' then
                 self.display_name = self.model
             elseif self.options.display_name == 'provider' then
@@ -82,7 +85,7 @@ function M:update_status()
         local request = string.format('%s (%s/%s)', self.display_name, self.n_finished_requests + 1, self.n_requests)
         return request .. ' ' .. self.options.spinner_symbols[self.spinner_index]
     else
-        return self.display_name
+        return self.options.display_on_idle and self.display_name or nil
     end
 end
 
