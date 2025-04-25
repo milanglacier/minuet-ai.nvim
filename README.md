@@ -385,6 +385,8 @@ require('minuet').setup {
     context_window = 512,
     provider_options = {
         openai_fim_compatible = {
+            -- For Windows users, TERM may not be present in environment variables.
+            -- Consider using APPDATA instead.
             api_key = 'TERM',
             name = 'Ollama',
             end_point = 'http://localhost:11434/v1/completions',
@@ -428,6 +430,8 @@ require('minuet').setup {
     context_window = 512,
     provider_options = {
         openai_fim_compatible = {
+            -- For Windows users, TERM may not be present in environment variables.
+            -- Consider using APPDATA instead.
             api_key = 'TERM',
             name = 'Llama.cpp',
             end_point = 'http://localhost:8012/v1/completions',
