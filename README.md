@@ -13,6 +13,7 @@
     - [Ollama Qwen-2.5-coder:7b](#ollama-qwen-25-coder7b)
     - [Llama.cpp Qwen-2.5-coder:1.5b](#llamacpp-qwen-25-coder15b)
 - [Selecting a Provider or Model](#selecting-a-provider-or-model)
+  - [Understanding Model Speed](#understanding-model-speed)
 - [Configuration](#configuration)
 - [API Keys](#api-keys)
 - [Prompt](#prompt)
@@ -482,6 +483,28 @@ Ollama using the `openai-fim-compatible` provider.
 As of January 28, 2025: Due to high server demand, Deepseek users may
 experience significant response delays or timeout. We recommend trying
 alternative providers instead.
+
+## Understanding Model Speed
+
+For cloud-based providers,
+[Openrouter](https://openrouter.ai/google/gemini-2.0-flash-001/providers)
+offers a valuable resource for comparing the speed of both closed-source and
+open-source models hosted by various cloud inference providers.
+
+When assessing model speed via Openrouter, two key metrics are latency (time to
+first token) and throughput (tokens per second). Latency is often a more
+critical factor than throughput.
+
+Ideally, one would aim for a latency of less than 1 second and a throughput
+exceeding 100 tokens per second.
+
+For local LLM,
+[llama.cpp#4167](https://github.com/ggml-org/llama.cpp/discussions/4167)
+provides valuable data on model speed for 7B models running on Apple M-series
+chips. The two crucial metrics are `Q4_0 PP [t/s]`, which measures latency
+(tokens per second to process the KV cache, equivalent to the time to generate
+the first token), and `Q4_0 TG [t/s]`, which indicates the tokens per second
+generation speed.
 
 # Configuration
 
