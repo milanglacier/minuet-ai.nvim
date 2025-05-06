@@ -491,9 +491,9 @@ For cloud-based providers,
 offers a valuable resource for comparing the speed of both closed-source and
 open-source models hosted by various cloud inference providers.
 
-When assessing model speed via Openrouter, two key metrics are latency (time to
-first token) and throughput (tokens per second). Latency is often a more
-critical factor than throughput.
+When assessing model speed, two key metrics are latency (time to first token)
+and throughput (tokens per second). Latency is often a more critical factor
+than throughput.
 
 Ideally, one would aim for a latency of less than 1 second and a throughput
 exceeding 100 tokens per second.
