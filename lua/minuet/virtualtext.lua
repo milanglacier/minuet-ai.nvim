@@ -348,7 +348,7 @@ function accept_word_extract_portion(suggestion)
     if suggestion:match '^%s*\n' then
         text_to_accept = suggestion:match '^(%s*\n)'
     else
-        text_to_accept = suggestion:match '^(%S+%s*)'
+        text_to_accept = suggestion:match '^([%w]+[%p]?%s*)' or suggestion:match '^(%S+%s*)'
         if not text_to_accept or #text_to_accept == 0 then
             text_to_accept = suggestion
         end
