@@ -3,6 +3,7 @@ local M = {}
 local utils = require 'minuet.utils'
 local api = vim.api
 local uv = vim.uv or vim.loop
+local last_cursor_position = api.nvim_win_get_cursor(0)
 
 M.ns_id = api.nvim_create_namespace 'minuet.virtualtext'
 M.augroup = api.nvim_create_augroup('MinuetVirtualText', { clear = true })
@@ -24,6 +25,23 @@ local internal = {
 
 local function should_auto_trigger()
     return vim.b.minuet_virtual_text_auto_trigger
+end
+
+local function last_typed_text()
+    local last_typed = nil
+    local current_position = api.nvim_win_get_cursor(0)
+
+    -- Convert 1-based line to 0-based for nvim_buf_get_text
+    local start_row = last_cursor_position[1] - 1
+    local start_col = last_cursor_position[2]
+    local end_row = current_position[1] - 1
+    local end_col = current_position[2]
+
+    if start_row <= end_row and start_col <= end_col then
+        last_typed = api.nvim_buf_get_text(0, start_row, start_col, end_row, end_col, {})
+    end
+
+    return last_typed
 end
 
 local function completion_menu_visible()
@@ -161,6 +179,8 @@ local function update_preview(ctx)
     if not ctx.shown_choices[suggestion] then
         ctx.shown_choices[suggestion] = true
     end
+
+    last_cursor_position = api.nvim_win_get_cursor(0)
 end
 
 ---@param ctx? minuet_suggestions_context
@@ -396,6 +416,21 @@ end
 
 function autocmd.on_cursor_moved_i()
     local ctx = get_ctx()
+    local last_change = last_typed_text()
+
+    if
+        ctx
+        and ctx.suggestions
+        and last_change
+        and #last_change == 1
+        and #last_change[1] > 0
+        and last_change[1] == ctx.suggestions[ctx.choice]:sub(1, #last_change[1])
+    then
+        ctx.suggestions[ctx.choice] = ctx.suggestions[ctx.choice]:sub(#last_change[1] + 1, -1)
+        update_preview()
+
+        return
+    end
     -- we don't cleanup immediately if the completion has arrived but not
     -- display yet.
     if ctx.shown_choices and next(ctx.shown_choices) then
