@@ -307,9 +307,9 @@ function action.accept(n_lines)
     vim.schedule_wrap(function()
         api.nvim_buf_set_text(0, line, col, line, col, suggestions)
         if #suggestions == 1 then
-           -- move cursor to end of inserted suggestion
-            local new_col = col + #suggestions[1]
-            api.nvim_win_set_cursor(0, {line + 1, new_col})
+            -- move cursor to end of inserted suggestion
+            local new_col = col + vim.fn.strcharlen(suggestions[1])
+            api.nvim_win_set_cursor(0, { line + 1, new_col })
         else
             -- move cursor to the end of inserted text
             api.nvim_feedkeys(string.rep(down_key, #suggestions - 1), 'n', false)
