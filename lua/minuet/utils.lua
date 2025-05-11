@@ -358,7 +358,6 @@ function M.prepend_to_complete_word(a, b)
 
     return a
 end
-JAMES = {}
 
 ---@param context table
 ---@param template table
