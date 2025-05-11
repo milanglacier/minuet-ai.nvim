@@ -359,6 +359,31 @@ function M.prepend_to_complete_word(a, b)
     return a
 end
 
+---Adjust indentation of lines based on direction
+---@param lines string The string containing the lines to adjust
+---@param indentation string The indentation string to add or remove
+---@param direction "+" | "-" "+" for adding, "-" for removing
+---@return string Lines Adjusted lines
+function M.adjust_indentation(lines, indentation, direction)
+    ---@diagnostic disable-next-line:cast-local-type
+    lines = vim.split(lines, '\n')
+    local new_lines = {}
+
+    for _, line in ipairs(lines) do
+        if direction == '+' then
+            table.insert(new_lines, indentation .. line)
+        elseif direction == '-' then
+            -- Remove indentation if it exists at the start of the line
+            if line:sub(1, #indentation) == indentation then
+                line = line:sub(#indentation + 1)
+            end
+            table.insert(new_lines, line)
+        end
+    end
+
+    return table.concat(new_lines, '\n')
+end
+
 ---@param context table
 ---@param template table
 ---@return string[]
