@@ -543,6 +543,9 @@ default_config = {
         -- if true, when the user is using blink or nvim-cmp, warn the user
         -- that they should use the native source instead.
         warn_on_blink_or_cmp = true,
+        -- See README section [Built-in Completion, Mini.Completion, and LSP
+        -- Setup] for more details on this option.
+        adjust_indentation = true,
     },
     virtualtext = {
         -- Specify the filetypes to enable automatic virtual text completion,
