@@ -61,6 +61,10 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
         local context = utils.get_context(ctx)
         utils.notify('Minuet completion started', 'verbose')
 
+        -- get the current line's indentation level for use in
+        -- `adjust_indentation`
+        local indentation = ctx.cursor_before_line:match '^%s*'
+
         local provider = require('minuet.backends.' .. config.provider)
 
         provider.complete(context, function(data)
@@ -72,7 +76,13 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
             -- The `blink.lua` comments explain the rationale for invoking
             -- `prepend_to_complete_word`.
             data = vim.tbl_map(function(item)
-                return utils.prepend_to_complete_word(item, context.lines_before)
+                if config.lsp.adjust_indentation then
+                    -- FIXME: Refer to [neovim/neovim#32972] for the rationale behind this
+                    -- operation.
+                    item = utils.adjust_indentation(item, indentation, '-')
+                end
+                item = utils.prepend_to_complete_word(item, context.lines_before)
+                return item
             end, data)
 
             if config.add_single_line_entry then

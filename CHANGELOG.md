@@ -1,3 +1,16 @@
+# Version 0.5.2 (2025-05-11)
+
+## Features
+
+- lsp: add option `adjust_indentation` for completion items.
+- lualine: display provider and model name.
+- chat input template can be a list of strings.
+
+## Fixes
+
+- Cursor Position: Put cursor at correct position when accepting single-line
+  virtual text completion.
+
 # Version 0.5.1 (2025-04-08)
 
 ## Features

@@ -257,7 +257,12 @@ source rather than through LSP for two main reasons:
 here](https://github.com/neovim/neovim/issues/32972)) may cause unexpected
 indentation behavior when accepting multi-line completions.
 
-Therefore, consider the following options:
+Currently, Minuet offers the config option `config.lsp.adjust_indentation`
+(enabled by default) as a temporary workaround. However, the author
+acknowledges that this solution is incomplete and may introduce additional edge
+cases when enabled.
+
+Therefore, consider the following practices when using built-in completion:
 
 1. Ensure `config.add_single_line_entry = true` and only accept single-line completions.
 2. Avoid using Minuet and built-in completion with languages where indentation
@@ -538,6 +543,9 @@ default_config = {
         -- if true, when the user is using blink or nvim-cmp, warn the user
         -- that they should use the native source instead.
         warn_on_blink_or_cmp = true,
+        -- See README section [Built-in Completion, Mini.Completion, and LSP
+        -- Setup] for more details on this option.
+        adjust_indentation = true,
     },
     virtualtext = {
         -- Specify the filetypes to enable automatic virtual text completion,
