@@ -185,6 +185,7 @@ local M = {
         auto_trigger_ignore_ft = {},
         keymap = {
             accept = nil,
+            accept_word = nil,
             accept_line = nil,
             -- accept n lines (prompts for number)
             accept_n_lines = nil,
