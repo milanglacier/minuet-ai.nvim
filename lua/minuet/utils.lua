@@ -361,10 +361,12 @@ end
 
 ---Adjust indentation of lines based on direction
 ---@param lines string The string containing the lines to adjust
----@param indentation string The indentation string to add or remove
+---@param ref_line string The reference line used to adjust identation
 ---@param direction "+" | "-" "+" for adding, "-" for removing
 ---@return string Lines Adjusted lines
-function M.adjust_indentation(lines, indentation, direction)
+function M.adjust_indentation(lines, ref_line, direction)
+    local indentation = string.match(ref_line or '', '^%s*') or ''
+
     ---@diagnostic disable-next-line:cast-local-type
     lines = vim.split(lines, '\n')
     local new_lines = {}
@@ -374,8 +376,8 @@ function M.adjust_indentation(lines, indentation, direction)
             table.insert(new_lines, indentation .. line)
         elseif direction == '-' then
             -- Remove indentation if it exists at the start of the line
-            if line:sub(1, #indentation) == indentation then
-                line = line:sub(#indentation + 1)
+            if line:sub(1, #ref_line) == indentation then
+                line = line:sub(#ref_line + 1)
             end
             table.insert(new_lines, line)
         end
