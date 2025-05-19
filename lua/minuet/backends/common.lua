@@ -26,7 +26,7 @@ end
 
 ---@param pid number
 local function terminate_job(pid)
-    if not uv.kill(pid, 15) then -- SIGTERM
+    if not uv.kill(pid, 'sigterm') then
         utils.notify('Failed to terminate completion job ' .. pid, 'warn', vim.log.levels.WARN)
         return false
     end
