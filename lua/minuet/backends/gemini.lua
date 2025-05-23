@@ -84,7 +84,8 @@ function M.complete(context, callback)
     end
 
     local end_point = string.format(
-        'https://generativelanguage.googleapis.com/v1beta/models/%s:%skey=%s',
+        '%s/%s:%skey=%s',
+        options.end_point,
         options.model,
         options.stream and 'streamGenerateContent?alt=sse&' or 'generateContent?',
         utils.get_api_key(options.api_key)

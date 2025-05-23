@@ -62,7 +62,7 @@ M.complete = function(context, callback)
         ['x-api-key'] = utils.get_api_key(options.api_key),
         ['anthropic-version'] = '2023-06-01',
     }
-    local args = utils.make_curl_args('https://api.anthropic.com/v1/messages', headers, data_file)
+    local args = utils.make_curl_args(options.end_point, headers, data_file)
 
     local provider_name = 'Claude'
     local timestamp = os.time()

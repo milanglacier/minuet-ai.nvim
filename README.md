@@ -765,6 +765,7 @@ provider_options = {
         chat_input = "See [Prompt Section for default value]",
         stream = true,
         api_key = 'ANTHROPIC_API_KEY',
+        end_point = 'https://api.anthropic.com/v1/messages',
         optional = {
             -- pass any additional parameters you want to send to claude request,
             -- e.g.
@@ -842,6 +843,7 @@ provider_options = {
         chat_input = "See [Prompt Section for default value]",
         stream = true,
         api_key = 'GEMINI_API_KEY',
+        end_point = 'https://generativelanguage.googleapis.com/v1beta/models',
         optional = {},
     },
 }
