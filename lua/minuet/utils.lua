@@ -464,7 +464,7 @@ function M.no_stream_decode(response, exit_code, data_file, provider, get_text_f
 
     success, result_str = pcall(get_text_fn, json)
 
-    if not success or not result_str then
+    if not success or not result_str or result_str == "" then
         if result:find 'error' then
             M.notify(provider .. ' returns error: ' .. vim.inspect(result), 'error', vim.log.levels.INFO)
         else
