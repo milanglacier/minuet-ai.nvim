@@ -478,7 +478,7 @@ computing power, please refer to [recipes.md](./recipes.md).
 
 # Selecting a Provider or Model
 
-The `gemini-flash` and `codestral` models offer high-quality output with free
+The `gemini-2.0-flash` and `codestral` models offer high-quality output with free
 and fast processing. For optimal quality (albeit slower generation speed),
 consider using the `deepseek-chat` model, which is compatible with both
 `openai-fim-compatible` and `openai-compatible` providers. For local LLM
@@ -488,6 +488,18 @@ Ollama using the `openai-fim-compatible` provider.
 As of January 28, 2025: Due to high server demand, Deepseek users may
 experience significant response delays or timeout. We recommend trying
 alternative providers instead.
+
+For Gemini model users:
+
+<details>
+
+We recommend using `gemini-2.0-flash` over `gemini-2.5-flash`, as the 2.0
+version offers significantly lower costs with comparable performance. The
+primary improvement in version 2.5 lies in its extended thinking mode, which
+provides minimal value for code completion scenarios. Furthermore, the thinking
+mode substantially increases latency, so we recommend disabling it entirely.
+
+</details>
 
 ## Understanding Model Speed
 
@@ -879,6 +891,12 @@ provider_options = {
     },
 }
 ```
+
+We recommend using `gemini-2.0-flash` over `gemini-2.5-flash`, as the 2.0
+version offers significantly lower costs with comparable performance. The
+primary improvement in version 2.5 lies in its extended thinking mode, which
+provides minimal value for code completion scenarios. Furthermore, the thinking
+mode substantially increases latency, so we recommend disabling it entirely.
 
 </details>
 
