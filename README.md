@@ -361,7 +361,7 @@ require('minuet').setup {
     provider = 'openai_compatible',
     provider_options = {
         openai_compatible = {
-            end_point = 'https://api.deepseek.com/v1/chat/completions',
+            end_point = 'https://api.deepseek.com/chat/completions',
             api_key = 'DEEPSEEK_API_KEY',
             name = 'deepseek',
             optional = {
