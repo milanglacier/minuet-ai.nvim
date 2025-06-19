@@ -323,7 +323,7 @@ M.provider_options = {
         },
     },
     openai_compatible = {
-        model = 'deepseek/deepseek-chat-v3-0324',
+        model = 'mistralai/devstral-small-2505',
         system = M.default_system,
         chat_input = M.default_chat_input,
         few_shots = M.default_few_shots,

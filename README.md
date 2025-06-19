@@ -918,7 +918,7 @@ The following config is the default.
 ```lua
 provider_options = {
     openai_compatible = {
-        model = 'qwen/qwen2.5-32b-instruct',
+        model = 'mistralai/devstral-small-2505',
         system = "see [Prompt] section for the default value",
         few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
