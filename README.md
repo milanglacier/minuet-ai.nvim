@@ -553,8 +553,8 @@ default_config = {
         enabled_auto_trigger_ft = {},
         -- Filetypes excluded from autotriggering. Useful when `enabled_auto_trigger_ft` = { '*' }
         disabled_auto_trigger_ft = {},
-        -- if true, when the user is using blink or nvim-cmp, warn the user
-        -- that they should use the native source instead.
+        -- if true, when the user is using blink or nvim-cmp or built-in pum
+        -- menu, warn the user that they should use the native source instead.
         warn_on_blink_or_cmp = true,
         -- See README section [Built-in Completion, Mini.Completion, and LSP
         -- Setup] for more details on this option.
