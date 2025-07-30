@@ -84,14 +84,14 @@ function M.complete(context, callback)
     end
 
     local end_point = string.format(
-        '%s/%s:%skey=%s',
+        '%s/%s:%s',
         options.end_point,
         options.model,
-        options.stream and 'streamGenerateContent?alt=sse&' or 'generateContent?',
-        utils.get_api_key(options.api_key)
+        options.stream and 'streamGenerateContent?alt=sse' or 'generateContent'
     )
     local headers = {
         ['Content-Type'] = 'application/json',
+        ['x-goog-api-key'] = utils.get_api_key(options.api_key),
     }
     local args = utils.make_curl_args(end_point, headers, data_file)
 
