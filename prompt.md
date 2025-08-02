@@ -106,7 +106,7 @@ Input markers:
 - `<contextBeforeCursor>`: Context before cursor
 
 Note that the user input will be provided in **reverse** order: first the
-context after cursor, followed bt the context before cursor.
+context after cursor, followed by the context before cursor.
 
 ## Default Guidelines
 
