@@ -684,7 +684,7 @@ function should return the result instantly as it will be called for each
 completion request.
 
 ```lua
-require('mineut').setup {
+require('minuet').setup {
     provider_options = {
         openai_compatible = {
             -- good
