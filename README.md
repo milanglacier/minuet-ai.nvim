@@ -489,17 +489,11 @@ As of January 28, 2025: Due to high server demand, Deepseek users may
 experience significant response delays or timeout. We recommend trying
 alternative providers instead.
 
-For Gemini model users:
-
-<details>
-
-We recommend using `gemini-2.0-flash` over `gemini-2.5-flash`, as the 2.0
-version offers significantly lower costs with comparable performance. The
-primary improvement in version 2.5 lies in its extended thinking mode, which
-provides minimal value for code completion scenarios. Furthermore, the thinking
-mode substantially increases latency, so we recommend disabling it entirely.
-
-</details>
+We **do not** recommend using thinking models, as this mode significantly
+increases latency—even with the fastest models. However, if you choose to use
+thinking models, please ensure that their thinking capabilities are disabled.
+Refer to the following examples for guidance on how to disable the thinking
+feature.
 
 ## Understanding Model Speed
 
@@ -741,6 +735,7 @@ provider_options = {
             -- stop = { 'end' },
             -- max_tokens = 256,
             -- top_p = 0.9,
+            -- reasoning_effort = 'minimal'
         },
     },
 }
