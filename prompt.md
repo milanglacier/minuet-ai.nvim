@@ -334,18 +334,7 @@ Please note that you should not copy-paste this into your configuration, as it
 represents the **default setting** applied to Gemini.
 
 ```lua
-local gemini_prompt = [[
-You are an AI code completion engine. Provide contextually appropriate completions:
-- Code completions in code context
-- Comment/documentation text in comments
-- String content in string literals
-- Prose in markdown/documentation files
-
-Input markers:
-- `<contextAfterCursor>`: Context after cursor
-- `<cursorPosition>`: Current cursor location
-- `<contextBeforeCursor>`: Context before cursor
-]]
+local gemini_prompt = require('minuet.config').default_system_prefix_first.prompt
 
 local gemini_few_shots = {}
 
