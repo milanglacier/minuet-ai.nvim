@@ -8,7 +8,7 @@
   - [Blink-cmp Setup](#blink-cmp-setup)
   - [Built-in Completion, Mini.Completion, and LSP Setup](#built-in-completion-minicompletion-and-lsp-setup)
   - [LLM Provider Examples](#llm-provider-examples)
-    - [Openrouter Deepseek-V3-0324](#openrouter-deepseek-v3-0324)
+    - [Openrouter Kimi-K2](#openrouter-kimi-k2)
     - [Deepseek](#deepseek)
     - [Ollama Qwen-2.5-coder:7b](#ollama-qwen-25-coder7b)
     - [Llama.cpp Qwen-2.5-coder:1.5b](#llamacpp-qwen-25-coder15b)
@@ -304,7 +304,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 ## LLM Provider Examples
 
-### Openrouter Kimi K2
+### Openrouter Kimi-K2
 
 <details>
 
