@@ -304,7 +304,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 ## LLM Provider Examples
 
-### Openrouter Deepseek-V3-0324
+### Openrouter Kimi K2
 
 <details>
 
@@ -318,7 +318,7 @@ require('minuet').setup {
         openai_compatible = {
             api_key = 'OPENROUTER_API_KEY',
             end_point = 'https://openrouter.ai/api/v1/chat/completions',
-            model = 'deepseek/deepseek-chat-v3-0324',
+            model = 'moonshotai/kimi-k2',
             name = 'Openrouter',
             optional = {
                 max_tokens = 56,
