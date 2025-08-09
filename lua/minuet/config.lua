@@ -349,7 +349,7 @@ M.provider_options = {
         },
     },
     openai_compatible = {
-        model = 'mistralai/devstral-small-2505',
+        model = 'mistralai/devstral-small',
         system = M.default_system,
         chat_input = M.default_chat_input,
         few_shots = M.default_few_shots,
