@@ -318,19 +318,34 @@ function M.filter_text(text, sequence)
     return string.sub(text, 1, start - 1)
 end
 
---- Remove the trailing and leading spaces for each string in the table
----@param items_table table[string]
+--- Remove the trailing and leading spaces for a single string item
+---@param item string
 ---@param keep_leading_newline? boolean
-function M.remove_spaces(items_table, keep_leading_newline)
-    local new = {}
+---@return string?
+function M.remove_spaces_single(item, keep_leading_newline)
+    if not item:find '%S' then -- skip entries that contain only whitespace
+        return nil
+    end
+
     local start_pattern = keep_leading_newline and '^[ \t]+' or '^%s+'
 
-    for _, item in ipairs(items_table) do
-        if item:find '%S' then -- only include entries that contains non-whitespace
-            -- replace the trailing spaces
-            item = item:gsub('%s+$', '')
-            -- replace the leading spaces
-            item = item:gsub(start_pattern, '')
+    -- replace the trailing spaces
+    item = item:gsub('%s+$', '')
+    -- replace the leading spaces
+    item = item:gsub(start_pattern, '')
+
+    return item
+end
+
+--- Remove the trailing and leading spaces for each string in the table
+---@param items table[string]
+---@param keep_leading_newline? boolean
+function M.remove_spaces(items, keep_leading_newline)
+    local new = {}
+
+    for _, item in ipairs(items) do
+        item = M.remove_spaces_single(item, keep_leading_newline)
+        if item then
             table.insert(new, item)
         end
     end
