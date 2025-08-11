@@ -1,3 +1,36 @@
+# Version 0.6.0 (2025-08-11)
+
+## Breaking Change
+
+- Improve completion filtering with before/after context:
+  - Refactors the completion filtering logic to be based on the longest common
+    match.
+  - Add a new `before-cursor-filter-length` config option to trim duplicated
+    prefixes from completions based on the text before the cursor.
+- Change default few-shot example: The default few-shot example has been
+  updated to require the AI to combine information from before and after the
+  cursor to generate the correct logic.
+- Update default system prompt: The system prompt is refined to be more concise
+  and provide clearer instructions to the AI on handling various completion
+  scenarios like code, comments, and strings.
+
+## Features
+
+- Make endpoint configurable for Gemini and Claude: Users can now
+  specify custom API endpoints for Gemini and Claude providers.
+
+## Fixes
+
+- Handle empty string for non-stream requests : Ensures that empty string
+  responses from the API are handled correctly for non-streaming requests.
+
+## Other
+
+- Refactor Gemini requests : Updated Gemini requests to use the
+  `x-goog-api-key` header to align with upstream changes.
+- Use lower case string instead of numbers to send signals, as recommended by
+  luv manual.
+
 # Version 0.5.2 (2025-05-11)
 
 ## Features
