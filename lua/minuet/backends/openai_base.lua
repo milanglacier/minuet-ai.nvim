@@ -88,7 +88,7 @@ function M.complete_openai_base(options, context, callback)
 
             local items = common.parse_completion_items(items_raw, options.name)
 
-            items = common.filter_context_sequences_in_items(items, context.lines_after)
+            items = common.filter_context_sequences_in_items(items, context)
 
             items = utils.remove_spaces(items)
 
@@ -195,7 +195,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                     table.insert(items, result)
                 end
 
-                items = common.filter_context_sequences_in_items(items, context_after_cursor)
+                items = common.filter_context_sequences_in_items(items, context)
                 items = utils.remove_spaces(items, true)
 
                 callback(items)

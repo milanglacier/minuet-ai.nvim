@@ -58,15 +58,8 @@ function M.parse_completion_items(items_raw, provider)
 end
 
 function M.filter_context_sequences_in_items(items, context)
-    local config = require('minuet').config
-    if config.after_cursor_filter_length == 0 then
-        return items
-    end
-
-    local filter_sequence = utils.make_context_filter_sequence(context, config.after_cursor_filter_length)
-
     items = vim.tbl_map(function(x)
-        return utils.filter_text(x, filter_sequence)
+        return utils.filter_text(x, context)
     end, items)
 
     return items

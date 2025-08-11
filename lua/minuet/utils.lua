@@ -278,44 +278,58 @@ function M.get_context(cmp_context)
     }
 end
 
-function M.make_context_filter_sequence(context, length)
-    if not context then
-        return
-    end
-
-    -- remove leading whitespaces
-    context = context:gsub('^%s+', '')
-
-    if vim.fn.strchars(context) < length then
-        return
-    end
-
-    context = vim.fn.strcharpart(context, 0, length)
-
-    -- remove trailing whitespaces
-    context = context:gsub('%s+$', '')
-
-    return context
-end
-
 ---remove the sequence and the rest part from text.
 ---@param text string?
----@param sequence string?
+---@param context { lines_before: string?, lines_after: string? }
 ---@return string?
-function M.filter_text(text, sequence)
-    if not sequence or not text then
+function M.filter_text(text, context)
+    local config = require('minuet').config
+
+    -- Handle nil values
+    if not text or not context then
         return text
     end
 
-    if sequence == '' then
+    local lines_before = context.lines_before
+    local lines_after = context.lines_after
+
+    -- Handle nil context values
+    if not lines_before and not lines_after then
         return text
     end
-    -- use plain match
-    local start = string.find(text, sequence, 1, true)
-    if not start then
-        return text
+
+    text = M.remove_spaces_single(text, true)
+    lines_before = M.remove_spaces_single(lines_before or '')
+    lines_after = M.remove_spaces_single(lines_after or '')
+
+    if not text then
+        return
     end
-    return string.sub(text, 1, start - 1)
+
+    local filtered_text = text
+
+    -- Filter based on context before cursor (trim from the beginning of completion)
+    if lines_before and config.before_cursor_filter_length > 0 then
+        local match_before = M.find_longest_match(filtered_text, lines_before)
+        local match_len = vim.fn.strchars(match_before)
+        if match_before and match_len >= config.before_cursor_filter_length then
+            -- Remove the matching part from the beginning of the completion
+            filtered_text = vim.fn.strcharpart(filtered_text, match_len)
+        end
+    end
+
+    -- Filter based on context after cursor (trim from the end of completion)
+    if lines_after and config.after_cursor_filter_length > 0 then
+        local match_after = M.find_longest_match(lines_after, filtered_text)
+        local match_len = vim.fn.strchars(match_after)
+        if match_after and match_len >= config.after_cursor_filter_length then
+            -- Remove the matching part from the end of the completion
+            local text_len = vim.fn.strchars(filtered_text)
+            filtered_text = vim.fn.strcharpart(filtered_text, 0, text_len - match_len)
+        end
+    end
+
+    return filtered_text
 end
 
 --- Remove the trailing and leading spaces for a single string item
@@ -351,6 +365,40 @@ function M.remove_spaces(items, keep_leading_newline)
     end
 
     return new
+end
+
+-- Find the longest string that is a prefix of A and a suffix of B. The
+-- function iterates from the longest possible match length downwards for
+-- efficiency.  If A or B are not strings, it returns an empty string.
+---@param a string?
+---@param b string?
+function M.find_longest_match(a, b)
+    -- Ensure both inputs are strings to avoid errors.
+    if type(a) ~= 'string' or type(b) ~= 'string' then
+        return ''
+    end
+
+    -- The longest possible match is limited by the shorter of the two strings.
+    local max_len = math.min(#a, #b)
+
+    -- Iterate downwards from the maximum possible length to 1.
+    -- This is more efficient because the first match we find will be the longest one.
+    for len = max_len, 1, -1 do
+        -- Extract the prefix from string 'a'.
+        local prefix_a = string.sub(a, 1, len)
+
+        -- Extract the suffix from string 'b'.
+        -- Negative indices in string.sub count from the end of the string.
+        local suffix_b = string.sub(b, -len)
+
+        -- If the prefix of 'a' matches the suffix of 'b', we've found our longest match.
+        if prefix_a == suffix_b then
+            return prefix_a
+        end
+    end
+
+    -- If the loop completes without finding any match, return an empty string.
+    return ''
 end
 
 --- If the last word of b is not a substring of the first word of a,

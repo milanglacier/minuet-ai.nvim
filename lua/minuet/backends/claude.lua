@@ -105,7 +105,7 @@ M.complete = function(context, callback)
 
             local items = common.parse_completion_items(items_raw, provider_name)
 
-            items = common.filter_context_sequences_in_items(items, context.lines_after)
+            items = common.filter_context_sequences_in_items(items, context)
 
             items = utils.remove_spaces(items)
 
