@@ -631,7 +631,7 @@ default_config = {
     after_cursor_filter_length = 15,
     -- Similar to after_cursor_filter_length but trim the completion item from
     -- prefix instead of suffix.
-    before_cursor_filter_length = 1,
+    before_cursor_filter_length = 2,
     -- proxy port to use
     proxy = nil,
     provider_options = {
