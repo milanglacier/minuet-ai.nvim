@@ -110,11 +110,12 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
 
             local items = {}
             for _, result in ipairs(new_data) do
-                local item_lines = vim.split(result, '\n')
+                local cleaned = result:gsub('^[\n\r]+', '')
+                local item_lines = vim.split(cleaned, '\n')
                 local item_label
 
                 if #item_lines == 1 then
-                    item_label = result
+                    item_label = cleaned
                 else
                     item_label = vim.fn.strcharpart(item_lines[1], 0, max_label_width - #multi_lines_indicators)
                         .. multi_lines_indicators
@@ -127,7 +128,7 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
                     insertTextMode = 1,
                     documentation = {
                         kind = 'markdown',
-                        value = '```' .. (vim.bo.ft or '') .. '\n' .. result .. '\n```',
+                        value = '```' .. (vim.bo.ft or '') .. '\n' .. cleaned .. '\n```',
                     },
                     kind = vim.lsp.protocol.CompletionItemKind.Text,
                     detail = config.provider_options[config.provider].name or config.provider,
