@@ -1501,7 +1501,7 @@ available in [recipes.md](./recipes.md).
 
 For detailed instructions on setting up and using VectorCode, please refer to the
 [official VectorCode
-documentation](https://github.com/Davidyz/VectorCode/blob/main/docs/neovim.md).
+documentation](https://github.com/Davidyz/VectorCode/tree/main/docs/neovim).
 
 # Troubleshooting
 
