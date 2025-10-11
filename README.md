@@ -731,6 +731,7 @@ the following is the default configuration for OpenAI:
 provider_options = {
     openai = {
         model = 'gpt-4.1-mini',
+        end_point = 'https://api.openai.com/v1/chat/completions',
         system = "see [Prompt] section for the default value",
         few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
@@ -756,6 +757,8 @@ provider_options = {
     openai = {
         optional = {
             max_tokens = 256,
+            -- for thinking models
+            reasoning_effort = 'minimal'
         },
     },
 }

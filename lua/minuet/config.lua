@@ -333,6 +333,7 @@ M.provider_options = {
     openai = {
         model = 'gpt-4.1-mini',
         api_key = 'OPENAI_API_KEY',
+        end_point = 'https://api.openai.com/v1/chat/completions',
         system = M.default_system,
         few_shots = M.default_few_shots,
         chat_input = M.default_chat_input,

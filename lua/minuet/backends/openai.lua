@@ -16,7 +16,6 @@ M.complete = function(context, callback)
     local config = require('minuet').config
     local options = vim.deepcopy(config.provider_options.openai)
     options.name = 'OpenAI'
-    options.end_point = 'https://api.openai.com/v1/chat/completions'
 
     base.complete_openai_base(options, context, callback)
 end
