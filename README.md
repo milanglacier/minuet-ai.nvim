@@ -776,7 +776,7 @@ the following is the default configuration for Claude:
 provider_options = {
     claude = {
         max_tokens = 512,
-        model = 'claude-3-5-haiku-20241022',
+        model = 'claude-haiku-4.5',
         system = "see [Prompt] section for the default value",
         few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
