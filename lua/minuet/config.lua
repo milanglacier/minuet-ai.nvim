@@ -344,7 +344,7 @@ M.provider_options = {
         },
     },
     claude = {
-        max_tokens = 512,
+        max_tokens = 256,
         api_key = 'ANTHROPIC_API_KEY',
         model = 'claude-haiku-4-5',
         end_point = 'https://api.anthropic.com/v1/messages',

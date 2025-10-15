@@ -775,7 +775,7 @@ the following is the default configuration for Claude:
 ```lua
 provider_options = {
     claude = {
-        max_tokens = 512,
+        max_tokens = 256,
         model = 'claude-haiku-4.5',
         system = "see [Prompt] section for the default value",
         few_shots = "see [Prompt] section for the default value",
