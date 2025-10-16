@@ -628,6 +628,54 @@ M.list_dedup = function(list)
     return items_cleaned
 end
 
+--- Format a completion result into a menu label and a preview text.
+--- It will pick the first non-blank line as the label source, truncate when
+--- multi-line using the provided width and append an indicator, and strip
+--- leading blank lines for preview. Returns nil for pure whitespace strings.
+---@param result string
+---@param opts { max_label_width?: number, indicator?: string }?
+---@return { label: string, preview: string }?
+function M.format_completion_display(result, opts)
+    if type(result) ~= 'string' or not result:find('%S') then
+        return nil
+    end
+
+    opts = opts or {}
+    local max_label_width = opts.max_label_width or 80
+    local indicator = opts.indicator or ' ⏎'
+
+    local item_lines = vim.split(result, '\n')
+
+    -- choose first non-blank line for display
+    local display_line = item_lines[1] or ''
+    for _, line in ipairs(item_lines) do
+        if line:find('%S') then
+            display_line = line
+            break
+        end
+    end
+
+    local label
+    if #item_lines == 1 then
+        label = display_line
+    else
+        label = vim.fn.strcharpart(display_line, 0, math.max(max_label_width - #indicator, 0)) .. indicator
+    end
+
+    -- strip leading blank lines for preview
+    local i = 1
+    while i <= #item_lines and not item_lines[i]:find('%S') do
+        i = i + 1
+    end
+    local rest = {}
+    for j = i, #item_lines do
+        table.insert(rest, item_lines[j])
+    end
+    local preview_text = table.concat(rest, '\n')
+
+    return { label = label, preview = preview_text }
+end
+
 ---@class minuet.EventData
 ---@field provider string the name of the provider
 ---@field name string the name of the subprovider for openai-compatible and openai-fim-compatible
