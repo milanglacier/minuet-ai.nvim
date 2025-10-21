@@ -851,14 +851,13 @@ Mercury Coder is a diffusion-based LLM created by [Inception](https://www.incept
 You can access Mercury Coder via an OpenAI compatible FIM endpoint using the following configuration:
 
 ```lua
-provider = "openai_fim_compatible",
 provider_options = {
     openai_fim_compatible = {
-    model = "mercury-coder",
-    -- FIM endpoint for Mercury Coder
-    end_point = "https://api.inceptionlabs.ai/v1/fim/completions",
-    api_key = "INCEPTION_API_KEY", -- environment variable name
-    stream = true,
+        model = "mercury-coder",
+        -- FIM endpoint for Mercury Coder
+        end_point = "https://api.inceptionlabs.ai/v1/fim/completions",
+        api_key = "INCEPTION_API_KEY", -- environment variable name
+        stream = true,
     },
 }
 ```
