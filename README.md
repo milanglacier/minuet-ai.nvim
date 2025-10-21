@@ -841,6 +841,29 @@ provider_options = {
 
 </details>
 
+## Mercury Coder
+
+Mercury Coder is a diffusion-based LLM created by [Inception](https://www.inceptionlabs.ai/) that generates code through iterative refinement rather than autoregressive token prediction, offering developers faster code completions. You can get an API key on the [Inception Platform](https://platform.inceptionlabs.ai/) and store it in `INCEPTION_API_KEY`.
+
+
+<details>
+
+You can access Mercury Coder via an OpenAI compatible FIM endpoint using the following configuration:
+
+```lua
+provider = "openai_fim_compatible",
+provider_options = {
+    openai_fim_compatible = {
+    model = "mercury-coder",
+    -- FIM endpoint for Mercury Coder
+    end_point = "https://api.inceptionlabs.ai/v1/fim/completions",
+    api_key = "INCEPTION_API_KEY", -- environment variable name
+    stream = true,
+    },
+}
+
+</details>
+
 ## Gemini
 
 You should register the account and use the service from Google AI Studio
