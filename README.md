@@ -21,6 +21,7 @@
   - [OpenAI](#openai)
   - [Claude](#claude)
   - [Codestral](#codestral)
+  - [Mercury Coder](#mercury-coder)
   - [Gemini](#gemini)
   - [OpenAI-compatible](#openai-compatible)
   - [OpenAI-FIM-compatible](#openai-fim-compatible)
@@ -843,18 +844,22 @@ provider_options = {
 
 ## Mercury Coder
 
-Mercury Coder is a diffusion-based LLM created by [Inception](https://www.inceptionlabs.ai/) that generates code through iterative refinement rather than autoregressive token prediction, offering developers faster code completions. You can get an API key on the [Inception Platform](https://platform.inceptionlabs.ai/) and store it in `INCEPTION_API_KEY`.
-
+Developed by Inception, Mercury Coder is described as a diffusion-based large
+language model that accelerates code generation through iterative refinement
+rather than autoregressive token prediction. According to the claim, this
+approach is intended to deliver faster and more efficient code completions. To
+begin, obtain an API key from the Inception Platform and configure it as the
+`INCEPTION_API_KEY` environment variable.
 
 <details>
 
-You can access Mercury Coder via an OpenAI compatible FIM endpoint using the following configuration:
+You can access Mercury Coder via the OpenAI compatible FIM endpoint using the
+following configuration:
 
 ```lua
 provider_options = {
     openai_fim_compatible = {
         model = "mercury-coder",
-        -- FIM endpoint for Mercury Coder
         end_point = "https://api.inceptionlabs.ai/v1/fim/completions",
         api_key = "INCEPTION_API_KEY", -- environment variable name
         stream = true,
