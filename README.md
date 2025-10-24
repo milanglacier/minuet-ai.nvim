@@ -635,6 +635,8 @@ default_config = {
     before_cursor_filter_length = 2,
     -- proxy port to use
     proxy = nil,
+    -- Callback to control buffer attachment. See "Buffer Attachment Control" section.
+    should_attach = nil,
     provider_options = {
         -- see the documentation in each provider in the following part.
     },
@@ -663,6 +665,24 @@ default_config = {
     presets = {}
 }
 ```
+
+# Buffer Attachment Control
+
+The `should_attach` configuration option allows you to control which buffers Minuet should attach to. This is useful for preventing sensitive code or specific file types from being sent to LLM providers.
+
+**Configuration:**
+
+```lua
+require('minuet').setup {
+    should_attach = function(bufnr, bufname)
+        -- Return true to enable Minuet, false to disable
+        -- bufnr: buffer number
+        -- bufname: full path to the buffer file
+    end,
+}
+```
+
+**Note:** When `should_attach` returns `false`, Minuet will be disabled for that buffer across all frontends (nvim-cmp, blink-cmp, virtual text, and LSP).
 
 # API Keys
 
