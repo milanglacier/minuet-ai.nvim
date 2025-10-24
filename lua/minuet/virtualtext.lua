@@ -23,6 +23,13 @@ local internal = {
 }
 
 local function should_auto_trigger()
+    local utils = require 'minuet.utils'
+
+    -- Check if should attach to buffer
+    if not utils.should_attach_to_buffer() then
+        return false
+    end
+
     return vim.b.minuet_virtual_text_auto_trigger
 end
 

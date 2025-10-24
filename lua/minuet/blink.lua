@@ -24,6 +24,15 @@ end
 
 function M:get_completions(ctx, callback)
     local config = require('minuet').config
+
+    -- Check if should attach to buffer
+    -- Get buffer number from blink context (ctx.bufnr) or fall back to current buffer
+    local bufnr = ctx.bufnr or vim.api.nvim_get_current_buf()
+    if not utils.should_attach_to_buffer(bufnr) then
+        callback()
+        return
+    end
+
     -- we want to always invoke completion when invoked manually
     if not config.blink.enable_auto_complete and ctx.trigger.kind ~= 'manual' then
         callback()

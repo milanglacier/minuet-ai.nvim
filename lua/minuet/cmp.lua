@@ -40,6 +40,14 @@ end
 function M:complete(ctx, callback)
     local config = require('minuet').config
 
+    -- Check if should attach to buffer
+    -- Get buffer number from cmp context (ctx.context.bufnr) or fall back to current buffer
+    local bufnr = ctx.context.bufnr or vim.api.nvim_get_current_buf()
+    if not utils.should_attach_to_buffer(bufnr) then
+        callback()
+        return
+    end
+
     -- we want to always invoke completion when invoked manually
     if not config.cmp.enable_auto_complete and ctx.context.option.reason ~= 'manual' then
         callback()
@@ -54,7 +62,12 @@ function M:complete(ctx, callback)
             end, config.throttle)
         end
 
-        local context = utils.get_context(ctx.context)
+        -- Ensure the context has the buffer number
+        local cmp_context = ctx.context
+        if not cmp_context.bufnr then
+            cmp_context.bufnr = bufnr
+        end
+        local context = utils.get_context(cmp_context)
         utils.notify('Minuet completion started', 'verbose')
 
         local provider = require('minuet.backends.' .. config.provider)

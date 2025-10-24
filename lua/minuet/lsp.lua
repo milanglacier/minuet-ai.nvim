@@ -264,6 +264,11 @@ function M.setup()
         vim.api.nvim_create_autocmd('FileType', {
             pattern = config.lsp.enabled_ft,
             callback = function(args)
+                -- Check if should attach to buffer
+                if not utils.should_attach_to_buffer(args.buf) then
+                    return
+                end
+
                 if vim.tbl_contains(config.lsp.disabled_ft, vim.b[args.buf].ft) then
                     return
                 end

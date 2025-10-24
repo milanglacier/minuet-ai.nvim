@@ -281,6 +281,11 @@ local M = {
     -- prefix instead of suffix.
     before_cursor_filter_length = 2,
     proxy = nil,
+    -- Callback to determine if Minuet should attach to a buffer
+    -- Function signature: function(bufnr: number, bufname: string) -> boolean
+    -- Return true to attach, false to skip
+    -- Default: always attach (nil or function returning true)
+    should_attach = nil,
 }
 
 M.default_system = {

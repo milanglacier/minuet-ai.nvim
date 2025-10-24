@@ -160,6 +160,7 @@ end
 --- @class minuet.BlinkCmpContext
 --- @field line string
 --- @field cursor number[]
+--- @field bufnr number?
 
 ---@param blink_context minuet.BlinkCmpContext?
 function M.make_cmp_context(blink_context)
@@ -168,9 +169,12 @@ function M.make_cmp_context(blink_context)
     if blink_context then
         cursor = blink_context.cursor
         self.cursor_line = blink_context.line
+        -- Get buffer number from blink context or default to current buffer
+        self.bufnr = blink_context.bufnr or vim.api.nvim_get_current_buf()
     else
         cursor = vim.api.nvim_win_get_cursor(0)
         self.cursor_line = vim.api.nvim_get_current_line()
+        self.bufnr = vim.api.nvim_get_current_buf()
     end
 
     self.cursor = {}
@@ -193,7 +197,7 @@ function M.make_cmp_context_from_lsp_params(params)
     local bufnr
     local self = {}
     if params.textDocument.uri == 'file://' then
-        bufnr = 0
+        bufnr = vim.api.nvim_get_current_buf()
     else
         bufnr = vim.uri_to_bufnr(params.textDocument.uri)
     end
@@ -205,6 +209,7 @@ function M.make_cmp_context_from_lsp_params(params)
         line = row,
         col = col,
     }
+    self.bufnr = bufnr
 
     local current_line = vim.api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1] or ''
     local cursor_before_line = vim.fn.strcharpart(current_line, 0, col)
@@ -227,8 +232,10 @@ function M.get_context(cmp_context)
     local config = require('minuet').config
 
     local cursor = cmp_context.cursor
-    local lines_before_list = vim.api.nvim_buf_get_lines(0, 0, cursor.line, false)
-    local lines_after_list = vim.api.nvim_buf_get_lines(0, cursor.line + 1, -1, false)
+    -- Use the buffer number from context, or fall back to current buffer
+    local bufnr = cmp_context.bufnr or vim.api.nvim_get_current_buf()
+    local lines_before_list = vim.api.nvim_buf_get_lines(bufnr, 0, cursor.line, false)
+    local lines_after_list = vim.api.nvim_buf_get_lines(bufnr, cursor.line + 1, -1, false)
 
     local lines_before = table.concat(lines_before_list, '\n')
     local lines_after = table.concat(lines_after_list, '\n')
@@ -668,6 +675,37 @@ function M.make_curl_args(end_point, headers, data_file)
     end
 
     return args
+end
+
+--- Check if Minuet should attach to the given buffer
+--- Calls the user-defined should_attach callback if configured
+---@param bufnr? number Buffer number (defaults to current buffer)
+---@return boolean should_attach Whether to attach to the buffer
+function M.should_attach_to_buffer(bufnr)
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
+    local config = require('minuet').config
+
+    -- If no callback is configured, always attach
+    if not config.should_attach then
+        return true
+    end
+
+    -- Call the user's callback with bufnr and bufname
+    local bufname = vim.api.nvim_buf_get_name(bufnr)
+    local ok, result = pcall(config.should_attach, bufnr, bufname)
+
+    if not ok then
+        M.notify('Error in should_attach callback: ' .. tostring(result), 'error', vim.log.levels.ERROR)
+        return true -- Default to attaching on error
+    end
+
+    M.notify(
+        string.format('should_attach check: bufnr=%d, bufname=%s, result=%s', bufnr, bufname, tostring(result)),
+        'debug',
+        vim.log.levels.DEBUG
+    )
+
+    return result
 end
 
 return M
