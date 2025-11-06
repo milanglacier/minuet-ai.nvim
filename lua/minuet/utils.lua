@@ -677,35 +677,38 @@ function M.make_curl_args(end_point, headers, data_file)
     return args
 end
 
---- Check if Minuet should attach to the given buffer
---- Calls the user-defined should_attach callback if configured
----@param bufnr? number Buffer number (defaults to current buffer)
----@return boolean should_attach Whether to attach to the buffer
-function M.should_attach_to_buffer(bufnr)
-    bufnr = bufnr or vim.api.nvim_get_current_buf()
+--- Check if Minuet should be allowed to trigger
+--- Calls the user-defined enabled callbacks if configured
+---@return boolean should_trigger Whether minuet is allowed to trigger
+function M.should_trigger()
     local config = require('minuet').config
 
-    -- If no callback is configured, always attach
-    if not config.should_attach then
+    -- If no callback is configured, always trigger
+    if not config.enabled or #config.enabled == 0 then
         return true
     end
 
-    -- Call the user's callback with bufnr and bufname
-    local bufname = vim.api.nvim_buf_get_name(bufnr)
-    local ok, result = pcall(config.should_attach, bufnr, bufname)
-
-    if not ok then
-        M.notify('Error in should_attach callback: ' .. tostring(result), 'error', vim.log.levels.ERROR)
-        return true -- Default to attaching on error
+    -- Reduce the user's callbacks
+    local trigger = true
+    for i, callback in ipairs(config.enabled) do
+        local ok, result = pcall(callback)
+        if not ok then
+            M.notify('Error in enabled callback: ' .. tostring(result), 'error', vim.log.levels.ERROR)
+            trigger = false
+            break
+        end
+        if not result then
+            M.notify(
+                string.format('should_trigger check: callback N%d, result=%s', i, tostring(result)),
+                'debug',
+                vim.log.levels.DEBUG
+            )
+            trigger = false
+            break
+        end
     end
 
-    M.notify(
-        string.format('should_attach check: bufnr=%d, bufname=%s, result=%s', bufnr, bufname, tostring(result)),
-        'debug',
-        vim.log.levels.DEBUG
-    )
-
-    return result
+    return trigger
 end
 
 return M

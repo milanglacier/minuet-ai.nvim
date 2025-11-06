@@ -25,8 +25,8 @@ local internal = {
 local function should_auto_trigger()
     local utils = require 'minuet.utils'
 
-    -- Check if should attach to buffer
-    if not utils.should_attach_to_buffer() then
+    -- Check if minuet is allowed to trigger
+    if not utils.should_trigger() then
         return false
     end
 

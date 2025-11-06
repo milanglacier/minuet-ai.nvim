@@ -40,10 +40,8 @@ end
 function M:complete(ctx, callback)
     local config = require('minuet').config
 
-    -- Check if should attach to buffer
-    -- Get buffer number from cmp context (ctx.context.bufnr) or fall back to current buffer
-    local bufnr = ctx.context.bufnr or vim.api.nvim_get_current_buf()
-    if not utils.should_attach_to_buffer(bufnr) then
+    -- Check if minuet is allowed to trigger
+    if not utils.should_trigger() then
         callback()
         return
     end

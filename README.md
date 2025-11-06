@@ -635,8 +635,8 @@ default_config = {
     before_cursor_filter_length = 2,
     -- proxy port to use
     proxy = nil,
-    -- Callback to control buffer attachment. See "Buffer Attachment Control" section.
-    should_attach = nil,
+    -- List of callbacks to control minuet triggering. See "Trigger Control" section.
+    enabled = nil,
     provider_options = {
         -- see the documentation in each provider in the following part.
     },
@@ -666,23 +666,23 @@ default_config = {
 }
 ```
 
-# Buffer Attachment Control
+# Trigger Control
 
-The `should_attach` configuration option allows you to control which buffers Minuet should attach to. This is useful for preventing sensitive code or specific file types from being sent to LLM providers.
+The `enabled` configuration option allows you to control whether Minuet should be allowed to trigger. This is useful for preventing sensitive code or specific file types from being sent to LLM providers.
 
 **Configuration:**
 
 ```lua
 require('minuet').setup {
-    should_attach = function(bufnr, bufname)
-        -- Return true to enable Minuet, false to disable
-        -- bufnr: buffer number
-        -- bufname: full path to the buffer file
-    end,
+    enabled = {
+        function()
+            -- Return true to enable Minuet, false to disable
+        end,
+    }
 }
 ```
 
-**Note:** When `should_attach` returns `false`, Minuet will be disabled for that buffer across all frontends (nvim-cmp, blink-cmp, virtual text, and LSP).
+**Note:** When one of the `enabled` callbacks return `false`, Minuet will not be allowed to trigger across all frontends (nvim-cmp, blink-cmp, virtual text, and LSP).
 
 # API Keys
 

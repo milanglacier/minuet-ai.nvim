@@ -264,8 +264,8 @@ function M.setup()
         vim.api.nvim_create_autocmd('FileType', {
             pattern = config.lsp.enabled_ft,
             callback = function(args)
-                -- Check if should attach to buffer
-                if not utils.should_attach_to_buffer(args.buf) then
+                -- Check if minuet is allowed to trigger
+                if not utils.should_trigger() then
                     return
                 end
 
