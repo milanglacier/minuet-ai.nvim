@@ -40,7 +40,7 @@ end
 function M:complete(ctx, callback)
     local config = require('minuet').config
 
-    -- Check if minuet is allowed to trigger
+    -- Early return if minuet is not allowed to trigger
     if not utils.should_trigger() then
         callback()
         return

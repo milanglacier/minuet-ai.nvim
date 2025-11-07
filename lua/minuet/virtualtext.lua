@@ -25,7 +25,7 @@ local internal = {
 local function should_auto_trigger()
     local utils = require 'minuet.utils'
 
-    -- Check if minuet is allowed to trigger
+    -- Early return if minuet is not allowed to trigger
     if not utils.should_trigger() then
         return false
     end
