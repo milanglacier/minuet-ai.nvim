@@ -769,7 +769,7 @@ provider_options = {
 ```
 
 Note: If you intend to use GPT-5 series models (e.g., `gpt-5-mini` or
-`gpt-5-nano`), please adhere to the following requirements:
+`gpt-5-nano`), keep the following points in mind:
 
 1. Use `max_completion_tokens` instead of `max_tokens`.
 2. These models do not support `top_p` or `temperature` adjustments.
