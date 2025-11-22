@@ -742,9 +742,10 @@ provider_options = {
             -- pass any additional parameters you want to send to OpenAI request,
             -- e.g.
             -- stop = { 'end' },
-            -- max_tokens = 256,
+            -- max_completion_tokens = 256,
             -- top_p = 0.9,
             -- reasoning_effort = 'minimal'
+            -- reasoning_effort = 'none'
         },
     },
 }
@@ -755,15 +756,25 @@ request timeout from outputing too many tokens.
 
 ```lua
 provider_options = {
-    openai = {
-        optional = {
-            max_tokens = 256,
-            -- for thinking models
-            reasoning_effort = 'minimal'
-        },
-    },
+	openai = {
+		optional = {
+			max_completion_tokens = 128,
+			-- for thinking models
+			reasoning_effort = "minimal",
+			-- If your chosen model supports it, you can also set this to 'none'.
+			-- reasoning_effort = 'none'
+		},
+	},
 }
 ```
+
+Note: If you intend to use GPT-5 series models (e.g., `gpt-5-mini` or
+`gpt-5-nano`), please adhere to the following requirements:
+
+1. Use `max_completion_tokens` instead of `max_tokens`.
+2. These models do not support `top_p` or `temperature` adjustments.
+3. Ensure `reasoning_effort` is set to `minimal` and update your request
+   options accordingly.
 
 </details>
 
