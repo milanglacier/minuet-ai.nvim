@@ -635,6 +635,8 @@ default_config = {
     before_cursor_filter_length = 2,
     -- proxy port to use
     proxy = nil,
+    -- List of callbacks to control minuet triggering. See "Trigger Control" section.
+    enabled = nil,
     provider_options = {
         -- see the documentation in each provider in the following part.
     },
@@ -663,6 +665,24 @@ default_config = {
     presets = {}
 }
 ```
+
+# Trigger Control
+
+The `enabled` configuration option allows you to control whether Minuet should be allowed to trigger. This is useful for preventing sensitive code or specific file types from being sent to LLM providers.
+
+**Configuration:**
+
+```lua
+require('minuet').setup {
+    enabled = {
+        function()
+            -- Return true to enable Minuet, false to disable
+        end,
+    }
+}
+```
+
+**Note:** When one of the `enabled` callbacks return `false`, Minuet will not be allowed to trigger across all frontends (nvim-cmp, blink-cmp, virtual text, and LSP).
 
 # API Keys
 

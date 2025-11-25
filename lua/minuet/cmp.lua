@@ -40,6 +40,12 @@ end
 function M:complete(ctx, callback)
     local config = require('minuet').config
 
+    -- Early return if minuet is not allowed to trigger
+    if not utils.should_trigger() then
+        callback()
+        return
+    end
+
     -- we want to always invoke completion when invoked manually
     if not config.cmp.enable_auto_complete and ctx.context.option.reason ~= 'manual' then
         callback()
@@ -54,7 +60,12 @@ function M:complete(ctx, callback)
             end, config.throttle)
         end
 
-        local context = utils.get_context(ctx.context)
+        -- Ensure the context has the buffer number
+        local cmp_context = ctx.context
+        if not cmp_context.bufnr then
+            cmp_context.bufnr = bufnr
+        end
+        local context = utils.get_context(cmp_context)
         utils.notify('Minuet completion started', 'verbose')
 
         local provider = require('minuet.backends.' .. config.provider)

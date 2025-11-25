@@ -264,6 +264,11 @@ function M.setup()
         vim.api.nvim_create_autocmd('FileType', {
             pattern = config.lsp.enabled_ft,
             callback = function(args)
+                -- Early return if minuet is not allowed to trigger
+                if not utils.should_trigger() then
+                    return
+                end
+
                 if vim.tbl_contains(config.lsp.disabled_ft, vim.b[args.buf].ft) then
                     return
                 end

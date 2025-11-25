@@ -23,6 +23,13 @@ local internal = {
 }
 
 local function should_auto_trigger()
+    local utils = require 'minuet.utils'
+
+    -- Early return if minuet is not allowed to trigger
+    if not utils.should_trigger() then
+        return false
+    end
+
     return vim.b.minuet_virtual_text_auto_trigger
 end
 

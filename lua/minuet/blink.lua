@@ -24,6 +24,13 @@ end
 
 function M:get_completions(ctx, callback)
     local config = require('minuet').config
+
+    -- Early return if minuet is not allowed to trigger
+    if not utils.should_trigger() then
+        callback()
+        return
+    end
+
     -- we want to always invoke completion when invoked manually
     if not config.blink.enable_auto_complete and ctx.trigger.kind ~= 'manual' then
         callback()

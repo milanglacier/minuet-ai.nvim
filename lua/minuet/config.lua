@@ -281,6 +281,11 @@ local M = {
     -- prefix instead of suffix.
     before_cursor_filter_length = 2,
     proxy = nil,
+    -- List of callbacks to determine if Minuet should trigger or not
+    -- Function signature: function() -> boolean
+    -- Minuet is allowed to trigger only if all callbacks return true
+    -- Or if enabled is nil or empty
+    enabled = nil,
 }
 
 M.default_system = {
