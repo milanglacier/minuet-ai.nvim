@@ -45,6 +45,14 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
     local config = require('minuet').config
 
     local function _complete()
+        -- NOTE: Since `config.enabled` is evaluated at runtime, this condition
+        -- must be checked within the deferred function body, right before
+        -- sending the request.
+        if not utils.run_hooks_until_failure(config.enabled) then
+            callback(nil, { isIncomplete = false, items = {} })
+            return
+        end
+
         -- NOTE: builtin completion will accumulate completion items during
         -- multiple callbacks, So for each back we must ensure we only deliver
         -- new arrived completion items to avoid duplicated completion items.

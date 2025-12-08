@@ -39,14 +39,23 @@ end
 
 function M:complete(ctx, callback)
     local config = require('minuet').config
+    local not_manual_completion = ctx.context.option.reason ~= 'manual'
 
     -- we want to always invoke completion when invoked manually
-    if not config.cmp.enable_auto_complete and ctx.context.option.reason ~= 'manual' then
+    if not config.cmp.enable_auto_complete and not_manual_completion then
         callback()
         return
     end
 
     local function _complete()
+        -- NOTE: Since `config.enabled` is evaluated at runtime, this condition
+        -- must be checked within the deferred function body, right before
+        -- sending the request.
+        if not_manual_completion and (not utils.run_hooks_until_failure(config.enabled)) then
+            callback()
+            return
+        end
+
         if config.throttle > 0 then
             self.is_in_throttle = true
             vim.defer_fn(function()

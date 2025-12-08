@@ -670,4 +670,24 @@ function M.make_curl_args(end_point, headers, data_file)
     return args
 end
 
+--- Runs a list of functions one by one.
+--- Stops and returns false immediately if a function returns false.
+--- @param hooks function[] A list of functions to run.
+--- @param ... any Arguments to pass to each function.
+--- @return boolean Returns false if any hook fails, true otherwise.
+function M.run_hooks_until_failure(hooks, ...)
+    if #hooks == 0 then
+        return true
+    end
+    for _, func in ipairs(hooks) do
+        local result = func(...)
+
+        if not result then
+            return false
+        end
+    end
+
+    return true
+end
+
 return M
