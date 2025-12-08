@@ -24,13 +24,23 @@ end
 
 function M:get_completions(ctx, callback)
     local config = require('minuet').config
+    local not_manual_completion = ctx.trigger.kind ~= 'manual'
+
     -- we want to always invoke completion when invoked manually
-    if not config.blink.enable_auto_complete and ctx.trigger.kind ~= 'manual' then
+    if not config.blink.enable_auto_complete and not_manual_completion then
         callback()
         return
     end
 
     local function _complete()
+        -- NOTE: Since `config.enabled` is evaluated at runtime, this condition
+        -- must be checked within the deferred function body, right before
+        -- sending the request.
+        if not_manual_completion and (not utils.run_hooks_until_failure(config.enabled)) then
+            callback()
+            return
+        end
+
         -- NOTE: blink will accumulate completion items during multiple
         -- callbacks, So for each back we must ensure we only deliver new
         -- arrived completion items to avoid duplicated completion items.

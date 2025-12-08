@@ -400,4 +400,14 @@ M.provider_options = {
 
 M.presets = {}
 
+-- **List** of functions to execute. If any function returns `false`, Minuet
+-- will not trigger auto-completion. Manual completion can still be invoked,
+-- even if these functions evaluate to `false`, when using `nvim-cmp`,
+-- `blink-cmp`, or virtual text (excluding LSP).
+-- When this list is empty (the default), it always evaluates to `true`.
+-- Note that this is called each time Minuet attempts to trigger
+-- auto-completion, so ensure the functions in this list are highly efficient.
+---@type (fun(): boolean)[]
+M.enabled = {}
+
 return M

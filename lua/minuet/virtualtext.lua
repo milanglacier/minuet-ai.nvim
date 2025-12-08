@@ -236,7 +236,11 @@ local function schedule()
     internal.timer = vim.defer_fn(function()
         local show_on_completion_menu = require('minuet').config.virtualtext.show_on_completion_menu
 
-        if internal.is_on_throttle or (not show_on_completion_menu and completion_menu_visible()) then
+        if
+            internal.is_on_throttle
+            or (not show_on_completion_menu and completion_menu_visible())
+            or (not utils.run_hooks_until_failure(config.enabled))
+        then
             return
         end
 
