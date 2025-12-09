@@ -319,7 +319,7 @@ function action.accept(n_lines)
     local ctx = get_ctx()
 
     local suggestion = get_current_suggestion(ctx)
-    if not suggestion or vim.fn.empty(suggestion) == 1 then
+    if not suggestion then
         return
     end
 
@@ -437,7 +437,14 @@ function autocmd.on_cursor_moved_i()
             and #last_typed_text[1] > 0
             and last_typed_text[1] == ctx.suggestions[ctx.choice]:sub(1, #last_typed_text[1])
         then
-            ctx.suggestions[ctx.choice] = ctx.suggestions[ctx.choice]:sub(#last_typed_text[1] + 1, -1)
+            local typed = last_typed_text[1]
+            for i, suggestion in ipairs(ctx.suggestions) do
+                if suggestion:sub(1, #typed) == typed then
+                    ctx.suggestions[i] = suggestion:sub(#typed + 1, -1)
+                else
+                    ctx.suggestions[i] = ''
+                end
+            end
             update_preview()
             return
         end
