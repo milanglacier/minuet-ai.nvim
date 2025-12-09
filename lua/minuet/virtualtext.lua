@@ -3,7 +3,6 @@ local M = {}
 local utils = require 'minuet.utils'
 local api = vim.api
 local uv = vim.uv or vim.loop
-local last_cursor_position = api.nvim_win_get_cursor(0)
 
 M.ns_id = api.nvim_create_namespace 'minuet.virtualtext'
 M.augroup = api.nvim_create_augroup('MinuetVirtualText', { clear = true })
@@ -25,23 +24,6 @@ local internal = {
 
 local function should_auto_trigger()
     return vim.b.minuet_virtual_text_auto_trigger
-end
-
-local function last_typed_text()
-    local last_typed = nil
-    local current_position = api.nvim_win_get_cursor(0)
-
-    -- Convert 1-based line to 0-based for nvim_buf_get_text
-    local start_row = last_cursor_position[1] - 1
-    local start_col = last_cursor_position[2]
-    local end_row = current_position[1] - 1
-    local end_col = current_position[2]
-
-    if start_row <= end_row and start_col <= end_col then
-        last_typed = api.nvim_buf_get_text(0, start_row, start_col, end_row, end_col, {})
-    end
-
-    return last_typed
 end
 
 local function completion_menu_visible()
@@ -89,12 +71,42 @@ local function get_ctx(bufnr)
     return ctx
 end
 
----@alias minuet_suggestions_context { suggestions?: string[], choice?: integer, shown_choices?: table<string, true> }
+---@return string[]?
+local function last_typed_text(ctx)
+    ctx = ctx or get_ctx()
+    local last_typed = nil
+    local last_pos = ctx.last_pos
+    if not last_pos then
+        return { '' }
+    end
+
+    local current_pos = api.nvim_win_get_cursor(0)
+
+    -- Convert 1-based line to 0-based for nvim_buf_get_text
+    local start_row = last_pos[1] - 1
+    local start_col = last_pos[2]
+    local end_row = current_pos[1] - 1
+    local end_col = current_pos[2]
+
+    if start_row <= end_row and start_col <= end_col then
+        last_typed = api.nvim_buf_get_text(0, start_row, start_col, end_row, end_col, {})
+    end
+
+    return last_typed
+end
+
+---@class minuet_suggestions_context
+---@field suggestions? string[]
+---@field choice? integer
+---@field shown_choices? table<string, true>
+---@field last_pos integer[]
+
 ---@param ctx? minuet_suggestions_context
 local function reset_ctx(ctx)
     ctx.suggestions = nil
     ctx.choice = nil
     ctx.shown_choices = nil
+    ctx.last_pos = nil
 end
 
 local function stop_timer()
@@ -180,7 +192,7 @@ local function update_preview(ctx)
         ctx.shown_choices[suggestion] = true
     end
 
-    last_cursor_position = api.nvim_win_get_cursor(0)
+    ctx.last_pos = api.nvim_win_get_cursor(0)
 end
 
 ---@param ctx? minuet_suggestions_context
