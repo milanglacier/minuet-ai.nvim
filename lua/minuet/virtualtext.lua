@@ -72,7 +72,7 @@ local function get_ctx(bufnr)
 end
 
 ---@return string[]?
-local function last_typed_text(ctx)
+local function get_last_typed_text(ctx)
     ctx = ctx or get_ctx()
     local last_typed = nil
     local last_pos = ctx.last_pos
@@ -428,21 +428,21 @@ end
 
 function autocmd.on_cursor_moved_i()
     local ctx = get_ctx()
-    local last_change = last_typed_text()
 
-    if
-        ctx
-        and ctx.suggestions
-        and last_change
-        and #last_change == 1
-        and #last_change[1] > 0
-        and last_change[1] == ctx.suggestions[ctx.choice]:sub(1, #last_change[1])
-    then
-        ctx.suggestions[ctx.choice] = ctx.suggestions[ctx.choice]:sub(#last_change[1] + 1, -1)
-        update_preview()
-
-        return
+    if ctx and ctx.suggestions and ctx.choice then
+        local last_typed_text = get_last_typed_text()
+        if
+            last_typed_text
+            and #last_typed_text == 1
+            and #last_typed_text[1] > 0
+            and last_typed_text[1] == ctx.suggestions[ctx.choice]:sub(1, #last_typed_text[1])
+        then
+            ctx.suggestions[ctx.choice] = ctx.suggestions[ctx.choice]:sub(#last_typed_text[1] + 1, -1)
+            update_preview()
+            return
+        end
     end
+
     -- we don't cleanup immediately if the completion has arrived but not
     -- display yet.
     if ctx.shown_choices and next(ctx.shown_choices) then
