@@ -1,3 +1,13 @@
+# Version 0.7.0 (2025-12-09)
+
+## Features
+
+- defaults: set default `before_cursor_filter_length` to 2.
+- claude: change default model to claude-haiku-4.5
+- claude: change default `max_tokens` to 256
+- add option `enabled` for dynamic enable at runtime
+- virtualtext: preserve completion items when user input matches existing completion items (#90)
+
 # Version 0.6.0 (2025-08-11)
 
 ## Breaking Change
