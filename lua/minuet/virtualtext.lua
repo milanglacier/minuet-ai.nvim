@@ -203,6 +203,35 @@ local function cleanup(ctx)
     clear_preview()
 end
 
+---@param ctx minuet.VirtualtextSuggestionContext
+---@return boolean Returns true if there are suggestions matching the user’s typed text; otherwise, false.
+local function update_suggestion_on_typing(ctx)
+    if not (ctx and ctx.suggestions and ctx.choice) then
+        return false
+    end
+
+    local last_typed_text = get_last_typed_text()
+    if
+        last_typed_text
+        and #last_typed_text == 1
+        and #last_typed_text[1] > 0
+        and last_typed_text[1] == ctx.suggestions[ctx.choice]:sub(1, #last_typed_text[1])
+    then
+        local typed = last_typed_text[1]
+        for i, suggestion in ipairs(ctx.suggestions) do
+            if suggestion:sub(1, #typed) == typed then
+                ctx.suggestions[i] = suggestion:sub(#typed + 1, -1)
+            else
+                ctx.suggestions[i] = ''
+            end
+        end
+        update_preview(ctx)
+        return true
+    end
+
+    return false
+end
+
 local function trigger(bufnr)
     if bufnr ~= api.nvim_get_current_buf() or vim.fn.mode() ~= 'i' then
         return
@@ -430,25 +459,8 @@ end
 function autocmd.on_cursor_moved_i()
     local ctx = get_ctx()
 
-    if ctx and ctx.suggestions and ctx.choice then
-        local last_typed_text = get_last_typed_text()
-        if
-            last_typed_text
-            and #last_typed_text == 1
-            and #last_typed_text[1] > 0
-            and last_typed_text[1] == ctx.suggestions[ctx.choice]:sub(1, #last_typed_text[1])
-        then
-            local typed = last_typed_text[1]
-            for i, suggestion in ipairs(ctx.suggestions) do
-                if suggestion:sub(1, #typed) == typed then
-                    ctx.suggestions[i] = suggestion:sub(#typed + 1, -1)
-                else
-                    ctx.suggestions[i] = ''
-                end
-            end
-            update_preview()
-            return
-        end
+    if update_suggestion_on_typing(ctx) then
+        return
     end
 
     -- we don't cleanup immediately if the completion has arrived but not
