@@ -358,6 +358,7 @@ function action.accept_n_lines()
 
     vim.api.nvim_win_set_cursor(0, cursor_pos)
 
+    ---@diagnostic disable-next-line:cast-local-type
     n = tonumber(n)
     if not n then
         return
