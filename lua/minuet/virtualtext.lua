@@ -226,6 +226,7 @@ local function update_suggestion_on_typing(ctx)
             end
         end
         update_preview(ctx)
+        stop_timer()
         return true
     end
 
