@@ -57,7 +57,7 @@ local function completion_menu_visible()
 end
 
 ---@param bufnr? integer
----@return minuet_suggestions_context
+---@return minuet.VirtualtextSuggestionContext
 local function get_ctx(bufnr)
     bufnr = bufnr or api.nvim_get_current_buf()
     if bufnr == 0 then
@@ -95,13 +95,13 @@ local function get_last_typed_text(ctx)
     return last_typed
 end
 
----@class minuet_suggestions_context
+---@class minuet.VirtualtextSuggestionContext
 ---@field suggestions? string[]
 ---@field choice? integer
 ---@field shown_choices? table<string, true>
 ---@field last_pos integer[]
 
----@param ctx? minuet_suggestions_context
+---@param ctx minuet.VirtualtextSuggestionContext
 local function reset_ctx(ctx)
     ctx.suggestions = nil
     ctx.choice = nil
@@ -121,7 +121,7 @@ local function clear_preview()
     api.nvim_buf_del_extmark(0, internal.ns_id, internal.extmark_id)
 end
 
----@param ctx? minuet_suggestions_context
+---@param ctx? minuet.VirtualtextSuggestionContext
 local function get_current_suggestion(ctx)
     ctx = ctx or get_ctx()
 
@@ -142,7 +142,7 @@ local function get_current_suggestion(ctx)
     return nil
 end
 
----@param ctx? minuet_suggestions_context
+---@param ctx? minuet.VirtualtextSuggestionContext
 local function update_preview(ctx)
     ctx = ctx or get_ctx()
 
@@ -195,7 +195,7 @@ local function update_preview(ctx)
     ctx.last_pos = api.nvim_win_get_cursor(0)
 end
 
----@param ctx? minuet_suggestions_context
+---@param ctx? minuet.VirtualtextSuggestionContext
 local function cleanup(ctx)
     ctx = ctx or get_ctx()
     stop_timer()
