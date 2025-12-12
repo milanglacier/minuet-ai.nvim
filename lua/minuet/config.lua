@@ -408,6 +408,6 @@ M.presets = {}
 -- Note that this is called each time Minuet attempts to trigger
 -- auto-completion, so ensure the functions in this list are highly efficient.
 ---@type (fun(): boolean)[]
-M.enabled = {}
+M.enable_predicates = {}
 
 return M

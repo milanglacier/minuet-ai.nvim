@@ -301,7 +301,7 @@ local function schedule()
         if
             internal.is_on_throttle
             or (not show_on_completion_menu and completion_menu_visible())
-            or (not utils.run_hooks_until_failure(config.enabled))
+            or (not utils.run_hooks_until_failure(config.enable_predicates))
         then
             return
         end

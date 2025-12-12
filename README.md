@@ -642,7 +642,7 @@ default_config = {
     -- When this list is empty (the default), it always evaluates to `true`.
     -- Note that this is called each time Minuet attempts to trigger
     -- auto-completion, so ensure the functions in this list are highly efficient.
-    enabled = {},
+    enable_predicates = {},
     provider_options = {
         -- see the documentation in each provider in the following part.
     },

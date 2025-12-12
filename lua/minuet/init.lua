@@ -6,6 +6,11 @@ function M.setup(config)
     M.presets = config.presets or {}
     M.presets.original = config
 
+    if config.enabled then
+        vim.deprecate('minuet.config.enabled', 'minuet.config.enable_predicates', 'next release', 'minuet', false)
+        config.enable_predicates = config.enable_predicates or config.enabled
+    end
+
     config.presets = nil
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
 

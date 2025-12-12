@@ -48,10 +48,10 @@ function M:complete(ctx, callback)
     end
 
     local function _complete()
-        -- NOTE: Since `config.enabled` is evaluated at runtime, this condition
-        -- must be checked within the deferred function body, right before
-        -- sending the request.
-        if not_manual_completion and (not utils.run_hooks_until_failure(config.enabled)) then
+        -- NOTE: Since the enable predicates are evaluated at runtime, this
+        -- condition must be checked within the deferred function body, right
+        -- before sending the request.
+        if not_manual_completion and (not utils.run_hooks_until_failure(config.enable_predicates)) then
             callback()
             return
         end
