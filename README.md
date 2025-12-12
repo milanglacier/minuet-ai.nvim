@@ -479,12 +479,12 @@ computing power, please refer to [recipes.md](./recipes.md).
 
 # Selecting a Provider or Model
 
-The `gemini-2.0-flash` and `codestral` models offer high-quality output with free
-and fast processing. For optimal quality (albeit slower generation speed),
-consider using the `deepseek-chat` model, which is compatible with both
-`openai-fim-compatible` and `openai-compatible` providers. For local LLM
-inference, you can deploy either `qwen-2.5-coder` or `deepseek-coder-v2` through
-Ollama using the `openai-fim-compatible` provider.
+The `gemini-2.0-flash` and `codestral` models offer high-quality output with
+free and fast processing. For optimal quality, though with significantly slower
+generation speed, consider using the `deepseek-chat` model, which is compatible
+with both `openai-fim-compatible` and `openai-compatible` providers. For local
+LLM inference, you can deploy either `qwen-2.5-coder` or `deepseek-coder-v2`
+through Ollama using the `openai-fim-compatible` provider.
 
 As of January 28, 2025: Due to high server demand, Deepseek users may
 experience significant response delays or timeout. We recommend trying
@@ -547,8 +547,8 @@ default_config = {
         enabled_auto_trigger_ft = {},
         -- Filetypes excluded from autotriggering. Useful when `enabled_auto_trigger_ft` = { '*' }
         disabled_auto_trigger_ft = {},
-        -- if true, when the user is using blink or nvim-cmp or built-in pum
-        -- menu, warn the user that they should use the native source instead.
+        -- if true, warn the user that they should use the native source
+        -- instead when the user is using blink or nvim-cmp.
         warn_on_blink_or_cmp = true,
         -- See README section [Built-in Completion, Mini.Completion, and LSP
         -- Setup] for more details on this option.
