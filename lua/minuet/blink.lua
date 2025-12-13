@@ -105,26 +105,22 @@ function M:get_completions(ctx, callback)
 
             local items = {}
             for _, result in ipairs(new_data) do
-                local item_lines = vim.split(result, '\n')
-                local item_label
-
-                if #item_lines == 1 then
-                    item_label = result
-                else
-                    item_label = vim.fn.strcharpart(item_lines[1], 0, max_label_width - #multi_lines_indicators)
-                        .. multi_lines_indicators
-                end
-
-                table.insert(items, {
-                    label = item_label,
-                    insertText = result,
-                    kind_name = config.provider_options[config.provider].name or config.provider,
-                    kind_hl = 'BlinkCmpItemKindMinuet',
-                    documentation = {
-                        kind = 'markdown',
-                        value = '```' .. (vim.bo.ft or '') .. '\n' .. result .. '\n```',
-                    },
+                local formatted = utils.format_completion_display(result, {
+                    max_label_width = max_label_width,
+                    indicator = multi_lines_indicators,
                 })
+                if formatted then
+                    table.insert(items, {
+                        label = formatted.label,
+                        insertText = result,
+                        kind_name = config.provider_options[config.provider].name or config.provider,
+                        kind_hl = 'BlinkCmpItemKindMinuet',
+                        documentation = {
+                            kind = 'markdown',
+                            value = '```' .. (vim.bo.ft or '') .. '\n' .. formatted.preview .. '\n```',
+                        },
+                    })
+                end
             end
             callback {
                 is_incomplete_forward = false,
