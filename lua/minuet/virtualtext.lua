@@ -88,7 +88,7 @@ local function get_last_typed_text(ctx)
     local end_row = current_pos[1] - 1
     local end_col = current_pos[2]
 
-    if start_row <= end_row and start_col <= end_col then
+    if start_row < end_row or (start_row == end_row and start_col <= end_col) then
         last_typed = api.nvim_buf_get_text(0, start_row, start_col, end_row, end_col, {})
     end
 
@@ -211,26 +211,26 @@ local function update_suggestion_on_typing(ctx)
     end
 
     local last_typed_text = get_last_typed_text()
-    if
-        last_typed_text
-        and #last_typed_text == 1
-        and #last_typed_text[1] > 0
-        and last_typed_text[1] == ctx.suggestions[ctx.choice]:sub(1, #last_typed_text[1])
-    then
-        local typed = last_typed_text[1]
-        for i, suggestion in ipairs(ctx.suggestions) do
-            if suggestion:sub(1, #typed) == typed then
-                ctx.suggestions[i] = suggestion:sub(#typed + 1, -1)
-            else
-                ctx.suggestions[i] = ''
-            end
-        end
-        update_preview(ctx)
-        stop_timer()
-        return true
+    if not (last_typed_text and #last_typed_text > 0) then
+        return false
     end
 
-    return false
+    local typed = table.concat(last_typed_text, '\n')
+    if #typed == 0 or typed ~= ctx.suggestions[ctx.choice]:sub(1, #typed) then
+        return false
+    end
+
+    for i, suggestion in ipairs(ctx.suggestions) do
+        if suggestion:sub(1, #typed) == typed then
+            ctx.suggestions[i] = suggestion:sub(#typed + 1, -1)
+        else
+            ctx.suggestions[i] = ''
+        end
+    end
+
+    update_preview(ctx)
+    stop_timer()
+    return true
 end
 
 local function trigger(bufnr)
