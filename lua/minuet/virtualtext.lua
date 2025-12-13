@@ -367,7 +367,7 @@ function action.accept(n_lines)
     local cursor = api.nvim_win_get_cursor(0)
     local line, col = cursor[1] - 1, cursor[2]
 
-    vim.schedule_wrap(function()
+    vim.schedule(function()
         api.nvim_buf_set_text(0, line, col, line, col, suggestions)
         local new_col = vim.fn.strcharlen(suggestions[#suggestions])
         -- For single-line suggestions, adjust the column position by adding the
@@ -376,7 +376,7 @@ function action.accept(n_lines)
             new_col = new_col + col
         end
         api.nvim_win_set_cursor(0, { line + #suggestions, new_col })
-    end)()
+    end)
 end
 
 function action.accept_n_lines()
