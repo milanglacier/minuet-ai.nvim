@@ -68,6 +68,11 @@ Just as dancers move during a minuet.
 - Support `virtual-text`, `nvim-cmp`, `blink-cmp`, `built-in`,
   `mini.completion` frontend.
 - Act as an **in-process LSP** server to provide completions (opt-in feature).
+- Accept completions continuously, one line at a time, so longer suggestions
+  can be pulled in incrementally.
+- When your typed text matches the start of a suggestion, Minuet keeps the
+  completion in sync of your typed text instead of clearing it, letting you
+  continue accepting lines without losing context.
 
 **With nvim-cmp / blink-cmp frontend**:
 
