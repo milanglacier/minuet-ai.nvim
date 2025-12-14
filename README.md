@@ -71,8 +71,8 @@ Just as dancers move during a minuet.
 - Accept completions continuously, one line at a time, so longer suggestions
   can be pulled in incrementally.
 - When your typed text matches the start of a suggestion, Minuet keeps the
-  completion in sync of your typed text instead of clearing it, letting you
-  continue accepting lines without losing context.
+  completion in sync of your typed text instead of clearing it, to avoid unnecessary
+  LLM requests and conserving resources.
 
 **With nvim-cmp / blink-cmp frontend**:
 
