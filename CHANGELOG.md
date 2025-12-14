@@ -6,7 +6,7 @@
 
 ## Features
 
-- virtualtext:
+- Virtual Text:
   - Continuous Line-by-Line Acceptance: The `accept_line` command now preserves
     partial accepted suggestion state. This allows users to accept multi-line
     suggestions incrementally by invoking the command repeatedly.
