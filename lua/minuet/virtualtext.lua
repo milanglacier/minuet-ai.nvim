@@ -354,13 +354,27 @@ function action.accept(n_lines)
     end
 
     local suggestions = vim.split(suggestion, '\n')
+    local remaining_suggestions = {}
 
     if n_lines then
+        -- NOTE: If the first line is an empty string (""), it indicates that
+        -- the original suggestion began with a newline character. This
+        -- typically occurs during partial completion: when the user accepts
+        -- the first line, the remaining suggestion may start with '\n'. In
+        -- this scenario, we increment n_lines by 1 because the user intends to
+        -- accept the next visible line of text, which corresponds to the
+        -- subsequent element in the suggestions list.
+        if suggestions[1] == '' then
+            n_lines = n_lines + 1
+        end
         n_lines = math.min(n_lines, #suggestions)
+        remaining_suggestions = vim.list_slice(suggestions, n_lines + 1, #suggestions)
         suggestions = vim.list_slice(suggestions, 1, n_lines)
     end
 
-    reset_ctx(ctx)
+    if #remaining_suggestions <= 0 then
+        reset_ctx(ctx)
+    end
 
     clear_preview()
 
