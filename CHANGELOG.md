@@ -11,8 +11,8 @@
     partial accepted suggestion state. This allows users to accept multi-line
     suggestions incrementally by invoking the command repeatedly.
   - Preserved Suggestions During Multi-line Typing: Prefix-matched suggestions
-    persist even while the user is typing multi-line text, ensuring continuity in
-    the suggestion flow.
+    persist even while the user is typing multi-line text, to avoid unnecessary
+    LLM requests and conserving resources.
 
 # Version 0.7.0 (2025-12-09)
 
