@@ -81,19 +81,28 @@ function M:complete(ctx, callback)
             data = utils.list_dedup(data)
 
             local items = {}
+            local max_label_width = 80
+            local multi_lines_indicators = ' ⏎'
+
             for _, result in ipairs(data) do
-                table.insert(items, {
-                    label = result,
-                    documentation = {
-                        kind = cmp.lsp.MarkupKind.Markdown,
-                        value = '```' .. (vim.bo.ft or '') .. '\n' .. result .. '\n```',
-                    },
-                    insertTextMode = lsp.InsertTextMode.AdjustIndentation,
-                    cmp = {
-                        kind_hl_group = 'CmpItemKindMinuet',
-                        kind_text = config.provider_options[config.provider].name or config.provider,
-                    },
+                local formatted = utils.format_completion_display(result, {
+                    max_label_width = max_label_width,
+                    indicator = multi_lines_indicators,
                 })
+                if formatted then
+                    table.insert(items, {
+                        label = formatted.label,
+                        documentation = {
+                            kind = cmp.lsp.MarkupKind.Markdown,
+                            value = '```' .. (vim.bo.ft or '') .. '\n' .. formatted.preview .. '\n```',
+                        },
+                        insertTextMode = lsp.InsertTextMode.AdjustIndentation,
+                        cmp = {
+                            kind_hl_group = 'CmpItemKindMinuet',
+                            kind_text = config.provider_options[config.provider].name or config.provider,
+                        },
+                    })
+                end
             end
             callback {
                 items = items,
