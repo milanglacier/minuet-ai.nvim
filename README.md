@@ -17,6 +17,7 @@
 - [Configuration](#configuration)
 - [API Keys](#api-keys)
 - [Prompt](#prompt)
+  - [Prefix-First vs. Suffix-First](#prefix-first-vs-suffix-first)
 - [Providers](#providers)
   - [OpenAI](#openai)
   - [Claude](#claude)
@@ -728,6 +729,51 @@ Note that `minuet` employs two distinct prompt systems:
 1. A system designed for chat-based LLMs (OpenAI, OpenAI-Compatible, Claude,
    and Gemini)
 2. A separate system designed for Codestral and OpenAI-FIM-compatible models
+
+## Prefix-First vs. Suffix-First
+
+When use chat-based LLMs, there are two ways for constructing the prompt:
+placing the prefix (context before the cursor) before the suffix (context after
+the cursor), or placing the suffix before the prefix.
+
+By default, `minuet` uses the **prefix-first** style for the Gemini provider,
+and the **suffix-first** style for OpenAI, OpenAI-Compatible, and Claude
+providers. It is recommended that you experiment with both strategies to
+determine which yields the best results, particularly if you are using an
+OpenAI-compatible provider with various models.
+
+Below is an example code snippet demonstrating how to switch between these two
+prompt construction methods:
+
+<details>
+
+```lua
+local mc = require 'minuet.config'
+
+-- Prefix-first style
+require('minuet').setup {
+    provider_options = {
+        openai_compatible = {
+            system = mc.default_system_prefix_first,
+            chat_input = mc.default_chat_input_prefix_first,
+            few_shots = mc.default_few_shots_prefix_first,
+        },
+    },
+}
+
+-- Suffix-first style
+require('minuet').setup {
+    provider_options = {
+        openai_compatible = {
+            system = mc.default_system,
+            few_shots = mc.default_few_shots,
+            chat_input = mc.default_chat_input,
+        },
+    },
+}
+```
+
+</details>
 
 # Providers
 
