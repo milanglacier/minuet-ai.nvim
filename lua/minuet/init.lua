@@ -1,8 +1,8 @@
-local default_config = require 'minuet.config'
-
 local M = {}
 
 function M.setup(config)
+    local default_config = require 'minuet.config'
+
     M.presets = config.presets or {}
     M.presets.original = config
 
