@@ -383,7 +383,7 @@ function action.accept(n_lines)
 
     vim.schedule(function()
         api.nvim_buf_set_text(0, line, col, line, col, suggestions)
-        local new_col = vim.fn.strcharlen(suggestions[#suggestions])
+        local new_col = #suggestions[#suggestions]
         -- For single-line suggestions, adjust the column position by adding the
         -- current column offset
         if #suggestions == 1 then
