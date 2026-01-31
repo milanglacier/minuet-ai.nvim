@@ -35,6 +35,7 @@
   - [`Minuet lsp`](#minuet-lsp)
 - [API](#api)
   - [Virtual Text](#virtual-text)
+  - [Fidget](#fidget)
   - [Lualine](#lualine)
   - [Minuet Event](#minuet-event)
 - [FAQ](#faq)
@@ -1265,6 +1266,23 @@ The Minuet LSP command provides commands for managing the in-process LSP server:
     require('minuet.virtualtext').action.is_visible,
 }
 ```
+
+## Fidget
+
+Minuet provides a Fidget component that displays the current status of Minuet requests.
+
+To use the Minuet Fidget component, add it to your Minuet configuration:
+
+<details>
+
+```lua
+-- the line goes right after your minuet setup call.
+require("minuet.fidget"):init()
+
+-- be sure to add j-hui/fidget.nvim as dependency.
+```
+
+</details>
 
 ## Lualine
 
