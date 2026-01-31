@@ -110,36 +110,32 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
 
             local items = {}
             for _, result in ipairs(new_data) do
-                local item_lines = vim.split(result, '\n')
-                local item_label
-
-                if #item_lines == 1 then
-                    item_label = result
-                else
-                    item_label = vim.fn.strcharpart(item_lines[1], 0, max_label_width - #multi_lines_indicators)
-                        .. multi_lines_indicators
-                end
-
-                table.insert(items, {
-                    label = item_label,
-                    insertText = result,
-                    -- insert, don't adjust indentation
-                    insertTextMode = 1,
-                    documentation = {
-                        kind = 'markdown',
-                        value = '```' .. (vim.bo.ft or '') .. '\n' .. result .. '\n```',
-                    },
-                    kind = vim.lsp.protocol.CompletionItemKind.Text,
-                    detail = config.provider_options[config.provider].name or config.provider,
-                    -- for nvim-cmp
-                    cmp = {
-                        kind_text = config.provider_options[config.provider].name or config.provider,
-                        kind_hl = 'LspKindMinuet',
-                    },
-                    -- for blink-cmp
-                    kind_name = config.provider_options[config.provider].name or config.provider,
-                    kind_hl_group = 'LspKindMinuet',
+                local formatted = utils.format_completion_display(result, {
+                    max_label_width = max_label_width,
+                    indicator = multi_lines_indicators,
                 })
+                if formatted then
+                    table.insert(items, {
+                        label = formatted.label,
+                        insertText = result,
+                        -- insert, don't adjust indentation
+                        insertTextMode = 1,
+                        documentation = {
+                            kind = 'markdown',
+                            value = '```' .. (vim.bo.ft or '') .. '\n' .. formatted.preview .. '\n```',
+                        },
+                        kind = vim.lsp.protocol.CompletionItemKind.Text,
+                        detail = config.provider_options[config.provider].name or config.provider,
+                        -- for nvim-cmp
+                        cmp = {
+                            kind_text = config.provider_options[config.provider].name or config.provider,
+                            kind_hl = 'LspKindMinuet',
+                        },
+                        -- for blink-cmp
+                        kind_name = config.provider_options[config.provider].name or config.provider,
+                        kind_hl_group = 'LspKindMinuet',
+                    })
+                end
             end
 
             callback(nil, {
