@@ -253,6 +253,8 @@ local M = {
     request_timeout = 3,
     -- Command used to make HTTP requests.
     curl_cmd = 'curl',
+    -- Extra arguments passed to curl (list of strings).
+    curl_extra_args = {},
     -- If completion item has multiple lines, create another completion item
     -- only containing its first line. This option only has impact for cmp and
     -- blink. For virtualtext, no single line entry will be added.
