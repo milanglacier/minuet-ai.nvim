@@ -352,15 +352,16 @@ function M.remove_spaces_single(item, keep_leading_newline)
 end
 
 --- Remove the trailing and leading spaces for each string in the table
----@param items table[string]
+---@param items string[]
 ---@param keep_leading_newline? boolean
+---@return string[]
 function M.remove_spaces(items, keep_leading_newline)
     local new = {}
 
     for _, item in ipairs(items) do
-        item = M.remove_spaces_single(item, keep_leading_newline)
+        local item_processed = M.remove_spaces_single(item, keep_leading_newline)
         if item then
-            table.insert(new, item)
+            table.insert(new, item_processed)
         end
     end
 
