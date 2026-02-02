@@ -615,6 +615,8 @@ default_config = {
     -- Conversely, with streaming disabled (stream = false), a timeout
     -- occurring before the LLM returns results will yield no completion items.
     request_timeout = 3,
+    -- Command used to make HTTP requests.
+    curl_cmd = 'curl',
     -- If completion item has multiple lines, create another completion item
     -- only containing its first line. This option only has impact for cmp and
     -- blink. For virtualtext, no single line entry will be added.

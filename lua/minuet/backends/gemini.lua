@@ -66,6 +66,7 @@ local function make_request_data()
 end
 
 function M.complete(context, callback)
+    local config = require('minuet').config
     common.terminate_all_jobs()
 
     local options, data = make_request_data()
@@ -107,7 +108,7 @@ function M.complete(context, callback)
     })
 
     local new_job = Job:new {
-        command = 'curl',
+        command = config.curl_cmd,
         args = args,
         on_exit = vim.schedule_wrap(function(job, exit_code)
             common.remove_job(job)

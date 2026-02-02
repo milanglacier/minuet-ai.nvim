@@ -39,6 +39,7 @@ function M.get_text_fn_stream(json)
 end
 
 M.complete = function(context, callback)
+    local config = require('minuet').config
     common.terminate_all_jobs()
 
     local options, data = make_request_data()
@@ -76,7 +77,7 @@ M.complete = function(context, callback)
     })
 
     local new_job = Job:new {
-        command = 'curl',
+        command = config.curl_cmd,
         args = args,
         on_exit = vim.schedule_wrap(function(job, exit_code)
             common.remove_job(job)

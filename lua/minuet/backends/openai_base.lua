@@ -58,7 +58,7 @@ function M.complete_openai_base(options, context, callback)
     })
 
     local new_job = Job:new {
-        command = 'curl',
+        command = config.curl_cmd,
         args = args,
         on_exit = vim.schedule_wrap(function(job, exit_code)
             common.remove_job(job)
@@ -169,7 +169,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
 
     for idx = 1, n_completions do
         local new_job = Job:new {
-            command = 'curl',
+            command = config.curl_cmd,
             args = args,
             on_exit = vim.schedule_wrap(function(job, exit_code)
                 common.remove_job(job)
