@@ -34,17 +34,19 @@ function M.complete_openai_base(options, context, callback)
 
     data = vim.tbl_deep_extend('force', data, options.optional or {})
 
-    local data_file = utils.make_tmp_file(data)
+    local headers = {
+        ['Content-Type'] = 'application/json',
+        ['Authorization'] = 'Bearer ' .. utils.get_api_key(options.api_key),
+    }
+    local transformed_data = common.apply_transforms(options.transform, options.end_point, headers, data)
+
+    local data_file = utils.make_tmp_file(transformed_data.body)
 
     if data_file == nil then
         return
     end
 
-    local headers = {
-        ['Content-Type'] = 'application/json',
-        ['Authorization'] = 'Bearer ' .. utils.get_api_key(options.api_key),
-    }
-    local args = utils.make_curl_args(options.end_point, headers, data_file)
+    local args = utils.make_curl_args(transformed_data.end_point, transformed_data.headers, data_file)
 
     local provider_name = 'openai_compatible'
     local timestamp = os.time()
@@ -135,15 +137,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
         ['Authorization'] = 'Bearer ' .. utils.get_api_key(options.api_key),
     }
 
-    local transformed_data = {
-        end_point = end_point,
-        headers = headers,
-        body = data,
-    }
-
-    for _, fun in ipairs(options.transform) do
-        transformed_data = fun(transformed_data)
-    end
+    local transformed_data = common.apply_transforms(options.transform, end_point, headers, data)
 
     local data_file = utils.make_tmp_file(transformed_data.body)
 

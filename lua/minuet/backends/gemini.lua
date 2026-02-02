@@ -77,13 +77,6 @@ function M.complete(context, callback)
 
     vim.list_extend(data.contents, ctx)
 
-    local data_file = utils.make_tmp_file(data)
-
-    if data_file == nil then
-        callback()
-        return
-    end
-
     local end_point = string.format(
         '%s/%s:%s',
         options.end_point,
@@ -94,7 +87,16 @@ function M.complete(context, callback)
         ['Content-Type'] = 'application/json',
         ['x-goog-api-key'] = utils.get_api_key(options.api_key),
     }
-    local args = utils.make_curl_args(end_point, headers, data_file)
+    local transformed_data = common.apply_transforms(options.transform, end_point, headers, data)
+
+    local data_file = utils.make_tmp_file(transformed_data.body)
+
+    if data_file == nil then
+        callback()
+        return
+    end
+
+    local args = utils.make_curl_args(transformed_data.end_point, transformed_data.headers, data_file)
 
     local provider_name = 'Gemini'
     local timestamp = os.time()

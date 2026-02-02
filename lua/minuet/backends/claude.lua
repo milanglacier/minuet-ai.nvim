@@ -52,18 +52,20 @@ M.complete = function(context, callback)
 
     data.messages = few_shots
 
-    local data_file = utils.make_tmp_file(data)
-
-    if data_file == nil then
-        return
-    end
-
     local headers = {
         ['Content-Type'] = 'application/json',
         ['x-api-key'] = utils.get_api_key(options.api_key),
         ['anthropic-version'] = '2023-06-01',
     }
-    local args = utils.make_curl_args(options.end_point, headers, data_file)
+    local transformed_data = common.apply_transforms(options.transform, options.end_point, headers, data)
+
+    local data_file = utils.make_tmp_file(transformed_data.body)
+
+    if data_file == nil then
+        return
+    end
+
+    local args = utils.make_curl_args(transformed_data.end_point, transformed_data.headers, data_file)
 
     local provider_name = 'Claude'
     local timestamp = os.time()

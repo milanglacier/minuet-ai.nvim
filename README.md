@@ -815,6 +815,8 @@ provider_options = {
             -- reasoning_effort = 'minimal'
             -- reasoning_effort = 'none'
         },
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
     },
 }
 ```
@@ -868,6 +870,8 @@ provider_options = {
             -- e.g.
             -- stop_sequences = nil,
         },
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
     },
 }
 ```
@@ -969,6 +973,8 @@ provider_options = {
         api_key = 'GEMINI_API_KEY',
         end_point = 'https://generativelanguage.googleapis.com/v1beta/models',
         optional = {},
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
     },
 }
 ```
@@ -1042,6 +1048,8 @@ provider_options = {
             stop = nil,
             max_tokens = nil,
         },
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
     }
 }
 ```

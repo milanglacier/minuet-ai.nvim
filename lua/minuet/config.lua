@@ -346,6 +346,8 @@ M.provider_options = {
             stop = nil,
             max_tokens = nil,
         },
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
     },
     claude = {
         max_tokens = 256,
@@ -359,6 +361,8 @@ M.provider_options = {
         optional = {
             stop_sequences = nil,
         },
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
     },
     openai_compatible = {
         model = 'mistralai/devstral-small',
@@ -373,6 +377,8 @@ M.provider_options = {
             stop = nil,
             max_tokens = nil,
         },
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
     },
     gemini = {
         model = 'gemini-2.0-flash',
@@ -383,6 +389,8 @@ M.provider_options = {
         few_shots = M.default_few_shots_prefix_first,
         stream = true,
         optional = {},
+        -- a list of functions to transform the endpoint, header, and request body
+        transform = {},
     },
     openai_fim_compatible = {
         model = 'deepseek-chat',

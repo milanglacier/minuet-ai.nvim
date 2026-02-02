@@ -76,4 +76,23 @@ function M.create_chat_messages_from_list(str_list)
     return result
 end
 
+---@param transform fun(data: { end_point: string, headers: table, body: table })[]?
+---@param end_point string
+---@param headers table
+---@param body table
+---@return { end_point: string, headers: table, body: table }
+function M.apply_transforms(transform, end_point, headers, body)
+    local transformed_data = {
+        end_point = end_point,
+        headers = headers,
+        body = body,
+    }
+
+    for _, fun in ipairs(transform or {}) do
+        transformed_data = fun(transformed_data)
+    end
+
+    return transformed_data
+end
+
 return M
