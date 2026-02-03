@@ -655,7 +655,6 @@ function M.make_curl_args(end_point, headers, data_file)
     for _, arg in ipairs(config.curl_extra_args) do
         table.insert(args, arg)
     end
-    table.insert(args, end_point)
 
     for k, v in pairs(headers) do
         table.insert(args, '-H')
@@ -670,6 +669,8 @@ function M.make_curl_args(end_point, headers, data_file)
         table.insert(args, '--proxy')
         table.insert(args, config.proxy)
     end
+
+    table.insert(args, end_point)
 
     return args
 end
