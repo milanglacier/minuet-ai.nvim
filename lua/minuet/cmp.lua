@@ -86,7 +86,7 @@ function M:complete(ctx, callback)
                     label = result,
                     documentation = {
                         kind = cmp.lsp.MarkupKind.Markdown,
-                        value = '```' .. (vim.bo.ft or '') .. '\n' .. result .. '\n```',
+                        value = '```' .. (vim.bo.ft or '') .. '\n' .. result:gsub('^[\n\r]+', '') .. '\n```',
                     },
                     insertTextMode = lsp.InsertTextMode.AdjustIndentation,
                     cmp = {
