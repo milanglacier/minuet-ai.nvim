@@ -684,6 +684,8 @@ default_config = {
     default_chat_input_prefix_first = { '...' },
     -- Config options for `Minuet change_preset` command
     presets = {}
+    -- Preset to load on setup
+    initial_preset = nil
 }
 ```
 

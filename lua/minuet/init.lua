@@ -14,6 +14,10 @@ function M.setup(config)
     config.presets = nil
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
 
+    if config.initial_preset ~= nil then
+        M.change_preset(config.initial_preset, false)
+    end
+
     local has_cmp = pcall(require, 'cmp')
 
     if has_cmp then
@@ -130,7 +134,11 @@ function M.change_provider(provider)
     vim.notify('Minuet Provider changed to: ' .. provider, vim.log.levels.INFO)
 end
 
-function M.change_preset(preset)
+function M.change_preset(preset, notify_change)
+    if notify_change == nil then
+        notify_change = true
+    end
+
     if not M.config then
         vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
         return
@@ -145,7 +153,9 @@ function M.change_preset(preset)
 
     -- deep extend the config with preset_config
     M.config = vim.tbl_deep_extend('force', M.config, preset_config)
-    vim.notify('Minuet Preset changed to: ' .. preset, vim.log.levels.INFO)
+    if notify_change then
+        vim.notify('Minuet Preset changed to: ' .. preset, vim.log.levels.INFO)
+    end
 end
 
 vim.api.nvim_create_user_command('Minuet', function(args)
