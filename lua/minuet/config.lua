@@ -285,6 +285,8 @@ local M = {
     -- prefix instead of suffix.
     before_cursor_filter_length = 2,
     proxy = nil,
+    -- Initial preset to use when starting up
+    initial_preset = nil,
 }
 
 M.default_system = {
