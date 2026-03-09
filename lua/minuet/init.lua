@@ -191,12 +191,27 @@ vim.api.nvim_create_user_command('Minuet', function(args)
         end,
     })
 
-    if fargs[1] == 'change_model' then
-        M.change_model(fargs[2])
-    elseif fargs[1] == 'change_preset' then
-        M.change_preset(fargs[2])
+    local command = fargs[1]
+    local subcommand = fargs[2]
+
+    if command == 'change_model' then
+        M.change_model(subcommand)
+    elseif command == 'change_preset' then
+        M.change_preset(subcommand)
     else
-        actions[fargs[1]][fargs[2]]()
+        local subcommands = actions[command]
+        if not subcommands then
+            vim.notify('Invalid Minuet command: ' .. tostring(command), vim.log.levels.ERROR)
+            return
+        end
+
+        local subcommand_fn = subcommands[subcommand]
+        if not subcommand_fn then
+            vim.notify('Minuet ' .. command .. ' requires a valid action', vim.log.levels.ERROR)
+            return
+        end
+
+        subcommand_fn()
     end
 end, {
     nargs = '+',
