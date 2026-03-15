@@ -12,12 +12,54 @@ function M.setup(config)
     end
 
     config.presets = nil
+
+    -- Migrate deprecated flat LSP keys into nested lsp.completion.*
+    if config.lsp then
+        local flat_to_nested = {
+            enabled_auto_trigger_ft = 'enabled_auto_trigger_ft',
+            disabled_auto_trigger_ft = 'disabled_auto_trigger_ft',
+            warn_on_blink_or_cmp = 'warn_on_blink_or_cmp',
+            adjust_indentation = 'adjust_indentation',
+        }
+        for flat_key, nested_key in pairs(flat_to_nested) do
+            if config.lsp[flat_key] ~= nil then
+                -- nested config wins if both old and new keys are provided
+                if not config.lsp.completion or config.lsp.completion[nested_key] == nil then
+                    config.lsp.completion = config.lsp.completion or {}
+                    config.lsp.completion[nested_key] = config.lsp[flat_key]
+                end
+                config.lsp[flat_key] = nil
+                vim.deprecate(
+                    'minuet.config.lsp.' .. flat_key,
+                    'minuet.config.lsp.completion.' .. nested_key,
+                    'next release',
+                    'minuet',
+                    false
+                )
+            end
+        end
+    end
+
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
 
     local has_cmp = pcall(require, 'cmp')
 
     if has_cmp then
         require('cmp').register_source('minuet', require('minuet.cmp'):new())
+    end
+
+    -- warn_on_virtualtext: warn when LSP inline completion is enabled
+    -- while Minuet virtual text is also configured for use
+    if
+        M.config.lsp.inline_completion.enable
+        and M.config.lsp.inline_completion.warn_on_virtualtext
+        and #M.config.virtualtext.auto_trigger_ft > 0
+    then
+        vim.notify(
+            'Minuet LSP inline completion and Minuet virtual text should not be used together. '
+                .. 'Disable one of them, or set lsp.inline_completion.warn_on_virtualtext = false to suppress this warning.',
+            vim.log.levels.WARN
+        )
     end
 
     require('minuet.virtualtext').setup()

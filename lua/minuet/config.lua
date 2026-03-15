@@ -189,16 +189,29 @@ local M = {
         enabled_ft = {},
         -- Filetypes excluded from LSP activation. Useful when `enabled_ft` = { '*' }
         disabled_ft = {},
-        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
-        enabled_auto_trigger_ft = {},
-        -- Filetypes excluded from autotriggering. Useful when `enabled_auto_trigger_ft` = { '*' }
-        disabled_auto_trigger_ft = {},
-        -- if true, warn the user that they should use the native source
-        -- instead when the user is using blink or nvim-cmp.
-        warn_on_blink_or_cmp = true,
-        -- See README section [Built-in Completion, Mini.Completion, and LSP
-        -- Setup] for more details on this option.
-        adjust_indentation = true,
+        completion = {
+            enable = true,
+            -- if true, warn the user that they should use the native source
+            -- instead when the user is using blink or nvim-cmp.
+            warn_on_blink_or_cmp = true,
+            -- See README section [Built-in Completion, Mini.Completion, and LSP
+            -- Setup] for more details on this option.
+            adjust_indentation = true,
+            -- Enables automatic completion triggering using `vim.lsp.completion.enable`
+            enabled_auto_trigger_ft = {},
+            -- Filetypes excluded from autotriggering. Useful when `enabled_auto_trigger_ft` = { '*' }
+            disabled_auto_trigger_ft = {},
+        },
+        inline_completion = {
+            enable = false,
+            -- if true, warn the user when LSP inline completion is enabled
+            -- while Minuet virtual text is also configured for use.
+            warn_on_virtualtext = true,
+            -- Enables automatic inline completion for these filetypes.
+            enabled_auto_trigger_ft = {},
+            -- Filetypes excluded from inline completion autotriggering.
+            disabled_auto_trigger_ft = {},
+        },
     },
     virtualtext = {
         -- Specify the filetypes to enable automatic virtual text completion,

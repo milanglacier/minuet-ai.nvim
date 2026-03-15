@@ -234,13 +234,15 @@ require('blink-cmp').setup {
 require('minuet').setup {
     lsp = {
         enabled_ft = { 'toml', 'lua', 'cpp' },
-        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
-        enabled_auto_trigger_ft = { 'cpp', 'lua' },
+        completion = {
+            -- Enables automatic completion triggering using `vim.lsp.completion.enable`
+            enabled_auto_trigger_ft = { 'cpp', 'lua' },
+        },
     }
 }
 ```
 
-The `enabled_auto_trigger_ft` setting is relevant only for built-in completion.
+The `completion.enabled_auto_trigger_ft` setting is relevant only for built-in completion.
 `Mini.Completion` users can ignore this option, as Mini.Completion uses **all**
 available LSPs for **auto-triggered** completion.
 
@@ -269,7 +271,7 @@ source rather than through LSP for two main reasons:
 here](https://github.com/neovim/neovim/issues/32972)) may cause unexpected
 indentation behavior when accepting multi-line completions.
 
-Currently, Minuet offers the config option `config.lsp.adjust_indentation`
+Currently, Minuet offers the config option `config.lsp.completion.adjust_indentation`
 (enabled by default) as a temporary workaround. However, the author
 acknowledges that this solution is incomplete and may introduce additional edge
 cases when enabled.
@@ -288,7 +290,7 @@ desired behavior for Minuet. As an LLM completion source, Minuet can face
 significant rate limits during automatic triggering.
 
 Therefore, it's recommended to enable Minuet for automatic triggering using the
-`config.lsp.enabled_auto_trigger_ft` setting.
+`config.lsp.completion.enabled_auto_trigger_ft` setting.
 
 For users who uses `LspAttach` event, it is recommeded to verify that the
 server is not the Minuet server before enabling autotrigger. An example
@@ -554,16 +556,29 @@ default_config = {
         enabled_ft = {},
         -- Filetypes excluded from LSP activation. Useful when `enabled_ft` = { '*' }
         disabled_ft = {},
-        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
-        enabled_auto_trigger_ft = {},
-        -- Filetypes excluded from autotriggering. Useful when `enabled_auto_trigger_ft` = { '*' }
-        disabled_auto_trigger_ft = {},
-        -- if true, warn the user that they should use the native source
-        -- instead when the user is using blink or nvim-cmp.
-        warn_on_blink_or_cmp = true,
-        -- See README section [Built-in Completion, Mini.Completion, and LSP
-        -- Setup] for more details on this option.
-        adjust_indentation = true,
+        completion = {
+            enable = true,
+            -- if true, warn the user that they should use the native source
+            -- instead when the user is using blink or nvim-cmp.
+            warn_on_blink_or_cmp = true,
+            -- See README section [Built-in Completion, Mini.Completion, and LSP
+            -- Setup] for more details on this option.
+            adjust_indentation = true,
+            -- Enables automatic completion triggering using `vim.lsp.completion.enable`
+            enabled_auto_trigger_ft = {},
+            -- Filetypes excluded from autotriggering. Useful when `enabled_auto_trigger_ft` = { '*' }
+            disabled_auto_trigger_ft = {},
+        },
+        inline_completion = {
+            enable = false,
+            -- if true, warn when LSP inline completion is enabled while
+            -- Minuet virtual text is also configured for use.
+            warn_on_virtualtext = true,
+            -- Enables automatic inline completion for these filetypes.
+            enabled_auto_trigger_ft = {},
+            -- Filetypes excluded from inline completion autotriggering.
+            disabled_auto_trigger_ft = {},
+        },
     },
     virtualtext = {
         -- Specify the filetypes to enable automatic virtual text completion,
