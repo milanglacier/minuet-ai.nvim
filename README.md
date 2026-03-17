@@ -284,34 +284,33 @@ source rather than through LSP for two main reasons:
    However, none of these specifically differentiates between manual and
    automatic completion requests.
 
-**Note**: An upstream issue ([tracked
-here](https://github.com/neovim/neovim/issues/32972)) may cause unexpected
-indentation behavior when accepting multi-line completions.
+**Note**:
 
-Currently, Minuet offers the config option `config.lsp.completion.adjust_indentation`
-(enabled by default) as a temporary workaround. However, the author
-acknowledges that this solution is incomplete and may introduce additional edge
-cases when enabled.
+- An upstream issue ([tracked
+  here](https://github.com/neovim/neovim/issues/32972)) may cause unexpected
+  indentation behavior when accepting multi-line completions.
 
-Therefore, consider the following practices when using built-in completion:
+  Currently, Minuet offers the config option `config.lsp.completion.adjust_indentation`
+  (enabled by default) as a temporary workaround. However, the author
+  acknowledges that this solution is incomplete and may introduce additional edge
+  cases when enabled.
 
-1. Ensure `config.add_single_line_entry = true` and only accept single-line completions.
-2. Avoid using Minuet and built-in completion with languages where indentation
-   affects semantics, such as Python.
+  Therefore, consider the following practices when using built-in completion:
+  - Ensure `config.add_single_line_entry = true` and only accept single-line completions.
+  - Avoid using Minuet and built-in completion with languages where indentation
+    affects semantics, such as Python.
 
-**Additional Note:**
+- Users might call `vim.lsp.completion.enable {autotrigger = true}` during
+  the `LspAttach` event when the client supports completion. However, this is
+  not the desired behavior for Minuet. As an LLM completion source, Minuet can
+  face significant rate limits during automatic triggering.
 
-Users might call `vim.lsp.completion.enable {autotrigger = true}` during the
-`LspAttach` event when the client supports completion. However, this is not the
-desired behavior for Minuet. As an LLM completion source, Minuet can face
-significant rate limits during automatic triggering.
+  Therefore, it's recommended to enable Minuet for automatic triggering using
+  the `config.lsp.completion.enabled_auto_trigger_ft` setting.
 
-Therefore, it's recommended to enable Minuet for automatic triggering using the
-`config.lsp.completion.enabled_auto_trigger_ft` setting.
-
-For users who uses `LspAttach` event, it is recommeded to verify that the
-server is not the Minuet server before enabling autotrigger. An example
-configuration is shown below:
+  For users who uses `LspAttach` event, it is recommeded to verify that the
+  server is not the Minuet server before enabling autotrigger. An example
+  configuration is shown below:
 
 ```lua
 vim.api.nvim_create_autocmd('LspAttach', {
