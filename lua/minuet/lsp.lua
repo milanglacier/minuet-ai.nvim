@@ -411,6 +411,18 @@ function M.setup()
         )
     end
 
+    if
+        config.lsp.inline_completion.enable
+        and config.lsp.inline_completion.warn_on_virtualtext
+        and #config.virtualtext.auto_trigger_ft > 0
+    then
+        vim.notify(
+            'Minuet LSP inline completion and Minuet virtual text should not be used together. '
+                .. 'Disable one of them, or set lsp.inline_completion.warn_on_virtualtext = false to suppress this warning.',
+            vim.log.levels.WARN
+        )
+    end
+
     vim.api.nvim_clear_autocmds { group = M.augroup }
 
     if #config.lsp.enabled_ft > 0 then

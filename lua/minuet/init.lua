@@ -48,20 +48,6 @@ function M.setup(config)
         require('cmp').register_source('minuet', require('minuet.cmp'):new())
     end
 
-    -- warn_on_virtualtext: warn when LSP inline completion is enabled
-    -- while Minuet virtual text is also configured for use
-    if
-        M.config.lsp.inline_completion.enable
-        and M.config.lsp.inline_completion.warn_on_virtualtext
-        and #M.config.virtualtext.auto_trigger_ft > 0
-    then
-        vim.notify(
-            'Minuet LSP inline completion and Minuet virtual text should not be used together. '
-                .. 'Disable one of them, or set lsp.inline_completion.warn_on_virtualtext = false to suppress this warning.',
-            vim.log.levels.WARN
-        )
-    end
-
     require('minuet.virtualtext').setup()
     require('minuet.lsp').setup()
     require 'minuet.deprecate'
