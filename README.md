@@ -229,20 +229,26 @@ require('blink-cmp').setup {
 **Requirements:**
 
 - Neovim version 0.11 or higher is necessary for built-in completion.
+- Neovim version 0.12 or higher is necessary for `vim.lsp.inline_completion`.
+
+### Completion
 
 ```lua
 require('minuet').setup {
     lsp = {
         enabled_ft = { 'toml', 'lua', 'cpp' },
-        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
-        enabled_auto_trigger_ft = { 'cpp', 'lua' },
+        completion = {
+            -- Enables automatic completion triggering using `vim.lsp.completion.enable`
+            enabled_auto_trigger_ft = { 'cpp', 'lua' },
+        },
     }
 }
 ```
 
-The `enabled_auto_trigger_ft` setting is relevant only for built-in completion.
-`Mini.Completion` users can ignore this option, as Mini.Completion uses **all**
-available LSPs for **auto-triggered** completion.
+The `completion.enabled_auto_trigger_ft` setting is relevant only for built-in
+completion (`vim.lsp.completion`). `Mini.Completion` users can ignore this
+option, as Mini.Completion uses **all** available LSPs for **auto-triggered**
+completion.
 
 For manually triggered completion, ensure `vim.bo.omnifunc` is set to
 `v:lua.vim.lsp.omnifunc` and use `<C-x><C-o>` in Insert mode.
@@ -269,7 +275,7 @@ source rather than through LSP for two main reasons:
 here](https://github.com/neovim/neovim/issues/32972)) may cause unexpected
 indentation behavior when accepting multi-line completions.
 
-Currently, Minuet offers the config option `config.lsp.adjust_indentation`
+Currently, Minuet offers the config option `config.lsp.completion.adjust_indentation`
 (enabled by default) as a temporary workaround. However, the author
 acknowledges that this solution is incomplete and may introduce additional edge
 cases when enabled.
@@ -288,7 +294,7 @@ desired behavior for Minuet. As an LLM completion source, Minuet can face
 significant rate limits during automatic triggering.
 
 Therefore, it's recommended to enable Minuet for automatic triggering using the
-`config.lsp.enabled_auto_trigger_ft` setting.
+`config.lsp.completion.enabled_auto_trigger_ft` setting.
 
 For users who uses `LspAttach` event, it is recommeded to verify that the
 server is not the Minuet server before enabling autotrigger. An example
@@ -311,6 +317,47 @@ vim.api.nvim_create_autocmd('LspAttach', {
     desc = 'Enable built-in auto completion',
 })
 ```
+
+### Inline completion
+
+Minuet can also expose suggestions through Neovim's built-in
+`vim.lsp.inline_completion` interface:
+
+```lua
+require('minuet').setup {
+    lsp = {
+        enabled_ft = { 'toml', 'lua', 'cpp' },
+        inline_completion = {
+            enable = true,
+            enabled_auto_trigger_ft = { 'cpp', 'lua' },
+        },
+    },
+}
+
+vim.keymap.set('i', '<A-x>', function()
+    vim.lsp.inline_completion.get()
+end, { desc = 'accept' })
+vim.keymap.set('i', '<A-c>', function()
+    vim.lsp.inline_completion.select { count = 1 }
+end, { desc = 'cycle to next' })
+vim.keymap.set('i', '<A-v>', function()
+    vim.lsp.inline_completion.select { count = -1 }
+end, { desc = 'cycle to prev' })
+```
+
+**Recommendation:**
+
+If you want inline suggestions, Minuet's own `virtualtext` frontend is still
+the **recommended** choice. Neovim's built-in `inline_completion` support is a
+useful baseline, but in practice it only covers automatic triggering. Minuet's
+`virtualtext` frontend exposes more of Minuet's intended completion workflow:
+it supports both manual invocation and automatic triggering, keeps suggestions
+in sync as you continue typing, and lets you accept longer suggestions
+incrementally, including accepting only part of a completion instead of
+committing the entire suggestion at once.
+
+When using LSP inline completion, avoid enabling Minuet `virtualtext` at the
+same time.
 
 </details>
 
@@ -554,16 +601,29 @@ default_config = {
         enabled_ft = {},
         -- Filetypes excluded from LSP activation. Useful when `enabled_ft` = { '*' }
         disabled_ft = {},
-        -- Enables automatic completion triggering using `vim.lsp.completion.enable`
-        enabled_auto_trigger_ft = {},
-        -- Filetypes excluded from autotriggering. Useful when `enabled_auto_trigger_ft` = { '*' }
-        disabled_auto_trigger_ft = {},
-        -- if true, warn the user that they should use the native source
-        -- instead when the user is using blink or nvim-cmp.
-        warn_on_blink_or_cmp = true,
-        -- See README section [Built-in Completion, Mini.Completion, and LSP
-        -- Setup] for more details on this option.
-        adjust_indentation = true,
+        completion = {
+            enable = true,
+            -- if true, warn the user that they should use the native source
+            -- instead when the user is using blink or nvim-cmp.
+            warn_on_blink_or_cmp = true,
+            -- See README section [Built-in Completion, Mini.Completion, and LSP
+            -- Setup] for more details on this option.
+            adjust_indentation = true,
+            -- Enables automatic completion triggering using `vim.lsp.completion.enable`
+            enabled_auto_trigger_ft = {},
+            -- Filetypes excluded from autotriggering. Useful when `enabled_auto_trigger_ft` = { '*' }
+            disabled_auto_trigger_ft = {},
+        },
+        inline_completion = {
+            enable = false,
+            -- if true, warn when LSP inline completion is enabled while
+            -- Minuet virtual text is also configured for use.
+            warn_on_virtualtext = true,
+            -- Enables automatic inline completion for these filetypes.
+            enabled_auto_trigger_ft = {},
+            -- Filetypes excluded from inline completion autotriggering.
+            disabled_auto_trigger_ft = {},
+        },
     },
     virtualtext = {
         -- Specify the filetypes to enable automatic virtual text completion,
@@ -1255,6 +1315,10 @@ The Minuet LSP command provides commands for managing the in-process LSP server:
 - `:Minuet lsp detach`: Detach the Minuet LSP server from the **current buffer**.
 - `:Minuet lsp enable_auto_trigger`: Enable automatic completion triggering using `vim.lsp.completion.enable` for **current buffer**.
 - `:Minuet lsp disable_auto_trigger`: Disable automatic completion triggering for **current buffer**.
+- `:Minuet lsp completion enable_auto_trigger`: Enable built-in completion auto-triggering for the **current buffer**.
+- `:Minuet lsp completion disable_auto_trigger`: Disable built-in completion auto-triggering for the **current buffer**.
+- `:Minuet lsp inline_completion enable_auto_trigger`: Enable `vim.lsp.inline_completion` auto-triggering for the **current buffer**.
+- `:Minuet lsp inline_completion disable_auto_trigger`: Disable `vim.lsp.inline_completion` auto-triggering for the **current buffer**.
 
 # API
 

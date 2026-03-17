@@ -12,12 +12,54 @@ function M.setup(config)
     end
 
     config.presets = nil
+
+    -- Migrate deprecated flat LSP keys into nested lsp.completion.*
+    if config.lsp then
+        local flat_to_nested = {
+            enabled_auto_trigger_ft = 'enabled_auto_trigger_ft',
+            disabled_auto_trigger_ft = 'disabled_auto_trigger_ft',
+            warn_on_blink_or_cmp = 'warn_on_blink_or_cmp',
+            adjust_indentation = 'adjust_indentation',
+        }
+        for flat_key, nested_key in pairs(flat_to_nested) do
+            if config.lsp[flat_key] ~= nil then
+                -- nested config wins if both old and new keys are provided
+                if not config.lsp.completion or config.lsp.completion[nested_key] == nil then
+                    config.lsp.completion = config.lsp.completion or {}
+                    config.lsp.completion[nested_key] = config.lsp[flat_key]
+                end
+                config.lsp[flat_key] = nil
+                vim.deprecate(
+                    'minuet.config.lsp.' .. flat_key,
+                    'minuet.config.lsp.completion.' .. nested_key,
+                    'next release',
+                    'minuet',
+                    false
+                )
+            end
+        end
+    end
+
     M.config = vim.tbl_deep_extend('force', default_config, config or {})
 
     local has_cmp = pcall(require, 'cmp')
 
     if has_cmp then
         require('cmp').register_source('minuet', require('minuet.cmp'):new())
+    end
+
+    -- warn_on_virtualtext: warn when LSP inline completion is enabled
+    -- while Minuet virtual text is also configured for use
+    if
+        M.config.lsp.inline_completion.enable
+        and M.config.lsp.inline_completion.warn_on_virtualtext
+        and #M.config.virtualtext.auto_trigger_ft > 0
+    then
+        vim.notify(
+            'Minuet LSP inline completion and Minuet virtual text should not be used together. '
+                .. 'Disable one of them, or set lsp.inline_completion.warn_on_virtualtext = false to suppress this warning.',
+            vim.log.levels.WARN
+        )
     end
 
     require('minuet.virtualtext').setup()
@@ -192,26 +234,34 @@ vim.api.nvim_create_user_command('Minuet', function(args)
     })
 
     local command = fargs[1]
-    local subcommand = fargs[2]
 
     if command == 'change_model' then
-        M.change_model(subcommand)
+        M.change_model(fargs[2])
     elseif command == 'change_preset' then
-        M.change_preset(subcommand)
+        M.change_preset(fargs[2])
     else
-        local subcommands = actions[command]
-        if not subcommands then
+        local action_group = actions[command]
+        if not action_group then
             vim.notify('Invalid Minuet command: ' .. tostring(command), vim.log.levels.ERROR)
             return
         end
 
-        local subcommand_fn = subcommands[subcommand]
-        if not subcommand_fn then
+        -- For commands like `lsp`, the action_group may contain nested
+        -- sub-groups (e.g. `lsp completion enable_auto_trigger`).
+        -- Walk one level deeper when fargs[2] resolves to a table.
+        local action_name = fargs[2]
+        if type(action_group[action_name]) == 'table' then
+            action_group = action_group[action_name]
+            action_name = fargs[3]
+        end
+
+        local action_fn = action_group[action_name]
+        if not action_fn then
             vim.notify('Minuet ' .. command .. ' requires a valid action', vim.log.levels.ERROR)
             return
         end
 
-        subcommand_fn()
+        action_fn()
     end
 end, {
     nargs = '+',
@@ -221,49 +271,51 @@ end, {
             return
         end
 
+        local completions = {
+            cmp = { enable = true, disable = true, toggle = true },
+            blink = { enable = true, disable = true, toggle = true },
+            virtualtext = { enable = true, disable = true, toggle = true },
+            lsp = {
+                attach = true,
+                detach = true,
+                completion = { enable_auto_trigger = true, disable_auto_trigger = true },
+                inline_completion = { enable_auto_trigger = true, disable_auto_trigger = true },
+            },
+            change_model = complete_change_model_options,
+            change_provider = function()
+                local providers = {}
+                for k, _ in pairs(M.config.provider_options) do
+                    table.insert(providers, k)
+                end
+                return providers
+            end,
+            change_preset = function()
+                local presets = {}
+                for k, _ in pairs(M.presets) do
+                    table.insert(presets, k)
+                end
+                return presets
+            end,
+        }
+
         cmdline = cmdline or ''
+        local parts = vim.split(vim.trim(cmdline), '%s+')
 
-        if cmdline:find 'change_model' then
-            return complete_change_model_options()
-        end
-
-        if cmdline:find 'cmp' or cmdline:find 'blink' or cmdline:find 'virtualtext' then
-            return {
-                'enable',
-                'disable',
-                'toggle',
-            }
-        end
-
-        if cmdline:find 'lsp' then
-            return {
-                'attach',
-                'detach',
-                'enable_auto_trigger',
-                'disable_auto_trigger',
-            }
-        end
-
-        if cmdline:find 'change_provider' then
-            if not M.config then
-                return
+        local node = completions
+        for i = 2, #parts do
+            if type(node) ~= 'table' or node[parts[i]] == nil then
+                return {}
             end
-            local providers = {}
-            for k, _ in pairs(M.config.provider_options) do
-                table.insert(providers, k)
-            end
-            return providers
+            node = node[parts[i]]
         end
 
-        if cmdline:find 'change_preset' then
-            local presets = {}
-            for k, _ in pairs(M.presets) do
-                table.insert(presets, k)
-            end
-            return presets
+        if type(node) == 'function' then
+            return node()
+        elseif type(node) == 'table' then
+            return vim.tbl_keys(node)
         end
 
-        return { 'cmp', 'virtualtext', 'blink', 'lsp', 'change_provider', 'change_model', 'change_preset' }
+        return {}
     end,
 })
 
