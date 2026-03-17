@@ -287,6 +287,7 @@ end, {
         cmdline = cmdline or ''
         local parts = vim.split(vim.trim(cmdline), '%s+')
 
+        ---@type table|function
         local node = completions
         for i = 2, #parts do
             if type(node) ~= 'table' or node[parts[i]] == nil then
