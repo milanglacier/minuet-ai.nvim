@@ -6,7 +6,9 @@
   - [Virtual Text Setup](#virtual-text-setup)
   - [Nvim-cmp setup](#nvim-cmp-setup)
   - [Blink-cmp Setup](#blink-cmp-setup)
-  - [Built-in Completion, Mini.Completion, and LSP Setup](#built-in-completion-minicompletion-and-lsp-setup)
+  - [In-Process LSP for Built-in Completion and Inline Completion](#in-process-lsp-for-built-in-completion-and-inline-completion)
+    - [Completion](#completion)
+    - [Inline completion](#inline-completion)
   - [LLM Provider Examples](#llm-provider-examples)
     - [Openrouter Kimi-K2](#openrouter-kimi-k2)
     - [Deepseek](#deepseek)
@@ -222,7 +224,7 @@ require('blink-cmp').setup {
 
 </details>
 
-## Built-in Completion, Mini.Completion, and LSP Setup
+## In-Process LSP for Built-in Completion and Inline Completion
 
 <details>
 
@@ -350,11 +352,11 @@ end, { desc = 'cycle to prev' })
 If you want inline suggestions, Minuet's own `virtualtext` frontend is still
 the **recommended** choice. Neovim's built-in `inline_completion` support is a
 useful baseline, but in practice it only covers automatic triggering. Minuet's
-`virtualtext` frontend exposes more of Minuet's intended completion workflow:
-it supports both manual invocation and automatic triggering, keeps suggestions
-in sync as you continue typing, and lets you accept longer suggestions
-incrementally, including accepting only part of a completion instead of
-committing the entire suggestion at once.
+`virtualtext` frontend supports a much more comprehensive workflow: it supports
+both manual invocation and automatic triggering, keeps suggestions in sync as
+you continue typing, and lets you accept longer suggestions incrementally,
+including accepting only part of a completion instead of committing the entire
+suggestion at once.
 
 When using LSP inline completion, avoid enabling Minuet `virtualtext` at the
 same time.
@@ -606,8 +608,7 @@ default_config = {
             -- if true, warn the user that they should use the native source
             -- instead when the user is using blink or nvim-cmp.
             warn_on_blink_or_cmp = true,
-            -- See README section [Built-in Completion, Mini.Completion, and LSP
-            -- Setup] for more details on this option.
+            -- See README In-Process LSP section for more details on this option.
             adjust_indentation = true,
             -- Enables automatic completion triggering using `vim.lsp.completion.enable`
             enabled_auto_trigger_ft = {},
@@ -619,7 +620,8 @@ default_config = {
             -- if true, warn when LSP inline completion is enabled while
             -- Minuet virtual text is also configured for use.
             warn_on_virtualtext = true,
-            -- Enables automatic inline completion for these filetypes.
+            -- Enables automatic inline completion using `vim.lsp.inline_completion.enable`
+            -- for these filetypes.
             enabled_auto_trigger_ft = {},
             -- Filetypes excluded from inline completion autotriggering.
             disabled_auto_trigger_ft = {},
