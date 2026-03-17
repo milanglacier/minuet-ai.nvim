@@ -423,6 +423,10 @@ function M.setup()
         )
     end
 
+    if config.lsp.inline_completion.enable and not vim.lsp.inline_completion then
+        vim.notify('Minuet LSP inline completion requires nvim.lsp.inline_completion', vim.log.levels.WARN)
+    end
+
     vim.api.nvim_clear_autocmds { group = M.augroup }
 
     if #config.lsp.enabled_ft > 0 then
@@ -528,6 +532,11 @@ M.actions.completion.disable_auto_trigger = function()
 end
 
 M.actions.inline_completion.enable_auto_trigger = function()
+    if not vim.lsp.inline_completion then
+        vim.notify('Minuet LSP inline completion requires nvim.lsp.inline_completion', vim.log.levels.WARN)
+        return
+    end
+
     local bufnr = vim.api.nvim_get_current_buf()
     local lsps = vim.lsp.get_clients { name = 'minuet', bufnr = bufnr }
     set_auto_trigger('inline_completion', bufnr, true)
@@ -537,26 +546,21 @@ M.actions.inline_completion.enable_auto_trigger = function()
         return
     end
 
-    if not vim.lsp.inline_completion then
-        vim.notify('Minuet LSP inline completion requires nvim inline completion support', vim.log.levels.WARN)
-        return
-    end
-
     vim.lsp.inline_completion.enable(true, { bufnr = bufnr })
     utils.notify('Minuet LSP inline completion is enabled for auto triggering', 'verbose', vim.log.levels.INFO)
 end
 
 M.actions.inline_completion.disable_auto_trigger = function()
+    if not vim.lsp.inline_completion then
+        vim.notify('Minuet LSP inline completion requires nvim.lsp.inline_completion', vim.log.levels.WARN)
+        return
+    end
+
     local bufnr = vim.api.nvim_get_current_buf()
     set_auto_trigger('inline_completion', bufnr, false)
     local lsps = vim.lsp.get_clients { name = 'minuet', bufnr = bufnr }
 
     if #lsps == 0 then
-        return
-    end
-
-    if not vim.lsp.inline_completion then
-        vim.notify('Minuet LSP inline completion requires nvim inline completion support', vim.log.levels.WARN)
         return
     end
 
