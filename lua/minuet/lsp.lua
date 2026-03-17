@@ -15,14 +15,8 @@ M.state = {
     inline_completion = {},
 }
 
-local function get_state(feature, bufnr)
-    if not M.state[feature][bufnr] then
-        M.state[feature][bufnr] = {
-            is_in_throttle = nil,
-            debounce_timer = nil,
-        }
-    end
-    return M.state[feature][bufnr]
+local function get_state(feature)
+    return M.state[feature]
 end
 
 function M.get_trigger_characters()
@@ -100,8 +94,7 @@ M.request_handler['textDocument/completion'] = function(_, params, callback, not
         return true, id
     end
 
-    local bufnr = vim.api.nvim_get_current_buf()
-    local st = get_state('completion', bufnr)
+    local st = get_state 'completion'
 
     local function _complete()
         -- NOTE: Since the enable predicates are evaluated at runtime, this
@@ -249,8 +242,7 @@ M.request_handler['textDocument/inlineCompletion'] = function(_, params, callbac
         return true, id
     end
 
-    local bufnr = vim.api.nvim_get_current_buf()
-    local st = get_state('inline_completion', bufnr)
+    local st = get_state 'inline_completion'
 
     local function _complete()
         if not utils.run_hooks_until_failure(config.enable_predicates) then
