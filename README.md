@@ -233,6 +233,17 @@ require('blink-cmp').setup {
 - Neovim version 0.11 or higher is necessary for built-in completion.
 - Neovim version 0.12 or higher is necessary for `vim.lsp.inline_completion`.
 
+**Note:**
+
+`config.lsp.completion.enable` and `config.lsp.inline_completion.enable` are
+setup-time options. Minuet decides which LSP capabilities to expose when
+`require('minuet').setup()` runs, so changing either option later will not
+enable the feature for an already-running Minuet LSP server.
+
+If you might want to use one of these features later in the same session,
+enable it during setup first, then control only its per-buffer auto-trigger
+behavior at runtime.
+
 ### Completion
 
 ```lua
@@ -346,6 +357,13 @@ vim.keymap.set('i', '<A-v>', function()
     vim.lsp.inline_completion.select { count = -1 }
 end, { desc = 'cycle to prev' })
 ```
+
+If you prefer not to use inline completion at startup but still want the option
+to enable it for specific buffers later, set
+`config.lsp.inline_completion.enable = true` during setup and leave
+`config.lsp.inline_completion.enabled_auto_trigger_ft` empty. You can then
+enable it at runtime for the current buffer with: `:Minuet lsp
+inline_completion enable_auto_trigger`.
 
 **Recommendation:**
 
