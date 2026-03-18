@@ -922,8 +922,8 @@ Note: If you intend to use GPT-5 series models (e.g., `gpt-5-mini` or
 
 1. Use `max_completion_tokens` instead of `max_tokens`.
 2. These models do not support `top_p` or `temperature` adjustments.
-3. Ensure `reasoning_effort` is set to `minimal` and update your request
-   options accordingly.
+3. Disable thinking by setting `reasoning_effort` to `none`, or use `minimal`
+   if your chosen model does not support `none`.
 
 </details>
 
