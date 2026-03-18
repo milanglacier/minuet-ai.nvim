@@ -819,8 +819,8 @@ When use chat-based LLMs, there are two ways for constructing the prompt:
 placing the prefix (context before the cursor) before the suffix (context after
 the cursor), or placing the suffix before the prefix.
 
-By default, `minuet` uses the **prefix-first** style for the Gemini provider,
-and the **suffix-first** style for OpenAI, OpenAI-Compatible, and Claude
+By default, `minuet` uses the **prefix-first** style for the OpenAI, Gemini
+provider, and the **suffix-first** style for OpenAI-Compatible, and Claude
 providers. It is recommended that you experiment with both strategies to
 determine which yields the best results, particularly if you are using an
 OpenAI-compatible provider with various models.

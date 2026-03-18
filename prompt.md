@@ -55,7 +55,7 @@ We utilize two distinct strategies when constructing prompts:
 
 1. **Prefix First Style**: This involves including the code preceding the
    cursor initially, followed by the code succeeding the cursor. This approach
-   is used only for the **Gemini** provider.
+   is used for the **OpenAI** and **Gemini** provider.
 
 2. **Suffix First Style**: This method involves including the code following
    the cursor initially, and then the code preceding the cursor. It is employed
