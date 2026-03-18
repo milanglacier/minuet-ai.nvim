@@ -878,7 +878,7 @@ the following is the default configuration for OpenAI:
 ```lua
 provider_options = {
     openai = {
-        model = 'gpt-4.1-mini',
+        model = 'gpt-5.4-nano',
         end_point = 'https://api.openai.com/v1/chat/completions',
         system = "see [Prompt] section for the default value",
         few_shots = "see [Prompt] section for the default value",
@@ -909,16 +909,16 @@ provider_options = {
 		optional = {
 			max_completion_tokens = 128,
 			-- for thinking models
-			reasoning_effort = "minimal",
-			-- If your chosen model supports it, you can also set this to 'none'.
-			-- reasoning_effort = 'none'
+			reasoning_effort = 'none'
+			-- reasoning_effort = "minimal",
+			-- Set to "minimal" if your chosen model doesn't support "none"
 		},
 	},
 }
 ```
 
 Note: If you intend to use GPT-5 series models (e.g., `gpt-5-mini` or
-`gpt-5-nano`), keep the following points in mind:
+`gpt-5.4-nano`), keep the following points in mind:
 
 1. Use `max_completion_tokens` instead of `max_tokens`.
 2. These models do not support `top_p` or `temperature` adjustments.

@@ -348,7 +348,7 @@ M.provider_options = {
         get_text_fn = {},
     },
     openai = {
-        model = 'gpt-4.1-mini',
+        model = 'gpt-5.4-nano',
         api_key = 'OPENAI_API_KEY',
         end_point = 'https://api.openai.com/v1/chat/completions',
         system = M.default_system,
