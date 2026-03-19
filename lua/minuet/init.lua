@@ -23,11 +23,6 @@ function M.setup(config)
         }
         for flat_key, nested_key in pairs(flat_to_nested) do
             if config.lsp[flat_key] ~= nil then
-                -- nested config wins if both old and new keys are provided
-                if not config.lsp.completion or config.lsp.completion[nested_key] == nil then
-                    config.lsp.completion = config.lsp.completion or {}
-                    config.lsp.completion[nested_key] = config.lsp[flat_key]
-                end
                 config.lsp[flat_key] = nil
                 vim.deprecate(
                     'minuet.config.lsp.' .. flat_key,
