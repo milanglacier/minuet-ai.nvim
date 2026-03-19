@@ -1332,8 +1332,8 @@ The Minuet LSP command provides commands for managing the in-process LSP server:
 
 - `:Minuet lsp attach`: Attach the Minuet LSP server to the **current buffer**.
 - `:Minuet lsp detach`: Detach the Minuet LSP server from the **current buffer**.
-- `:Minuet lsp completion enable_auto_trigger`: Enable built-in completion auto-triggering for the **current buffer**.
-- `:Minuet lsp completion disable_auto_trigger`: Disable built-in completion auto-triggering for the **current buffer**.
+- `:Minuet lsp completion enable_auto_trigger`: Enable auto-triggered `vim.lsp.completion` for the **current buffer**.
+- `:Minuet lsp completion disable_auto_trigger`: Disable auto-triggered `vim.lsp.completion` for the **current buffer**.
 - `:Minuet lsp inline_completion enable_auto_trigger`: Enable `vim.lsp.inline_completion` auto-triggering for the **current buffer**.
 - `:Minuet lsp inline_completion disable_auto_trigger`: Disable `vim.lsp.inline_completion` auto-triggering for the **current buffer**.
 
