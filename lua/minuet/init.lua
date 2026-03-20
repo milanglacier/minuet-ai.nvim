@@ -246,7 +246,7 @@ vim.api.nvim_create_user_command('Minuet', function(args)
     end
 end, {
     nargs = '+',
-    complete = function(_, cmdline, _)
+    complete = function(arglead, cmdline, _)
         if not M.config then
             vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
             return
@@ -284,17 +284,30 @@ end, {
 
         ---@type table|function
         local node = completions
-        for i = 2, #parts do
-            if type(node) ~= 'table' or node[parts[i]] == nil then
+
+        -- The current part may be partial, so keep `node` at the parent level
+        -- and filter by prefix.
+        local n_fully_typed_parts = #parts
+        if arglead ~= '' and #parts > 0 then
+            n_fully_typed_parts = n_fully_typed_parts - 1
+        end
+
+        for i = 2, n_fully_typed_parts do
+            local part = parts[i]
+            if type(node) ~= 'table' or node[part] == nil then
                 return {}
             end
-            node = node[parts[i]]
+            node = node[part]
         end
 
         if type(node) == 'function' then
-            return node()
+            return vim.tbl_filter(function(item)
+                return vim.startswith(item, arglead)
+            end, node())
         elseif type(node) == 'table' then
-            return vim.tbl_keys(node)
+            return vim.tbl_filter(function(item)
+                return vim.startswith(item, arglead)
+            end, vim.tbl_keys(node))
         end
 
         return {}
