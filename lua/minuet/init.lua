@@ -171,6 +171,73 @@ function M.change_preset(preset)
     vim.notify('Minuet Preset changed to: ' .. preset, vim.log.levels.INFO)
 end
 
+local function minuet_complete(arglead, cmdline, _)
+    if not M.config then
+        vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
+        return
+    end
+
+    local completions = {
+        cmp = { enable = true, disable = true, toggle = true },
+        blink = { enable = true, disable = true, toggle = true },
+        virtualtext = { enable = true, disable = true, toggle = true },
+        lsp = {
+            attach = true,
+            detach = true,
+            completion = { enable_auto_trigger = true, disable_auto_trigger = true },
+            inline_completion = { enable_auto_trigger = true, disable_auto_trigger = true },
+        },
+        change_model = complete_change_model_options,
+        change_provider = function()
+            local providers = {}
+            for k, _ in pairs(M.config.provider_options) do
+                table.insert(providers, k)
+            end
+            return providers
+        end,
+        change_preset = function()
+            local presets = {}
+            for k, _ in pairs(M.presets) do
+                table.insert(presets, k)
+            end
+            return presets
+        end,
+    }
+
+    cmdline = cmdline or ''
+    local parts = vim.split(vim.trim(cmdline), '%s+')
+
+    ---@type table|function
+    local node = completions
+
+    -- The current part may be partial, so keep `node` at the parent level
+    -- and filter by prefix.
+    local n_fully_typed_parts = #parts
+    if arglead ~= '' and #parts > 0 then
+        n_fully_typed_parts = n_fully_typed_parts - 1
+    end
+
+    for i = 2, n_fully_typed_parts do
+        local part = parts[i]
+        if type(node) ~= 'table' or node[part] == nil then
+            return {}
+        end
+        node = node[part]
+    end
+
+    if type(node) == 'function' then
+        return vim.tbl_filter(function(item)
+            return vim.startswith(item, arglead)
+        end, node())
+    elseif type(node) == 'table' then
+        return vim.tbl_filter(function(item)
+            return vim.startswith(item, arglead)
+        end, vim.tbl_keys(node))
+    end
+
+    return {}
+end
+
 vim.api.nvim_create_user_command('Minuet', function(args)
     if not M.config then
         vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
@@ -246,72 +313,7 @@ vim.api.nvim_create_user_command('Minuet', function(args)
     end
 end, {
     nargs = '+',
-    complete = function(arglead, cmdline, _)
-        if not M.config then
-            vim.notify 'Minuet config is not set up yet, please call the setup function firstly.'
-            return
-        end
-
-        local completions = {
-            cmp = { enable = true, disable = true, toggle = true },
-            blink = { enable = true, disable = true, toggle = true },
-            virtualtext = { enable = true, disable = true, toggle = true },
-            lsp = {
-                attach = true,
-                detach = true,
-                completion = { enable_auto_trigger = true, disable_auto_trigger = true },
-                inline_completion = { enable_auto_trigger = true, disable_auto_trigger = true },
-            },
-            change_model = complete_change_model_options,
-            change_provider = function()
-                local providers = {}
-                for k, _ in pairs(M.config.provider_options) do
-                    table.insert(providers, k)
-                end
-                return providers
-            end,
-            change_preset = function()
-                local presets = {}
-                for k, _ in pairs(M.presets) do
-                    table.insert(presets, k)
-                end
-                return presets
-            end,
-        }
-
-        cmdline = cmdline or ''
-        local parts = vim.split(vim.trim(cmdline), '%s+')
-
-        ---@type table|function
-        local node = completions
-
-        -- The current part may be partial, so keep `node` at the parent level
-        -- and filter by prefix.
-        local n_fully_typed_parts = #parts
-        if arglead ~= '' and #parts > 0 then
-            n_fully_typed_parts = n_fully_typed_parts - 1
-        end
-
-        for i = 2, n_fully_typed_parts do
-            local part = parts[i]
-            if type(node) ~= 'table' or node[part] == nil then
-                return {}
-            end
-            node = node[part]
-        end
-
-        if type(node) == 'function' then
-            return vim.tbl_filter(function(item)
-                return vim.startswith(item, arglead)
-            end, node())
-        elseif type(node) == 'table' then
-            return vim.tbl_filter(function(item)
-                return vim.startswith(item, arglead)
-            end, vim.tbl_keys(node))
-        end
-
-        return {}
-    end,
+    complete = minuet_complete,
 })
 
 return M
