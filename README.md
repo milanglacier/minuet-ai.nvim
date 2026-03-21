@@ -1068,10 +1068,12 @@ provider_options = {
         optional = {
             generationConfig = {
                 maxOutputTokens = 256,
-                -- When using `gemini-2.5-flash`, it is recommended to entirely
-                -- disable thinking for faster completion retrieval.
                 thinkingConfig = {
+                    -- Disable thinking for gemini 2.5 models
                     thinkingBudget = 0,
+                    -- Disable thinking for gemini 3.x models
+                    thinkingLevel = 'minimal',
+                    -- Setting only one of the above options is sufficient.
                 },
             },
             safetySettings = {
