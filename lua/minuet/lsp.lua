@@ -231,6 +231,7 @@ end
 M.request_handler['textDocument/inlineCompletion'] = function(_, params, callback, notify_callback)
     local id = M.generate_request_id()
     local config = require('minuet').config
+    local position = params.position
 
     if not config.lsp.inline_completion.enable then
         vim.schedule(function()
@@ -275,6 +276,16 @@ M.request_handler['textDocument/inlineCompletion'] = function(_, params, callbac
             for _, result in ipairs(data) do
                 table.insert(items, {
                     insertText = result,
+                    range = {
+                        start = {
+                            line = position.line,
+                            character = position.character,
+                        },
+                        ['end'] = {
+                            line = position.line,
+                            character = position.character,
+                        },
+                    },
                 })
             end
 
