@@ -381,6 +381,14 @@ function action.accept(n_lines)
     local cursor = api.nvim_win_get_cursor(0)
     local line, col = cursor[1] - 1, cursor[2]
 
+    if vim.fn.pumvisible() == 1 then
+        -- Accepting Minuet completion while the pum is open is temporary; when
+        -- the user closes the pum, Vim restores the buffer state and removes
+        -- Minuet's completion text. Therefore we need to close the pum before
+        -- accepting.
+        api.nvim_feedkeys(api.nvim_replace_termcodes('<C-e>', true, true, true), 'n', true)
+    end
+
     vim.schedule(function()
         api.nvim_buf_set_text(0, line, col, line, col, suggestions)
         local new_col = #suggestions[#suggestions]
