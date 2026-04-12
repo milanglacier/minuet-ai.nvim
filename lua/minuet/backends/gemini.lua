@@ -1,6 +1,5 @@
 local utils = require 'minuet.utils'
 local common = require 'minuet.backends.common'
-local Job = require 'plenary.job'
 
 local M = {}
 
@@ -109,12 +108,8 @@ function M.complete(context, callback)
         timestamp = timestamp,
     })
 
-    local new_job = Job:new {
-        command = config.curl_cmd,
-        args = args,
-        on_exit = vim.schedule_wrap(function(job, exit_code)
-            common.remove_job(job)
-
+    local new_job = common.start_job(config.curl_cmd, args, {
+        on_exit = function(_, result)
             utils.run_event('MinuetRequestFinished', {
                 provider = provider_name,
                 name = provider_name,
@@ -126,9 +121,9 @@ function M.complete(context, callback)
 
             local items_raw
             if options.stream then
-                items_raw = utils.stream_decode(job, exit_code, data_file, provider_name, M.get_text_fn)
+                items_raw = utils.stream_decode(result, data_file, provider_name, M.get_text_fn)
             else
-                items_raw = utils.no_stream_decode(job, exit_code, data_file, provider_name, M.get_text_fn)
+                items_raw = utils.no_stream_decode(result, data_file, provider_name, M.get_text_fn)
             end
 
             if not items_raw then
@@ -143,11 +138,24 @@ function M.complete(context, callback)
             items = utils.remove_spaces(items)
 
             callback(items)
-        end),
-    }
+        end,
+        on_spawn_error = function()
+            os.remove(data_file)
+            utils.run_event('MinuetRequestFinished', {
+                provider = provider_name,
+                name = provider_name,
+                model = options.model,
+                n_requests = 1,
+                request_idx = 1,
+                timestamp = timestamp,
+            })
+            callback()
+        end,
+    })
 
-    common.register_job(new_job)
-    new_job:start()
+    if not new_job then
+        return
+    end
 
     utils.run_event('MinuetRequestStarted', {
         provider = provider_name,

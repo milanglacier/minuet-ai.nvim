@@ -97,7 +97,6 @@ https://github.com/user-attachments/assets/e0c4f2bd-0361-45b4-8eb4-0f49356bd7d9
 # Requirements
 
 - Neovim 0.10+.
-- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
 - optional: [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
 - optional: [blink.cmp](https://github.com/Saghen/blink.cmp)
 - An API key for at least one of the supported AI providers
@@ -116,7 +115,6 @@ specs = {
             }
         end,
     },
-    { 'nvim-lua/plenary.nvim' },
     -- optional, if you are using virtual-text frontend, nvim-cmp is not
     -- required.
     { 'hrsh7th/nvim-cmp' },

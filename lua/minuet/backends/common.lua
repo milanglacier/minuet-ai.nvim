@@ -1,19 +1,16 @@
 local M = {}
 local utils = require 'minuet.utils'
-local uv = vim.uv or vim.loop
----@diagnostic disable-next-line: unused-local
-local Job = require 'plenary.job'
 
--- currently running completion jobs, basically forked curl processes
+-- Currently running completion jobs, basically forked curl processes.
 M.current_jobs = {}
 
----@param job Job
+---@param job vim.SystemObj
 function M.register_job(job)
     table.insert(M.current_jobs, job)
     utils.notify('Registered completion job', 'debug')
 end
 
----@param job Job
+---@param job vim.SystemObj
 function M.remove_job(job)
     for i, j in ipairs(M.current_jobs) do
         if j.pid == job.pid then
@@ -24,24 +21,62 @@ function M.remove_job(job)
     end
 end
 
----@param pid number
-local function terminate_job(pid)
-    if not uv.kill(pid, 'sigterm') then
-        utils.notify('Failed to terminate completion job ' .. pid, 'warn', vim.log.levels.WARN)
+---@param job vim.SystemObj
+local function terminate_job(job)
+    local ok = pcall(job.kill, job, 'sigterm')
+    if not ok then
+        utils.notify('Failed to terminate completion job ' .. job.pid, 'warn', vim.log.levels.WARN)
         return false
     end
 
-    utils.notify('Terminate completion job ' .. pid, 'debug')
+    utils.notify('Terminate completion job ' .. job.pid, 'debug')
 
     return true
 end
 
 function M.terminate_all_jobs()
     for _, job in ipairs(M.current_jobs) do
-        terminate_job(job.pid)
+        terminate_job(job)
     end
 
     M.current_jobs = {}
+end
+
+---@class minuet.JobHandlers
+---@field on_exit fun(job: vim.SystemObj, result: vim.SystemCompleted)
+---@field on_spawn_error? fun()
+
+---@param command string
+---@param args string[]
+---@param handlers minuet.JobHandlers
+---@return vim.SystemObj?
+function M.start_job(command, args, handlers)
+    local cmd = { command }
+    vim.list_extend(cmd, args)
+
+    ---@type vim.SystemObj?
+    local job
+    local ok, result = pcall(vim.system, cmd, { text = true }, vim.schedule_wrap(function(out)
+        if not job then
+            return
+        end
+
+        M.remove_job(job)
+        handlers.on_exit(job, out)
+    end))
+
+    if not ok then
+        utils.notify('Failed to start completion job: ' .. result, 'error', vim.log.levels.ERROR)
+        if handlers.on_spawn_error then
+            handlers.on_spawn_error()
+        end
+        return nil
+    end
+
+    job = result
+    M.register_job(job)
+
+    return job
 end
 
 ---@param items_raw string?
