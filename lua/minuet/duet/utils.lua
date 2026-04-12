@@ -1,9 +1,6 @@
 local M = {}
 local shared_utils = require('minuet.utils')
-
-local editable_region_start_marker = '<editable_region_start>'
-local editable_region_end_marker = '<editable_region_end>'
-local cursor_position_marker = '<cursor_position>'
+local default_markers = require('minuet.duet.config').markers
 
 function M.get_root_config()
     return require('minuet').config
@@ -11,6 +8,16 @@ end
 
 function M.get_config()
     return M.get_root_config().duet
+end
+
+local function get_markers()
+    local config = M.get_config()
+    local markers = config and config.markers or {}
+    return {
+        editable_region_start = markers.editable_region_start or default_markers.editable_region_start,
+        editable_region_end = markers.editable_region_end or default_markers.editable_region_end,
+        cursor_position = markers.cursor_position or default_markers.cursor_position,
+    }
 end
 
 M.notify = shared_utils.notify
@@ -41,7 +48,15 @@ function M.make_system_prompt(template)
 end
 
 function M.make_duet_llm_shot(context, chat_input)
-    local template = type(chat_input) == 'table' and chat_input.template or ''
+    local resolved_chat_input = M.get_or_eval_value(chat_input)
+    local template = ''
+
+    if type(resolved_chat_input) == 'string' then
+        template = resolved_chat_input
+    elseif type(resolved_chat_input) == 'table' then
+        template = M.get_or_eval_value(resolved_chat_input.template) or ''
+    end
+
     return template
         :gsub('{{{non_editable_region_before}}}', context.non_editable_region_before)
         :gsub('{{{editable_region_before_cursor}}}', context.editable_region_before_cursor)
@@ -103,20 +118,22 @@ local function count_occurrences(text, needle)
 end
 
 function M.parse_duet_response(text)
+    local markers = get_markers()
+
     if type(text) ~= 'string' or text == '' then
         return nil, 'empty response'
     end
 
-    if count_occurrences(text, editable_region_start_marker) ~= 1 then
+    if count_occurrences(text, markers.editable_region_start) ~= 1 then
         return nil, 'expected exactly one editable region start marker'
     end
 
-    if count_occurrences(text, editable_region_end_marker) ~= 1 then
+    if count_occurrences(text, markers.editable_region_end) ~= 1 then
         return nil, 'expected exactly one editable region end marker'
     end
 
-    local start_pos, start_end = text:find(editable_region_start_marker, 1, true)
-    local end_pos = text:find(editable_region_end_marker, start_end + 1, true)
+    local start_pos, start_end = text:find(markers.editable_region_start, 1, true)
+    local end_pos = text:find(markers.editable_region_end, start_end + 1, true)
     if not start_pos or not end_pos then
         return nil, 'failed to locate editable region markers'
     end
@@ -129,11 +146,11 @@ function M.parse_duet_response(text)
         inner = inner:sub(1, -2)
     end
 
-    if count_occurrences(inner, cursor_position_marker) ~= 1 then
+    if count_occurrences(inner, markers.cursor_position) ~= 1 then
         return nil, 'expected exactly one cursor marker inside editable region'
     end
 
-    local cursor_pos, cursor_end = inner:find(cursor_position_marker, 1, true)
+    local cursor_pos, cursor_end = inner:find(markers.cursor_position, 1, true)
     local before = inner:sub(1, cursor_pos - 1)
     local after = inner:sub(cursor_end + 1)
     local text_without_cursor = before .. after

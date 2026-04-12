@@ -1,95 +1,115 @@
-local default_prompt = [[
-You are an AI editing engine that rewrites only the editable region in a document.
+local default_markers = {
+    editable_region_start = '<editable_region_start>',
+    editable_region_end = '<editable_region_end>',
+    cursor_position = '<cursor_position>',
+}
+
+local function get_markers()
+    local markers = default_markers
+    if require('minuet').config then
+        markers = require('minuet').config.duet.markers
+    end
+    return markers
+end
+
+local function render_markers(template)
+    local markers = get_markers()
+    return template
+        :gsub('{{{editable_region_start}}}', markers.editable_region_start)
+        :gsub('{{{editable_region_end}}}', markers.editable_region_end)
+        :gsub('{{{cursor_position}}}', markers.cursor_position)
+end
+
+local function make_default_prompt()
+    return render_markers [[You are an AI editing engine that rewrites only the editable region in a document.
 
 Input markers:
-- `<editable_region_start>` and `<editable_region_end>` wrap the editable region.
-- `<cursor_position>` marks the current cursor position inside that editable region.
-]]
+- `{{{editable_region_start}}}` and `{{{editable_region_end}}}` wrap the editable region.
+- `{{{cursor_position}}}` marks the current cursor position inside that editable region.]]
+end
 
-local default_guidelines = [[
-Guidelines:
-1. Return only the rewritten editable region, wrapped in `<editable_region_start>` and `<editable_region_end>`.
-2. Include exactly one `<cursor_position>` marker inside the rewritten editable region.
+local function make_default_guidelines()
+    return render_markers [[Guidelines:
+1. Return only the rewritten editable region, wrapped in `{{{editable_region_start}}}` and `{{{editable_region_end}}}`.
+2. Include exactly one `{{{cursor_position}}}` marker inside the rewritten editable region.
 3. Preserve indentation, formatting, and surrounding syntax conventions.
 4. Do not return explanations, markdown fences, or any content outside the editable region block.
-5. Make the rewrite coherent with the surrounding non-editable text.
-]]
+5. Make the rewrite coherent with the surrounding non-editable text.]]
+end
 
 local default_system = {
     template = '{{{prompt}}}\n{{{guidelines}}}',
-    prompt = default_prompt,
-    guidelines = default_guidelines,
+    prompt = make_default_prompt,
+    guidelines = make_default_guidelines,
 }
 
 local default_chat_input = {
-    template = table.concat({
-        '{{{non_editable_region_before}}}',
-        '<editable_region_start>',
-        '{{{editable_region_before_cursor}}}<cursor_position>{{{editable_region_after_cursor}}}',
-        '<editable_region_end>',
-        '{{{non_editable_region_after}}}',
-    }, '\n'),
+    template = function()
+        return render_markers [[{{{non_editable_region_before}}}
+{{{editable_region_start}}}
+{{{editable_region_before_cursor}}}{{{cursor_position}}}{{{editable_region_after_cursor}}}
+{{{editable_region_end}}}
+{{{non_editable_region_after}}}]]
+    end,
 }
 
-local default_few_shots = {
-    {
-        role = 'user',
-        content = table.concat({
-            'type User = {',
-            '    id: string;',
-            '    name: string;',
-            '    role?: string;',
-            '    active?: boolean;',
-            '};',
-            '',
-            'async function buildRequest(user: User, overrides: Record<string, any> = {}) {',
-            "    const baseHeaders = { 'content-type': 'application/json' };",
-            '',
-            '<editable_region_start>',
-            '    const payload = {',
-            '        id: user.id,',
-            '        name: user.name,',
-            '    };',
-            '',
-            '    return {',
-            "        method: 'POST',",
-            '        headers: baseHeaders,',
-            '        body: JSON.stringify(payload<cursor_position>),',
-            '    };',
-            '<editable_region_end>',
-            '}',
-            '',
-            'export async function sendUser(user: User, overrides = {}) {',
-            '    const request = await buildRequest(user, overrides);',
-            "    return fetch('/api/users', request);",
-            '}',
-        }, '\n'),
-    },
-    {
-        role = 'assistant',
-        content = table.concat({
-            '<editable_region_start>',
-            '    const payload = {',
-            '        id: user.id,',
-            '        name: user.name,',
-            '        role: overrides.role ?? user.role ?? "viewer",',
-            '        active: overrides.active ?? user.active ?? true,',
-            '    };',
-            '',
-            '    return {',
-            "        method: 'POST',",
-            '        headers: {',
-            '            ...baseHeaders,',
-            '            ...overrides.headers,',
-            '        },',
-            '        body: JSON.stringify(payload),',
-            '        signal: overrides.signal,',
-            '        keepalive: overrides.keepalive ?? false,<cursor_position>',
-            '    };',
-            '<editable_region_end>',
-        }, '\n'),
-    },
+local default_few_shots = function()
+    return {
+        {
+            role = 'user',
+            content = render_markers [[type User = {
+    id: string;
+    name: string;
+    role?: string;
+    active?: boolean;
+};
+
+async function buildRequest(user: User, overrides: Record<string, any> = {}) {
+    const baseHeaders = { 'content-type': 'application/json' };
+
+{{{editable_region_start}}}
+    const payload = {
+        id: user.id,
+        name: user.name,
+    };
+
+    return {
+        method: 'POST',
+        headers: baseHeaders,
+        body: JSON.stringify(payload{{{cursor_position}}}),
+    };
+{{{editable_region_end}}}
 }
+
+export async function sendUser(user: User, overrides = {}) {
+    const request = await buildRequest(user, overrides);
+    return fetch('/api/users', request);
+}]],
+        },
+        {
+            role = 'assistant',
+            content = render_markers [[{{{editable_region_start}}}
+    const payload = {
+        id: user.id,
+        name: user.name,
+        role: overrides.role ?? user.role ?? "viewer",
+        active: overrides.active ?? user.active ?? true,
+    };
+
+    return {
+        method: 'POST',
+        headers: {
+            ...baseHeaders,
+            ...overrides.headers,
+        },
+        body: JSON.stringify(payload),
+        signal: overrides.signal,
+        keepalive: overrides.keepalive ?? false,{{{cursor_position}}}
+    };
+{{{editable_region_end}}}]],
+        },
+    }
+end
 
 local function make_openai_options()
     return {
@@ -97,7 +117,7 @@ local function make_openai_options()
         api_key = 'OPENAI_API_KEY',
         end_point = 'https://api.openai.com/v1/chat/completions',
         system = vim.deepcopy(default_system),
-        few_shots = vim.deepcopy(default_few_shots),
+        few_shots = default_few_shots,
         chat_input = vim.deepcopy(default_chat_input),
         optional = {},
         transform = {},
@@ -110,7 +130,7 @@ local function make_claude_options()
         api_key = 'ANTHROPIC_API_KEY',
         end_point = 'https://api.anthropic.com/v1/messages',
         system = vim.deepcopy(default_system),
-        few_shots = vim.deepcopy(default_few_shots),
+        few_shots = default_few_shots,
         chat_input = vim.deepcopy(default_chat_input),
         max_tokens = 8192,
         optional = {},
@@ -124,7 +144,7 @@ local function make_gemini_options()
         api_key = 'GEMINI_API_KEY',
         end_point = 'https://generativelanguage.googleapis.com/v1beta/models',
         system = vim.deepcopy(default_system),
-        few_shots = vim.deepcopy(default_few_shots),
+        few_shots = default_few_shots,
         chat_input = vim.deepcopy(default_chat_input),
         optional = {},
         transform = {},
@@ -138,7 +158,7 @@ local function make_openai_compatible_options()
         end_point = 'https://openrouter.ai/api/v1/chat/completions',
         name = 'Openrouter',
         system = vim.deepcopy(default_system),
-        few_shots = vim.deepcopy(default_few_shots),
+        few_shots = default_few_shots,
         chat_input = vim.deepcopy(default_chat_input),
         optional = {},
         transform = {},
@@ -146,12 +166,13 @@ local function make_openai_compatible_options()
 end
 
 ---@class minuet.DuetChatInput
----@field template string
+---@field template string|function
 
 ---@class minuet.DuetConfig
 ---@field provider string
 ---@field request_timeout integer
 ---@field editable_region { lines_before: integer, lines_after: integer }
+---@field markers { editable_region_start: string, editable_region_end: string, cursor_position: string }
 ---@field preview { enabled: boolean }
 ---@field provider_options table<string, table>
 local M = {
@@ -161,6 +182,7 @@ local M = {
         lines_before = 8,
         lines_after = 8,
     },
+    markers = vim.deepcopy(default_markers),
     preview = {
         enabled = true,
     },
