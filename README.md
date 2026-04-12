@@ -100,6 +100,8 @@ https://github.com/user-attachments/assets/e0c4f2bd-0361-45b4-8eb4-0f49356bd7d9
 - optional: [nvim-cmp](https://github.com/hrsh7th/nvim-cmp)
 - optional: [blink.cmp](https://github.com/Saghen/blink.cmp)
 - An API key for at least one of the supported AI providers
+- ~~[plenary.nvim](https://github.com/nvim-lua/plenary.nvim)~~ Minuet now uses
+  the builtin `vim.system` and no longer requires plenary.
 
 # Installation
 
