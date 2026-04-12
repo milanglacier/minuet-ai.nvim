@@ -499,19 +499,20 @@ function M.make_chat_llm_shot(context, template)
     return results
 end
 
-function M.no_stream_decode(response, exit_code, data_file, provider, get_text_fn)
+---@param response vim.SystemCompleted
+function M.no_stream_decode(response, data_file, provider, get_text_fn)
     os.remove(data_file)
 
-    if exit_code ~= 0 then
-        if exit_code == 28 then
+    if response.code ~= 0 then
+        if response.code == 28 then
             M.notify('Request timed out.', 'warn', vim.log.levels.WARN)
         else
-            M.notify(string.format('Request failed with exit code %d', exit_code), 'error', vim.log.levels.ERROR)
+            M.notify(string.format('Request failed with exit code %d', response.code), 'error', vim.log.levels.ERROR)
         end
         return
     end
 
-    local result = table.concat(response:result(), '\n')
+    local result = response.stdout or ''
     local success, json = pcall(vim.json.decode, result)
     if not success then
         if result ~= '' then
@@ -540,16 +541,17 @@ function M.no_stream_decode(response, exit_code, data_file, provider, get_text_f
     return result_str
 end
 
-function M.stream_decode(response, exit_code, data_file, provider, get_text_fn)
+---@param response vim.SystemCompleted
+function M.stream_decode(response, data_file, provider, get_text_fn)
     os.remove(data_file)
 
-    if not (exit_code == 28 or exit_code == 0) then
-        M.notify(string.format('Request failed with exit code %d', exit_code), 'error', vim.log.levels.ERROR)
+    if not (response.code == 28 or response.code == 0) then
+        M.notify(string.format('Request failed with exit code %d', response.code), 'error', vim.log.levels.ERROR)
         return
     end
 
     local result = {}
-    local responses = response:result()
+    local responses = vim.split(response.stdout or '', '\n', { plain = true, trimempty = false })
 
     for _, line in ipairs(responses) do
         local success, json, text

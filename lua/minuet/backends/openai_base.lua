@@ -1,7 +1,6 @@
 local M = {}
 local common = require 'minuet.backends.common'
 local utils = require 'minuet.utils'
-local Job = require 'plenary.job'
 
 function M.openai_get_text_fn_no_stream(json)
     return json.choices[1].message.content
@@ -9,6 +8,11 @@ end
 
 function M.openai_get_text_fn_stream(json)
     return json.choices[1].delta.content
+end
+
+local function prepare_fim_items(items, context)
+    local filtered_items = common.filter_context_sequences_in_items(items, context)
+    return utils.remove_spaces(filtered_items, true)
 end
 
 function M.complete_openai_base(options, context, callback)
@@ -59,12 +63,8 @@ function M.complete_openai_base(options, context, callback)
         timestamp = timestamp,
     })
 
-    local new_job = Job:new {
-        command = config.curl_cmd,
-        args = args,
-        on_exit = vim.schedule_wrap(function(job, exit_code)
-            common.remove_job(job)
-
+    local new_job = common.start_job(config.curl_cmd, args, {
+        on_exit = function(_, result)
             utils.run_event('MinuetRequestFinished', {
                 provider = provider_name,
                 model = options.model,
@@ -77,10 +77,9 @@ function M.complete_openai_base(options, context, callback)
             local items_raw
 
             if options.stream then
-                items_raw = utils.stream_decode(job, exit_code, data_file, options.name, M.openai_get_text_fn_stream)
+                items_raw = utils.stream_decode(result, data_file, options.name, M.openai_get_text_fn_stream)
             else
-                items_raw =
-                    utils.no_stream_decode(job, exit_code, data_file, options.name, M.openai_get_text_fn_no_stream)
+                items_raw = utils.no_stream_decode(result, data_file, options.name, M.openai_get_text_fn_no_stream)
             end
 
             if not items_raw then
@@ -95,11 +94,24 @@ function M.complete_openai_base(options, context, callback)
             items = utils.remove_spaces(items)
 
             callback(items)
-        end),
-    }
+        end,
+        on_spawn_error = function()
+            os.remove(data_file)
+            utils.run_event('MinuetRequestFinished', {
+                provider = provider_name,
+                model = options.model,
+                name = options.name,
+                n_requests = 1,
+                request_idx = 1,
+                timestamp = timestamp,
+            })
+            callback()
+        end,
+    })
 
-    common.register_job(new_job)
-    new_job:start()
+    if not new_job then
+        return
+    end
 
     utils.run_event('MinuetRequestStarted', {
         provider = provider_name,
@@ -162,12 +174,8 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
     })
 
     for idx = 1, n_completions do
-        local new_job = Job:new {
-            command = config.curl_cmd,
-            args = args,
-            on_exit = vim.schedule_wrap(function(job, exit_code)
-                common.remove_job(job)
-
+        local new_job = common.start_job(config.curl_cmd, args, {
+            on_exit = function(_, out)
                 utils.run_event('MinuetRequestFinished', {
                     provider = provider_name,
                     name = options.name,
@@ -180,33 +188,41 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                 local result
 
                 if options.stream then
-                    result = utils.stream_decode(job, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.stream_decode(out, data_file, options.name, get_text_fn)
                 else
-                    result = utils.no_stream_decode(job, exit_code, data_file, options.name, get_text_fn)
+                    result = utils.no_stream_decode(out, data_file, options.name, get_text_fn)
                 end
 
                 if result then
                     table.insert(items, result)
                 end
 
-                items = common.filter_context_sequences_in_items(items, context)
-                items = utils.remove_spaces(items, true)
-
-                callback(items)
-            end),
-        }
-
-        common.register_job(new_job)
-        new_job:start()
-
-        utils.run_event('MinuetRequestStarted', {
-            provider = provider_name,
-            name = options.name,
-            model = options.model,
-            n_requests = n_completions,
-            request_idx = idx,
-            timestamp = timestamp,
+                callback(prepare_fim_items(items, context))
+            end,
+            on_spawn_error = function()
+                os.remove(data_file)
+                utils.run_event('MinuetRequestFinished', {
+                    provider = provider_name,
+                    name = options.name,
+                    model = options.model,
+                    n_requests = n_completions,
+                    request_idx = idx,
+                    timestamp = timestamp,
+                })
+                callback(prepare_fim_items(items, context))
+            end,
         })
+
+        if new_job then
+            utils.run_event('MinuetRequestStarted', {
+                provider = provider_name,
+                name = options.name,
+                model = options.model,
+                n_requests = n_completions,
+                request_idx = idx,
+                timestamp = timestamp,
+            })
+        end
     end
 end
 
