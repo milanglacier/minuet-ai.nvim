@@ -43,6 +43,7 @@ function M.setup(config)
         require('cmp').register_source('minuet', require('minuet.cmp'):new())
     end
 
+    require('minuet.duet').setup()
     require('minuet.virtualtext').setup()
     require('minuet.lsp').setup()
     require 'minuet.deprecate'
@@ -181,6 +182,7 @@ local function minuet_complete(arglead, cmdline, _)
     local completions = {
         cmp = { enable = true, disable = true, toggle = true },
         blink = { enable = true, disable = true, toggle = true },
+        duet = { predict = true, apply = true, dismiss = true },
         virtualtext = { enable = true, disable = true, toggle = true },
         lsp = {
             attach = true,
@@ -273,6 +275,8 @@ vim.api.nvim_create_user_command('Minuet', function(args)
     }
 
     actions.lsp = require('minuet.lsp').actions
+
+    actions.duet = require('minuet.duet').action
 
     actions.change_provider = setmetatable({}, {
         __index = function(_, key)
