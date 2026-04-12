@@ -136,55 +136,7 @@ function M.make_curl_args(end_point, headers, data_file, timeout)
 end
 
 function M.stream_decode(response, data_file, provider, get_text_fn)
-    os.remove(data_file)
-
-    if response.code ~= 0 then
-        if response.code == 28 then
-            M.notify('Minuet duet request timed out.', 'warn', vim.log.levels.WARN)
-        else
-            M.notify(
-                string.format('Minuet duet request failed with exit code %d', response.code),
-                'error',
-                vim.log.levels.ERROR
-            )
-        end
-
-        return nil
-    end
-
-    local parts = {}
-    local responses = vim.split(response.stdout or '', '\n', { plain = true, trimempty = false })
-
-    for _, line in ipairs(responses) do
-        line = vim.trim(line)
-        if line == '' then
-            goto continue
-        end
-
-        line = line:gsub('^data:%s*', '')
-        if line == '[DONE]' then
-            goto continue
-        end
-
-        local ok, json = pcall(vim.json.decode, line)
-        if not ok then
-            goto continue
-        end
-
-        local success, text = pcall(get_text_fn, json)
-        if success and type(text) == 'string' and text ~= '' then
-            table.insert(parts, text)
-        end
-
-        ::continue::
-    end
-
-    local result = #parts > 0 and table.concat(parts) or nil
-    if not result then
-        M.notify(provider .. ' returned no text on streaming response.', 'verbose', vim.log.levels.INFO)
-    end
-
-    return result
+    require('minuet.utils').stream_decode(response, data_file, provider, get_text_fn)
 end
 
 function M.run_event(event, opts)
