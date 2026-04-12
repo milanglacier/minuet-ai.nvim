@@ -52,6 +52,7 @@ function M.make_cmp_map()
     local cmp = require 'cmp'
     return cmp.mapping(cmp.mapping.complete {
         config = {
+            ---@diagnostic disable-next-line: redundant-parameter
             sources = cmp.config.sources {
                 { name = 'minuet' },
             },
