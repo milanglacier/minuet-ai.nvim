@@ -298,7 +298,7 @@ function M.filter_text(text, context)
         return text
     end
 
-    text = M.remove_spaces_single(text, true)
+    text = M.remove_spaces_single(text or '', true)
     lines_before = M.remove_spaces_single(lines_before or '')
     lines_after = M.remove_spaces_single(lines_after or '')
 
