@@ -1,15 +1,9 @@
 local M = {}
+local shared_utils = require('minuet.utils')
 
 local editable_region_start_marker = '<editable_region_start>'
 local editable_region_end_marker = '<editable_region_end>'
 local cursor_position_marker = '<cursor_position>'
-
-local notify_levels = {
-    debug = 0,
-    verbose = 1,
-    warn = 2,
-    error = 3,
-}
 
 function M.get_root_config()
     return require('minuet').config
@@ -19,61 +13,10 @@ function M.get_config()
     return M.get_root_config().duet
 end
 
-function M.notify(msg, duet_level, vim_level, opts)
-    local root_config = M.get_root_config()
-    if not root_config or not root_config.notify then
-        return
-    end
-
-    if notify_levels[duet_level] >= notify_levels[root_config.notify] then
-        vim.notify(msg, vim_level, opts)
-    end
-end
-
-function M.get_api_key(env_var)
-    local api_key
-    if type(env_var) == 'function' then
-        api_key = env_var()
-    elseif type(env_var) == 'string' then
-        api_key = vim.env[env_var]
-    end
-
-    if type(api_key) ~= 'string' or api_key == '' then
-        return nil
-    end
-
-    return api_key
-end
-
-function M.get_or_eval_value(val)
-    if type(val) == 'function' then
-        return val()
-    end
-
-    return val
-end
-
-function M.make_tmp_file(content)
-    local tmp_file = os.tmpname()
-    local file = io.open(tmp_file, 'w+')
-
-    if not file then
-        M.notify('Cannot open temporary message file: ' .. tmp_file, 'error', vim.log.levels.ERROR)
-        return nil
-    end
-
-    local ok, json = pcall(vim.json.encode, content)
-    if not ok then
-        file:close()
-        M.notify('Failed to encode duet request data', 'error', vim.log.levels.ERROR)
-        return nil
-    end
-
-    file:write(json)
-    file:close()
-
-    return tmp_file
-end
+M.notify = shared_utils.notify
+M.get_api_key = shared_utils.get_api_key
+M.get_or_eval_value = shared_utils.get_or_eval_value
+M.make_tmp_file = shared_utils.make_tmp_file
 
 function M.make_system_prompt(template)
     if type(template) == 'string' then
@@ -135,13 +78,8 @@ function M.make_curl_args(end_point, headers, data_file, timeout)
     return args
 end
 
-function M.stream_decode(response, data_file, provider, get_text_fn)
-    require('minuet.utils').stream_decode(response, data_file, provider, get_text_fn)
-end
-
-function M.run_event(event, opts)
-    vim.api.nvim_exec_autocmds('User', { pattern = event, data = opts or {} })
-end
+M.stream_decode = shared_utils.stream_decode
+M.run_event = shared_utils.run_event
 
 function M.get_changedtick(bufnr)
     return vim.api.nvim_buf_get_changedtick(bufnr)
