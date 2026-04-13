@@ -1,4 +1,5 @@
 local api = vim.api
+local utils = require 'minuet.duet.utils'
 local M = {}
 
 M.ns_id = api.nvim_create_namespace 'minuet.duet'
@@ -16,6 +17,7 @@ for hl_group, default_link in pairs(default_highlights) do
     end
 end
 
+---@diagnostic disable-next-line: deprecated
 local diff = (vim.text and vim.text.diff) or vim.diff
 
 local function join_lines(lines)
@@ -217,10 +219,7 @@ function M.render(bufnr, state)
     if #hunks == 0 then
         render_cursor_on_unchanged_line(bufnr, state, hunks, cursor_char)
         if not state.proposed_cursor then
-            add_extmark(bufnr, state, math.max(state.range.end_row - 1, 0), {
-                virt_text = { { ' no text changes', 'MinuetDuetComment' } },
-                virt_text_pos = 'eol',
-            })
+            utils.notify('Minuet duet predicts no text changes.', 'warn', vim.log.levels.WARN)
         end
         return
     end
