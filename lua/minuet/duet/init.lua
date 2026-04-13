@@ -93,10 +93,6 @@ local function predict()
             state.proposed_cursor = parsed.cursor
 
             preview.render(bufnr, state)
-
-            if not duet_config.preview.enabled then
-                utils.notify('Minuet duet prediction is ready.', 'verbose', vim.log.levels.INFO)
-            end
         end)
     end)
 end
@@ -139,11 +135,6 @@ local action = {
     is_visible = function()
         local bufnr = api.nvim_get_current_buf()
         local state = get_state(bufnr)
-
-        if not require('minuet').config.duet.preview.enabled then
-            return state.proposed_lines ~= nil
-        end
-
         return preview.is_visible(bufnr, state)
     end,
 }

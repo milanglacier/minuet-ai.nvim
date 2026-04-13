@@ -211,10 +211,6 @@ function M.render(bufnr, state)
     local config = require('minuet').config.duet
     M.clear(bufnr, state)
 
-    if not config.preview.enabled then
-        return
-    end
-
     local hunks = get_hunks(state)
     local cursor_char = config.preview.cursor
 
