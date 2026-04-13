@@ -1376,6 +1376,9 @@ Example keymaps:
 vim.keymap.set('n', '<leader>mp', '<cmd>Minuet duet predict<cr>', { desc = 'Minuet duet predict' })
 vim.keymap.set('n', '<leader>ma', '<cmd>Minuet duet apply<cr>', { desc = 'Minuet duet apply' })
 vim.keymap.set('n', '<leader>md', '<cmd>Minuet duet dismiss<cr>', { desc = 'Minuet duet dismiss' })
+vim.keymap.set('i', '<A-z>', '<cmd>Minuet duet predict<cr>', { desc = 'Minuet duet predict' })
+vim.keymap.set('i', '<A-a>', '<cmd>Minuet duet apply<cr>', { desc = 'Minuet duet apply' })
+vim.keymap.set('i', '<A-x>', '<cmd>Minuet duet dismiss<cr>', { desc = 'Minuet duet dismiss' })
 ```
 
 The recommended model at the moment is `gemini-3-flash-preview`.
