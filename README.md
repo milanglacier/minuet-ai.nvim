@@ -1527,6 +1527,20 @@ require('minuet').setup {
 }
 ```
 
+## Duet
+
+The duet module provides functions to programmatically control duet prediction:
+
+```lua
+{
+    require('minuet.duet').action.predict,
+    require('minuet.duet').action.apply,
+    require('minuet.duet').action.dismiss,
+    -- Check if a duet preview is currently visible in the current buffer
+    require('minuet.duet').action.is_visible,
+}
+```
+
 ## Lualine
 
 Minuet provides a Lualine component that displays the current status of Minuet requests. This component shows:
@@ -1565,7 +1579,7 @@ require('lualine').setup {
 
 ## Minuet Event
 
-Minuet emits three distinct events during its request workflow:
+### Standard Completion Events
 
 - **MinuetRequestStartedPre**: Triggered before a completion request is
   initiated. This allows for pre-request operations, such as logging or updating
@@ -1573,6 +1587,15 @@ Minuet emits three distinct events during its request workflow:
 - **MinuetRequestStarted**: Triggered immediately after the completion request
   is dispatched, signaling that the request is in progress.
 - **MinuetRequestFinished**: Triggered upon completion of the request.
+
+### Duet Events
+
+- **MinuetDuetRequestStartedPre**: Triggered before a duet request is initiated.
+- **MinuetDuetRequestStarted**: Triggered immediately after the duet request
+  is dispatched.
+- **MinuetDuetRequestFinished**: Triggered upon completion of the duet request.
+
+### Event Data
 
 Each event includes a `data` field containing the following properties:
 
