@@ -20,6 +20,8 @@ end
 ---@diagnostic disable-next-line: deprecated
 local diff = (vim.text and vim.text.diff) or vim.diff
 
+---@alias MinuetDuetHunk integer[]
+
 local function join_lines(lines)
     if not lines or #lines == 0 then
         return ''
@@ -28,14 +30,21 @@ local function join_lines(lines)
     return table.concat(lines, '\n') .. '\n'
 end
 
+---@return MinuetDuetHunk[]
 local function get_hunks(state)
     local original = join_lines(state.original_lines)
     local proposed = join_lines(state.proposed_lines)
-    return diff(original, proposed, {
+    local hunks = diff(original, proposed, {
         result_type = 'indices',
         algorithm = 'histogram',
         linematch = true,
-    }) or {}
+    })
+
+    -- make the LSP type checking happy.
+    if type(hunks) == 'string' or hunks == nil then
+        return {}
+    end
+    return hunks
 end
 
 local function add_extmark(bufnr, state, row, opts)
@@ -99,6 +108,7 @@ local function render_inserted_lines(bufnr, state, row, lines, proposed_indices,
     })
 end
 
+---@param hunk MinuetDuetHunk
 local function render_hunk(bufnr, state, hunk, cursor_char)
     local original_start, original_count, proposed_start, proposed_count = unpack(hunk)
     local pair_count = math.min(original_count, proposed_count)
@@ -155,6 +165,7 @@ local function render_hunk(bufnr, state, hunk, cursor_char)
 end
 
 --- Render the cursor on an unchanged line (not covered by any hunk).
+---@param hunks MinuetDuetHunk[]
 local function render_cursor_on_unchanged_line(bufnr, state, hunks, cursor_char)
     local c = state.proposed_cursor
     if not c then
@@ -208,6 +219,7 @@ function M.render(bufnr, state)
     local config = require('minuet').config.duet
     M.clear(bufnr, state)
 
+    ---@type MinuetDuetHunk[]
     local hunks = get_hunks(state)
     local cursor_char = config.preview.cursor
 
