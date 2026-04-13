@@ -95,6 +95,10 @@ Just as dancers move during a minuet.
 
 ![example-virtual-text](./assets/example-virtual-text.png)
 
+**With duet (next-edit prediction)**:
+
+![example-duet](./assets/example-duet.jpg)
+
 https://github.com/user-attachments/assets/e0c4f2bd-0361-45b4-8eb4-0f49356bd7d9
 
 <!-- The link above is a showcase video for the virtual text feature, hosted -->
