@@ -1396,6 +1396,16 @@ require('minuet').setup {
                     },
                 },
             },
+            openai_compatible = {
+                model = 'minimax/minimax-m2.7',
+                optional = {
+                    reasoning_effort = 'none',
+                    -- prioritize throughput for faster completion
+                    provider = {
+                        sort = 'throughput',
+                    },
+                },
+            },
         },
     },
 }
@@ -1405,7 +1415,7 @@ This feature is highly experimental:
 
 - It only targets general-purpose LLMs rather than NES-specialized models, as I
   lack local GPU resources for testing.
-- Comparable small models from competitors of gemini—`claude-haiku-4.5` and
+- Comparable small models from competitors of Google—`claude-haiku-4.5` and
   `gpt-5.4-mini`—perform poorly.
 - Given completion latency constraints, automatic duet prediction is not
   implemented.
