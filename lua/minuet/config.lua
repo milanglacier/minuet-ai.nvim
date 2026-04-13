@@ -423,6 +423,8 @@ M.provider_options = {
     },
 }
 
+M.duet = require 'minuet.duet.config'
+
 M.presets = {}
 
 -- **List** of functions to execute. If any function returns `false`, Minuet
