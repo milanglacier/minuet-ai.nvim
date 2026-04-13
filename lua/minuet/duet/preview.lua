@@ -8,7 +8,7 @@ local default_highlights = {
     MinuetDuetAdd = 'DiffAdd',
     MinuetDuetDelete = 'DiffDelete',
     MinuetDuetComment = 'Comment',
-    MinuetDuetCursor = 'Cursor',
+    MinuetDuetCursor = 'IncSearch',
 }
 
 for hl_group, default_link in pairs(default_highlights) do
