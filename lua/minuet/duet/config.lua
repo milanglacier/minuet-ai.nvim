@@ -36,8 +36,10 @@ local function make_default_guidelines()
 1. Return only the rewritten editable region, wrapped in `{{{editable_region_start}}}` and `{{{editable_region_end}}}`.
 2. Include exactly one `{{{cursor_position}}}` marker inside the rewritten editable region.
 3. Preserve indentation, formatting, blank lines, and surrounding syntax conventions. Keep the exact number of empty lines unless you are intentionally changing them.
-4. Do not return explanations, markdown fences, or any content outside the editable region block.
-5. Make the rewrite coherent with the surrounding non-editable text.]]
+4. For any text or code inside the editable region that is not intended to change, copy it verbatim. Do not paraphrase, refactor, reformat, or otherwise alter unchanged content.
+5. Make only the smallest changes necessary to satisfy the requested edit.
+6. Do not return explanations, markdown fences, or any content outside the editable region block.
+7. Make the rewrite coherent with the surrounding non-editable text.]]
 end
 
 local default_system = {
