@@ -1407,12 +1407,84 @@ This feature is highly experimental:
 - Given completion latency constraints, automatic duet prediction is not
   implemented.
 
+It is recommended to configure the thinking levels of the models; refer to the
+[provider sections](#providers) for guidance on managing thinking settings for
+each provider.
+
 ## TODO
 
 - [ ] Implement a proper diff mechanism to include recent edit changes in prompts.
 - [ ] Add support for specialized NES models (Zeta, Sweep).
 - [ ] Integrate with Inception's hosted API.
-- [ ] Implement automatic triggered duet prediction.
+- [ ] Implement automatically triggered duet prediction.
+
+## Default Config
+
+```lua
+require('minuet').setup {
+    duet = {
+        provider = 'gemini', -- Provider used by `:Minuet duet predict`.
+        request_timeout = 15, -- Timeout in seconds for a single duet request.
+        editable_region = {
+            lines_before = 8, -- Number of editable lines included before the cursor.
+            lines_after = 8, -- Number of editable lines included after the cursor.
+        },
+        markers = {
+            editable_region_start = '<editable_region_start>', -- Marker that wraps the start of the editable region in prompts and responses.
+            editable_region_end = '<editable_region_end>', -- Marker that wraps the end of the editable region in prompts and responses.
+            cursor_position = '<cursor_position>', -- Marker the model must preserve exactly once to indicate the final cursor position.
+        },
+        preview = {
+            cursor = '', -- Virtual marker shown at the predicted cursor location in the preview.
+        },
+        provider_options = {
+            openai = {
+                model = 'gpt-5.4-mini', -- Default OpenAI model for duet requests.
+                api_key = 'OPENAI_API_KEY', -- Environment variable name, or a function that returns the API key.
+                end_point = 'https://api.openai.com/v1/chat/completions', -- OpenAI chat completions endpoint.
+                system = { ... }, -- Duet system prompt config; keep the default unless you need a custom rewrite prompt.
+                few_shots = { ... }, -- Example user/assistant turns used to steer the rewrite.
+                chat_input = { ... }, -- Template that serializes editable and non-editable buffer regions.
+                optional = {}, -- Extra request body fields passed through to the OpenAI API.
+                transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
+            },
+            claude = {
+                model = 'claude-haiku-4-5', -- Default Claude model for duet requests.
+                api_key = 'ANTHROPIC_API_KEY', -- Environment variable name, or a function that returns the API key.
+                end_point = 'https://api.anthropic.com/v1/messages', -- Claude messages endpoint.
+                system = { ... }, -- Same duet system prompt structure as other chat providers.
+                system = { ... }, -- Duet system prompt config; keep the default unless you need a custom rewrite prompt.
+                few_shots = { ... }, -- Example user/assistant turns used to steer the rewrite.
+                chat_input = { ... }, -- Template that serializes editable and non-editable buffer regions.
+                max_tokens = 8192, -- Maximum tokens Claude can emit for the rewritten editable region.
+                optional = {}, -- Extra request body fields passed through to the Claude API.
+                transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
+            },
+            gemini = {
+                model = 'gemini-3-flash-preview', -- Recommended duet model at the moment.
+                api_key = 'GEMINI_API_KEY', -- Environment variable name, or a function that returns the API key.
+                end_point = 'https://generativelanguage.googleapis.com/v1beta/models', -- Base Gemini models endpoint.
+                system = { ... }, -- Duet system prompt config; keep the default unless you need a custom rewrite prompt.
+                few_shots = { ... }, -- Example user/assistant turns used to steer the rewrite.
+                chat_input = { ... }, -- Template that serializes editable and non-editable buffer regions.
+                optional = {}, -- Extra request body fields passed through to the Claude API.
+                transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
+            },
+            openai_compatible = {
+                model = 'mistralai/devstral-small', -- Default model for OpenAI-compatible chat providers.
+                api_key = 'OPENROUTER_API_KEY', -- Environment variable name, or a function that returns the API key.
+                end_point = 'https://openrouter.ai/api/v1/chat/completions', -- Must be a chat-completions-compatible endpoint.
+                name = 'Openrouter', -- Provider label used in events and notifications.
+                system = { ... }, -- Duet system prompt config; keep the default unless you need a custom rewrite prompt.
+                few_shots = { ... }, -- Example user/assistant turns used to steer the rewrite.
+                chat_input = { ... }, -- Template that serializes editable and non-editable buffer regions.
+                optional = {}, -- Extra request body fields passed through to the provider.
+                transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
+            },
+        },
+    },
+}
+```
 
 # API
 
