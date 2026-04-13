@@ -56,14 +56,19 @@ function M.start_job(command, args, handlers)
 
     ---@type vim.SystemObj?
     local job
-    local ok, result = pcall(vim.system, cmd, { text = true }, vim.schedule_wrap(function(out)
-        if not job then
-            return
-        end
+    local ok, result = pcall(
+        vim.system,
+        cmd,
+        { text = true },
+        vim.schedule_wrap(function(out)
+            if not job then
+                return
+            end
 
-        M.remove_job(job)
-        handlers.on_exit(job, out)
-    end))
+            M.remove_job(job)
+            handlers.on_exit(job, out)
+        end)
+    )
 
     if not ok then
         utils.notify('Failed to start completion job: ' .. result, 'error', vim.log.levels.ERROR)

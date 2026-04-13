@@ -1,5 +1,5 @@
 local M = {}
-local shared_utils = require('minuet.utils')
+local shared_utils = require 'minuet.utils'
 local default_markers = require('minuet.duet.config').markers
 
 function M.get_root_config()
