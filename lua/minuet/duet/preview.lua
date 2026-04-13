@@ -201,11 +201,6 @@ function M.clear(bufnr, state)
         pcall(api.nvim_buf_del_extmark, bufnr, M.ns_id, extmark_id)
     end
 
-    if state.extmark_id then
-        pcall(api.nvim_buf_del_extmark, bufnr, M.ns_id, state.extmark_id)
-    end
-
-    state.extmark_id = nil
     state.extmark_ids = nil
 end
 
@@ -242,13 +237,7 @@ function M.is_visible(bufnr, state)
             return true
         end
     end
-
-    if not state.extmark_id then
-        return false
-    end
-
-    local extmark = api.nvim_buf_get_extmark_by_id(bufnr, M.ns_id, state.extmark_id, {})
-    return extmark[1] ~= nil
+    return false
 end
 
 return M

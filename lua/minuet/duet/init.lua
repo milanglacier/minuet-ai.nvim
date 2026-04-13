@@ -40,7 +40,6 @@ end
 local function predict()
     local bufnr = api.nvim_get_current_buf()
     local state = get_state(bufnr)
-    local duet_config = require('minuet').config.duet
 
     clear_state(bufnr, state)
 
@@ -128,6 +127,16 @@ local function dismiss()
     clear_state(bufnr, get_state(bufnr))
 end
 
+---@param info { buf: integer }
+local function on_text_changed(info)
+    local state = internal.states[info.buf]
+    if not state then
+        return
+    end
+
+    clear_state(info.buf, state)
+end
+
 local action = {
     predict = predict,
     apply = apply,
@@ -143,6 +152,12 @@ M.action = action
 
 function M.setup()
     api.nvim_clear_autocmds { group = M.augroup }
+
+    api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI', 'TextChangedP' }, {
+        group = M.augroup,
+        callback = on_text_changed,
+        desc = '[minuet.duet] clear preview on text change',
+    })
 
     api.nvim_create_autocmd('BufWipeout', {
         group = M.augroup,
