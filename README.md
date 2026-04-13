@@ -1378,7 +1378,7 @@ vim.keymap.set('n', '<leader>ma', '<cmd>Minuet duet apply<cr>', { desc = 'Minuet
 vim.keymap.set('n', '<leader>md', '<cmd>Minuet duet dismiss<cr>', { desc = 'Minuet duet dismiss' })
 ```
 
-The recommended model at the moment is `gemini-3-flash-preview` and `Minimax-m2.7`.
+The recommended model at the moment is `gemini-3-flash-preview`.
 
 ```lua
 require('minuet').setup {
@@ -1399,7 +1399,7 @@ require('minuet').setup {
             openai_compatible = {
                 model = 'minimax/minimax-m2.7',
                 optional = {
-                    reasoning_effort = 'none',
+                    reasoning_effort = 'minimal',
                     -- prioritize throughput for faster completion
                     provider = {
                         sort = 'throughput',
