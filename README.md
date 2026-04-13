@@ -1412,6 +1412,12 @@ It is recommended to configure the thinking levels of the models; refer to the
 [provider sections](#providers) for guidance on managing thinking settings for
 each provider.
 
+Avoid setting a small `max_tokens` or `max_completion_tokens` limit for duet
+requests. Duet expects the model to return the complete rewritten editable
+region, including the cursor marker; if the response is truncated, the parser
+will reject it. Leave the limit unset when the provider allows that, or set it
+large enough to cover the full rewritten region.
+
 ## TODO
 
 - [ ] Implement a proper diff mechanism to include recent edit changes in prompts.
@@ -1457,7 +1463,7 @@ require('minuet').setup {
                 system = { ... }, -- Duet system prompt config; keep the default unless you need a custom rewrite prompt.
                 few_shots = { ... }, -- Example user/assistant turns used to steer the rewrite.
                 chat_input = { ... }, -- Template that serializes editable and non-editable buffer regions.
-                max_tokens = 8192, -- Maximum tokens Claude can emit for the rewritten editable region.
+                max_tokens = 8192, -- Keep this large; if Claude truncates the rewritten editable region, duet parsing will fail.
                 optional = {}, -- Extra request body fields passed through to the Claude API.
                 transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
             },
@@ -1468,7 +1474,7 @@ require('minuet').setup {
                 system = { ... }, -- Duet system prompt config; keep the default unless you need a custom rewrite prompt.
                 few_shots = { ... }, -- Example user/assistant turns used to steer the rewrite.
                 chat_input = { ... }, -- Template that serializes editable and non-editable buffer regions.
-                optional = {}, -- Extra request body fields passed through to the Claude API.
+                optional = {}, -- Extra request body fields passed through to the OpenAI API.
                 transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
             },
             openai_compatible = {
@@ -1479,7 +1485,7 @@ require('minuet').setup {
                 system = { ... }, -- Duet system prompt config; keep the default unless you need a custom rewrite prompt.
                 few_shots = { ... }, -- Example user/assistant turns used to steer the rewrite.
                 chat_input = { ... }, -- Template that serializes editable and non-editable buffer regions.
-                optional = {}, -- Extra request body fields passed through to the provider.
+                optional = {}, -- Extra request body fields passed through to the OpenAI API.
                 transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
             },
         },
