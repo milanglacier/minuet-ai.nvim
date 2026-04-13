@@ -7,6 +7,7 @@ local default_highlights = {
     MinuetDuetAdd = 'DiffAdd',
     MinuetDuetDelete = 'DiffDelete',
     MinuetDuetComment = 'Comment',
+    MinuetDuetCursor = 'Cursor',
 }
 
 for hl_group, default_link in pairs(default_highlights) do
@@ -41,14 +42,53 @@ local function add_extmark(bufnr, state, row, opts)
     table.insert(state.extmark_ids, extmark_id)
 end
 
-local function render_inserted_lines(bufnr, state, row, lines, above)
+--- Build styled chunks for a proposed line, inserting the cursor character
+--- when the cursor falls on this line.
+---@param text string the proposed line content
+---@param hl_group string highlight group for the text
+---@param cursor_col integer|nil byte column of cursor on this line, nil if cursor is elsewhere
+---@param cursor_char string the cursor character to render
+---@return table[] chunks list of {text, hl_group} pairs
+local function make_chunks(text, hl_group, cursor_col, cursor_char)
+    if not cursor_col then
+        return { { text, hl_group } }
+    end
+    local before = text:sub(1, cursor_col)
+    local after = text:sub(cursor_col + 1)
+    local chunks = {}
+    if #before > 0 then
+        table.insert(chunks, { before, hl_group })
+    end
+    table.insert(chunks, { cursor_char, 'MinuetDuetCursor' })
+    if #after > 0 then
+        table.insert(chunks, { after, hl_group })
+    end
+    return chunks
+end
+
+--- Return the cursor column if the proposed line at `proposed_idx` (0-based)
+--- carries the cursor, otherwise nil.
+local function cursor_col_for(state, proposed_idx)
+    local c = state.proposed_cursor
+    if not c then
+        return nil
+    end
+    if proposed_idx == c.row_offset then
+        return c.col
+    end
+    return nil
+end
+
+local function render_inserted_lines(bufnr, state, row, lines, proposed_indices, cursor_char, above)
     if #lines == 0 then
         return
     end
 
     local virt_lines = {}
-    for _, line in ipairs(lines) do
-        table.insert(virt_lines, { { line, 'MinuetDuetAdd' } })
+    for i, line in ipairs(lines) do
+        local col = cursor_col_for(state, proposed_indices[i])
+        local chunks = make_chunks(line, 'MinuetDuetAdd', col, cursor_char)
+        table.insert(virt_lines, chunks)
     end
 
     add_extmark(bufnr, state, row, {
@@ -57,7 +97,7 @@ local function render_inserted_lines(bufnr, state, row, lines, above)
     })
 end
 
-local function render_hunk(bufnr, state, hunk)
+local function render_hunk(bufnr, state, hunk, cursor_char)
     local original_start, original_count, proposed_start, proposed_count = unpack(hunk)
     local pair_count = math.min(original_count, proposed_count)
     local first_buffer_row = state.range.start_row + original_start - 1
@@ -65,10 +105,13 @@ local function render_hunk(bufnr, state, hunk)
     for offset = 0, pair_count - 1 do
         local buffer_row = first_buffer_row + offset
         local proposed_line = state.proposed_lines[proposed_start + offset] or ''
+        local proposed_idx = proposed_start + offset - 1 -- 0-based index into proposed_lines
+        local col = cursor_col_for(state, proposed_idx)
+        local chunks = make_chunks(' ' .. proposed_line, 'MinuetDuetAdd', col and col + 1, cursor_char)
 
         add_extmark(bufnr, state, buffer_row, {
             line_hl_group = 'MinuetDuetDelete',
-            virt_text = { { ' ' .. proposed_line, 'MinuetDuetAdd' } },
+            virt_text = chunks,
             virt_text_pos = 'eol',
         })
     end
@@ -81,8 +124,10 @@ local function render_hunk(bufnr, state, hunk)
 
     if proposed_count > pair_count then
         local inserted_lines = {}
+        local proposed_indices = {}
         for offset = pair_count, proposed_count - 1 do
             table.insert(inserted_lines, state.proposed_lines[proposed_start + offset] or '')
+            table.insert(proposed_indices, proposed_start + offset - 1) -- 0-based
         end
 
         local insertion_anchor_row = first_buffer_row + math.max(original_count - 1, 0)
@@ -95,8 +140,54 @@ local function render_hunk(bufnr, state, hunk)
             end
         end
 
-        render_inserted_lines(bufnr, state, insertion_anchor_row, inserted_lines, render_above)
+        render_inserted_lines(
+            bufnr,
+            state,
+            insertion_anchor_row,
+            inserted_lines,
+            proposed_indices,
+            cursor_char,
+            render_above
+        )
     end
+end
+
+--- Render the cursor on an unchanged line (not covered by any hunk).
+local function render_cursor_on_unchanged_line(bufnr, state, hunks, cursor_char)
+    local c = state.proposed_cursor
+    if not c then
+        return
+    end
+
+    local proposed_row_1based = c.row_offset + 1
+
+    -- If the cursor falls inside a hunk it was already rendered there.
+    for _, hunk in ipairs(hunks) do
+        local _, _, ps, pc = unpack(hunk)
+        if proposed_row_1based >= ps and proposed_row_1based < ps + pc then
+            return
+        end
+    end
+
+    -- Map proposed row → original row by undoing the cumulative insert/delete shift.
+    local shift = 0
+    for _, hunk in ipairs(hunks) do
+        local _, oc, ps, pc = unpack(hunk)
+        if ps + pc <= proposed_row_1based then
+            shift = shift + (pc - oc)
+        end
+    end
+
+    local original_row_1based = proposed_row_1based - shift
+    local buffer_row = state.range.start_row + original_row_1based - 1
+
+    local line_text = state.proposed_lines[proposed_row_1based] or ''
+    local chunks = make_chunks(' ' .. line_text, 'MinuetDuetComment', c.col + 1, cursor_char)
+
+    add_extmark(bufnr, state, buffer_row, {
+        virt_text = chunks,
+        virt_text_pos = 'eol',
+    })
 end
 
 function M.clear(bufnr, state)
@@ -125,18 +216,24 @@ function M.render(bufnr, state)
     end
 
     local hunks = get_hunks(state)
+    local cursor_char = config.preview.cursor
 
     if #hunks == 0 then
-        add_extmark(bufnr, state, math.max(state.range.end_row - 1, 0), {
-            virt_text = { { ' no text changes', 'MinuetDuetComment' } },
-            virt_text_pos = 'eol',
-        })
+        render_cursor_on_unchanged_line(bufnr, state, hunks, cursor_char)
+        if not state.proposed_cursor then
+            add_extmark(bufnr, state, math.max(state.range.end_row - 1, 0), {
+                virt_text = { { ' no text changes', 'MinuetDuetComment' } },
+                virt_text_pos = 'eol',
+            })
+        end
         return
     end
 
     for _, hunk in ipairs(hunks) do
-        render_hunk(bufnr, state, hunk)
+        render_hunk(bufnr, state, hunk, cursor_char)
     end
+
+    render_cursor_on_unchanged_line(bufnr, state, hunks, cursor_char)
 end
 
 function M.is_visible(bufnr, state)

@@ -173,7 +173,7 @@ end
 ---@field request_timeout integer
 ---@field editable_region { lines_before: integer, lines_after: integer }
 ---@field markers { editable_region_start: string, editable_region_end: string, cursor_position: string }
----@field preview { enabled: boolean }
+---@field preview { enabled: boolean, cursor: string }
 ---@field provider_options table<string, table>
 local M = {
     provider = 'openai',
@@ -185,6 +185,7 @@ local M = {
     markers = vim.deepcopy(default_markers),
     preview = {
         enabled = true,
+        cursor = '\u{f246}',
     },
     provider_options = {
         openai = make_openai_options(),
