@@ -1,5 +1,24 @@
 local M = {}
 
+function M.replace_string_literal(text, needle, replacement)
+    local result = {}
+    local start_index = 1
+
+    while true do
+        local match_start, match_end = text:find(needle, start_index, true)
+        if not match_start then
+            table.insert(result, text:sub(start_index))
+            break
+        end
+
+        table.insert(result, text:sub(start_index, match_start - 1))
+        table.insert(result, replacement)
+        start_index = match_end + 1
+    end
+
+    return table.concat(result)
+end
+
 function M.notify(msg, minuet_level, vim_level, opts)
     local config = require('minuet').config
     local notify_levels = {
@@ -70,7 +89,11 @@ function M.make_system_prompt(template, n_completion)
 
     if type(n_completion_template) == 'string' and type(n_completion) == 'number' then
         n_completion_template = string.format(n_completion_template, n_completion)
-        system_prompt = system_prompt:gsub('{{{n_completion_template}}}', n_completion_template)
+        system_prompt = M.replace_string_literal(
+            system_prompt,
+            '{{{n_completion_template}}}',
+            n_completion_template
+        )
     end
 
     template.template = nil
@@ -78,9 +101,9 @@ function M.make_system_prompt(template, n_completion)
 
     for k, v in pairs(template) do
         if type(v) == 'function' then
-            system_prompt = system_prompt:gsub('{{{' .. k .. '}}}', v())
+            system_prompt = M.replace_string_literal(system_prompt, '{{{' .. k .. '}}}', v())
         elseif type(v) == 'string' then
-            system_prompt = system_prompt:gsub('{{{' .. k .. '}}}', v)
+            system_prompt = M.replace_string_literal(system_prompt, '{{{' .. k .. '}}}', v)
         end
     end
 

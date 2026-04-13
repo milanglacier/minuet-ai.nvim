@@ -3,7 +3,6 @@ local default_markers = {
     editable_region_end = '<editable_region_end>',
     cursor_position = '<cursor_position>',
 }
-
 local function get_markers()
     local markers = default_markers
     if require('minuet').config then
@@ -13,11 +12,15 @@ local function get_markers()
 end
 
 local function render_markers(template)
+    local shared_utils = require 'minuet.utils'
+
     local markers = get_markers()
+    template =
+        shared_utils.replace_string_literal(template, '{{{editable_region_start}}}', markers.editable_region_start)
+    template = shared_utils.replace_string_literal(template, '{{{editable_region_end}}}', markers.editable_region_end)
+    template = shared_utils.replace_string_literal(template, '{{{cursor_position}}}', markers.cursor_position)
+
     return template
-        :gsub('{{{editable_region_start}}}', markers.editable_region_start)
-        :gsub('{{{editable_region_end}}}', markers.editable_region_end)
-        :gsub('{{{cursor_position}}}', markers.cursor_position)
 end
 
 local function make_default_prompt()

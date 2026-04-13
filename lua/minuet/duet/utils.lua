@@ -40,7 +40,7 @@ function M.make_system_prompt(template)
         end
 
         if type(value) == 'string' then
-            rendered = rendered:gsub('{{{' .. key .. '}}}', value)
+            rendered = shared_utils.replace_string_literal(rendered, '{{{' .. key .. '}}}', value)
         end
     end
 
@@ -57,12 +57,28 @@ function M.make_duet_llm_shot(context, chat_input)
         template = M.get_or_eval_value(resolved_chat_input.template) or ''
     end
 
-    return template
-        :gsub('{{{non_editable_region_before}}}', context.non_editable_region_before)
-        :gsub('{{{editable_region_before_cursor}}}', context.editable_region_before_cursor)
-        :gsub('{{{editable_region_after_cursor}}}', context.editable_region_after_cursor)
-        :gsub('{{{non_editable_region_after}}}', context.non_editable_region_after)
-        :gsub('{{{.-}}}', '')
+    template = shared_utils.replace_string_literal(
+        template,
+        '{{{non_editable_region_before}}}',
+        context.non_editable_region_before
+    )
+    template = shared_utils.replace_string_literal(
+        template,
+        '{{{editable_region_before_cursor}}}',
+        context.editable_region_before_cursor
+    )
+    template = shared_utils.replace_string_literal(
+        template,
+        '{{{editable_region_after_cursor}}}',
+        context.editable_region_after_cursor
+    )
+    template = shared_utils.replace_string_literal(
+        template,
+        '{{{non_editable_region_after}}}',
+        context.non_editable_region_after
+    )
+
+    return template:gsub('{{{.-}}}', '')
 end
 
 function M.make_curl_args(end_point, headers, data_file, timeout)
