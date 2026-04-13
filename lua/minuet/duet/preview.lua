@@ -124,7 +124,7 @@ local function render_hunk(bufnr, state, hunk, cursor_char)
         local proposed_line = state.proposed_lines[proposed_start + offset] or ''
         local proposed_idx = proposed_start + offset - 1 -- 0-based index into proposed_lines
         local col = cursor_col_for(state, proposed_idx)
-        local chunks = make_chunks(' ' .. proposed_line, 'MinuetDuetAdd', col and col + 1, cursor_char)
+        local chunks = make_chunks(proposed_line, 'MinuetDuetAdd', col, cursor_char)
 
         add_extmark(bufnr, state, buffer_row, {
             end_col = #buffer_line,
@@ -204,7 +204,7 @@ local function render_cursor_on_unchanged_line(bufnr, state, hunks, cursor_char)
     local buffer_row = state.range.start_row + original_row_1based - 1
 
     local line_text = state.proposed_lines[proposed_row_1based] or ''
-    local chunks = make_chunks(' ' .. line_text, 'MinuetDuetComment', c.col + 1, cursor_char)
+    local chunks = make_chunks(line_text, 'MinuetDuetComment', c.col, cursor_char)
 
     add_extmark(bufnr, state, buffer_row, {
         virt_text = chunks,
