@@ -1,6 +1,5 @@
 local M = {}
 local shared_utils = require 'minuet.utils'
-local default_markers = require('minuet.duet.config').markers
 
 function M.get_root_config()
     return require('minuet').config
@@ -13,6 +12,7 @@ end
 local function get_markers()
     local config = M.get_config()
     local markers = config and config.markers or {}
+    local default_markers = require('minuet.duet.config').markers
     return {
         editable_region_start = markers.editable_region_start or default_markers.editable_region_start,
         editable_region_end = markers.editable_region_end or default_markers.editable_region_end,
