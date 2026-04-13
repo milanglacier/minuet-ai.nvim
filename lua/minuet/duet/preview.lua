@@ -120,21 +120,26 @@ local function render_hunk(bufnr, state, hunk, cursor_char)
 
     for offset = 0, pair_count - 1 do
         local buffer_row = first_buffer_row + offset
+        local buffer_line = api.nvim_buf_get_lines(bufnr, buffer_row, buffer_row + 1, false)[1] or ''
         local proposed_line = state.proposed_lines[proposed_start + offset] or ''
         local proposed_idx = proposed_start + offset - 1 -- 0-based index into proposed_lines
         local col = cursor_col_for(state, proposed_idx)
         local chunks = make_chunks(' ' .. proposed_line, 'MinuetDuetAdd', col and col + 1, cursor_char)
 
         add_extmark(bufnr, state, buffer_row, {
-            line_hl_group = 'MinuetDuetDelete',
+            end_col = #buffer_line,
+            hl_group = 'MinuetDuetDelete',
             virt_text = chunks,
             virt_text_pos = 'eol',
         })
     end
 
     for offset = pair_count, original_count - 1 do
-        add_extmark(bufnr, state, first_buffer_row + offset, {
-            line_hl_group = 'MinuetDuetDelete',
+        local buffer_row = first_buffer_row + offset
+        local buffer_line = api.nvim_buf_get_lines(bufnr, buffer_row, buffer_row + 1, false)[1] or ''
+        add_extmark(bufnr, state, buffer_row, {
+            end_col = #buffer_line,
+            hl_group = 'MinuetDuetDelete',
         })
     end
 
