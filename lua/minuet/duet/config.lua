@@ -180,7 +180,7 @@ local M = {
     request_timeout = 15,
     editable_region = {
         lines_before = 8,
-        lines_after = 8,
+        lines_after = 15,
     },
     markers = vim.deepcopy(default_markers),
     preview = {

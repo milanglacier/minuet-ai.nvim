@@ -1428,7 +1428,7 @@ require('minuet').setup {
         request_timeout = 15, -- Timeout in seconds for a single duet request.
         editable_region = {
             lines_before = 8, -- Number of editable lines included before the cursor.
-            lines_after = 8, -- Number of editable lines included after the cursor.
+            lines_after = 15, -- Number of editable lines included after the cursor.
         },
         markers = {
             editable_region_start = '<editable_region_start>', -- Marker that wraps the start of the editable region in prompts and responses.
