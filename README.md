@@ -1378,7 +1378,7 @@ vim.keymap.set('n', '<leader>ma', '<cmd>Minuet duet apply<cr>', { desc = 'Minuet
 vim.keymap.set('n', '<leader>md', '<cmd>Minuet duet dismiss<cr>', { desc = 'Minuet duet dismiss' })
 ```
 
-The recommended model at the moment is `gemini-3-flash-preview`.
+The recommended model at the moment is `gemini-3-flash-preview` and `Minimax-m2.7`.
 
 ```lua
 require('minuet').setup {
@@ -1405,9 +1405,7 @@ This feature is highly experimental:
 
 - It only targets general-purpose LLMs rather than NES-specialized models, as I
   lack local GPU resources for testing.
-- I have only tested small models; among them, only
-  `gemini-3-flash-preview` demonstrates acceptable performance.
-- Comparable small models from competitors—`claude-haiku-4.5` and
+- Comparable small models from competitors of gemini—`claude-haiku-4.5` and
   `gpt-5.4-mini`—perform poorly.
 - Given completion latency constraints, automatic duet prediction is not
   implemented.
