@@ -38,6 +38,10 @@ local function get_hunks(state)
         result_type = 'indices',
         algorithm = 'histogram',
         linematch = true,
+        ignore_whitespace = false,
+        ignore_whitespace_change = false,
+        ignore_whitespace_change_at_eol = false,
+        ignore_blank_lines = false,
     })
 
     -- make the LSP type checking happy.

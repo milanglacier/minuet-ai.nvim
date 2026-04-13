@@ -32,7 +32,7 @@ local function make_default_guidelines()
     return render_markers [[Guidelines:
 1. Return only the rewritten editable region, wrapped in `{{{editable_region_start}}}` and `{{{editable_region_end}}}`.
 2. Include exactly one `{{{cursor_position}}}` marker inside the rewritten editable region.
-3. Preserve indentation, formatting, and surrounding syntax conventions.
+3. Preserve indentation, formatting, blank lines, and surrounding syntax conventions. Keep the exact number of empty lines unless you are intentionally changing them.
 4. Do not return explanations, markdown fences, or any content outside the editable region block.
 5. Make the rewrite coherent with the surrounding non-editable text.]]
 end
