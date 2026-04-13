@@ -34,7 +34,9 @@
   - [`Minuet change_preset`](#minuet-change_preset)
   - [`Minuet blink`, `Minuet cmp`](#minuet-blink-minuet-cmp)
   - [`Minuet virtualtext`](#minuet-virtualtext)
+  - [`Minuet duet`](#minuet-duet)
   - [`Minuet lsp`](#minuet-lsp)
+- [Duet (Next Edit Prediction)](#duet-next-edit-prediction)
 - [API](#api)
   - [Virtual Text](#virtual-text)
   - [Lualine](#lualine)
@@ -46,6 +48,7 @@
   - [Integration with `lazyvim`](#integration-with-lazyvim)
 - [Enhancement](#enhancement)
   - [RAG (Experimental)](#rag-experimental)
+- [TODO](#todo)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [Acknowledgement](#acknowledgement)
@@ -76,6 +79,8 @@ Just as dancers move during a minuet.
 - When your typed text matches the start of a suggestion, Minuet keeps the
   completion in sync of your typed text rather than discarding it, to reduce
   unnecessary LLM requests and conserving resources.
+- Support next-edit prediction (NES) via `Minuet duet` commands. This feature
+  is highly experimental.
 
 **With nvim-cmp / blink-cmp frontend**:
 
@@ -1328,6 +1333,15 @@ Enable or disable the automatic display of `virtual-text` completion in the
 Example usage: `Minuet virtualtext toggle`, `Minuet virtualtext enable`,
 `Minuet virtualtext disable`.
 
+## `Minuet duet`
+
+The Minuet duet command provides manual next-edit prediction controls:
+
+- `:Minuet duet predict`: Request an NES prediction for the current editable
+  region and show it as a preview.
+- `:Minuet duet apply`: Apply the current duet prediction.
+- `:Minuet duet dismiss`: Dismiss the current duet prediction preview.
+
 ## `Minuet lsp`
 
 The Minuet LSP command provides commands for managing the in-process LSP server:
@@ -1338,6 +1352,67 @@ The Minuet LSP command provides commands for managing the in-process LSP server:
 - `:Minuet lsp completion disable_auto_trigger`: Disable auto-triggered `vim.lsp.completion` for the **current buffer**.
 - `:Minuet lsp inline_completion enable_auto_trigger`: Enable `vim.lsp.inline_completion` auto-triggering for the **current buffer**.
 - `:Minuet lsp inline_completion disable_auto_trigger`: Disable `vim.lsp.inline_completion` auto-triggering for the **current buffer**.
+
+# Duet (Next Edit Prediction)
+
+`Minuet duet` is Minuet's highly experimental next-edit prediction (NES)
+feature.
+
+Basic usage is manual. Bind the duet commands to your preferred keymaps, then:
+
+1. Trigger `:Minuet duet predict` to request a prediction for the current edit.
+2. Review the preview rendered in the buffer.
+3. Apply it with `:Minuet duet apply` or discard it with
+   `:Minuet duet dismiss`.
+
+Example keymaps:
+
+```lua
+vim.keymap.set('n', '<leader>mp', '<cmd>Minuet duet predict<cr>', { desc = 'Minuet duet predict' })
+vim.keymap.set('n', '<leader>ma', '<cmd>Minuet duet apply<cr>', { desc = 'Minuet duet apply' })
+vim.keymap.set('n', '<leader>md', '<cmd>Minuet duet dismiss<cr>', { desc = 'Minuet duet dismiss' })
+```
+
+The recommended model at the moment is `gemini-3-flash-preview`.
+
+```lua
+require('minuet').setup {
+    duet = {
+        provider = 'gemini',
+        provider_options = {
+            gemini = {
+                model = 'gemini-3-flash-preview',
+                optional = {
+                    generationConfig = {
+                        thinkingConfig = {
+                            -- Disable thinking is recommended
+                            thinkingLevel = 'minimal',
+                        },
+                    },
+                },
+            },
+        },
+    },
+}
+```
+
+This feature is highly experimental:
+
+- It only targets general-purpose LLMs rather than NES-specialized models, as I
+  lack local GPU resources for testing.
+- I have only tested small models; among them, only
+  `gemini-3-flash-preview` demonstrates acceptable performance.
+- Comparable small models from competitors—`claude-haiku-4.5` and
+  `gpt-5.4-mini`—perform poorly.
+- Given completion latency constraints, automatic duet prediction is not
+  implemented.
+
+## TODO
+
+- [ ] Implement a proper diff mechanism to include recent edit changes in prompts.
+- [ ] Add support for specialized NES models (Zeta, Sweep).
+- [ ] Integrate with Inception's hosted API.
+- [ ] Implement automatic triggered duet prediction.
 
 # API
 

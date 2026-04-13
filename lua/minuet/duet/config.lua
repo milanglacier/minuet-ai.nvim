@@ -140,7 +140,7 @@ end
 
 local function make_gemini_options()
     return {
-        model = 'gemini-2.0-flash',
+        model = 'gemini-3-flash-preview',
         api_key = 'GEMINI_API_KEY',
         end_point = 'https://generativelanguage.googleapis.com/v1beta/models',
         system = vim.deepcopy(default_system),
@@ -176,7 +176,7 @@ end
 ---@field preview { cursor: string }
 ---@field provider_options table<string, table>
 local M = {
-    provider = 'openai',
+    provider = 'gemini',
     request_timeout = 15,
     editable_region = {
         lines_before = 8,
