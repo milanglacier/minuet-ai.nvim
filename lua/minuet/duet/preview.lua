@@ -3,6 +3,18 @@ local M = {}
 
 M.ns_id = api.nvim_create_namespace 'minuet.duet'
 
+local default_highlights = {
+    MinuetDuetAdd = 'DiffAdd',
+    MinuetDuetDelete = 'DiffDelete',
+    MinuetDuetComment = 'Comment',
+}
+
+for hl_group, default_link in pairs(default_highlights) do
+    if vim.tbl_isempty(api.nvim_get_hl(0, { name = hl_group })) then
+        api.nvim_set_hl(0, hl_group, { link = default_link })
+    end
+end
+
 local diff = (vim.text and vim.text.diff) or vim.diff
 
 local function join_lines(lines)
@@ -36,7 +48,7 @@ local function render_inserted_lines(bufnr, state, row, lines, above)
 
     local virt_lines = {}
     for _, line in ipairs(lines) do
-        table.insert(virt_lines, { { line, 'DiffAdd' } })
+        table.insert(virt_lines, { { line, 'MinuetDuetAdd' } })
     end
 
     add_extmark(bufnr, state, row, {
@@ -55,15 +67,15 @@ local function render_hunk(bufnr, state, hunk)
         local proposed_line = state.proposed_lines[proposed_start + offset] or ''
 
         add_extmark(bufnr, state, buffer_row, {
-            line_hl_group = 'DiffDelete',
-            virt_text = { { ' ' .. proposed_line, 'DiffAdd' } },
+            line_hl_group = 'MinuetDuetDelete',
+            virt_text = { { ' ' .. proposed_line, 'MinuetDuetAdd' } },
             virt_text_pos = 'eol',
         })
     end
 
     for offset = pair_count, original_count - 1 do
         add_extmark(bufnr, state, first_buffer_row + offset, {
-            line_hl_group = 'DiffDelete',
+            line_hl_group = 'MinuetDuetDelete',
         })
     end
 
@@ -116,7 +128,7 @@ function M.render(bufnr, state)
 
     if #hunks == 0 then
         add_extmark(bufnr, state, math.max(state.range.end_row - 1, 0), {
-            virt_text = { { ' no text changes', 'Comment' } },
+            virt_text = { { ' no text changes', 'MinuetDuetComment' } },
             virt_text_pos = 'eol',
         })
         return
