@@ -26,12 +26,8 @@ M.get_or_eval_value = shared_utils.get_or_eval_value
 M.make_tmp_file = shared_utils.make_tmp_file
 
 function M.make_system_prompt(template)
-    if type(template) == 'string' then
-        return template
-    end
-
     local values = vim.deepcopy(template or {})
-    local rendered = values.template or ''
+    local rendered = M.get_or_eval_value(values.template) or ''
     values.template = nil
 
     for key, value in pairs(values) do
@@ -49,13 +45,7 @@ end
 
 function M.make_duet_llm_shot(context, chat_input)
     local resolved_chat_input = M.get_or_eval_value(chat_input)
-    local template = ''
-
-    if type(resolved_chat_input) == 'string' then
-        template = resolved_chat_input
-    elseif type(resolved_chat_input) == 'table' then
-        template = M.get_or_eval_value(resolved_chat_input.template) or ''
-    end
+    local template = type(resolved_chat_input) == 'table' and M.get_or_eval_value(resolved_chat_input.template) or ''
 
     template = shared_utils.replace_string_literal(
         template,
