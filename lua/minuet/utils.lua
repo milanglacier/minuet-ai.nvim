@@ -114,6 +114,10 @@ function M.make_system_prompt(template, n_completion)
 end
 
 --- Return val if val is not a function, else call val and return the value
+---
+---@generic T
+---@param val T|fun(): T
+---@return T
 function M.get_or_eval_value(val)
     if type(val) ~= 'function' then
         return val

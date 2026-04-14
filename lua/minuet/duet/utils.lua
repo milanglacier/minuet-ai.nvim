@@ -43,32 +43,45 @@ function M.make_system_prompt(template)
     return rendered:gsub('{{{.-}}}', '')
 end
 
+---@param chat_input minuet.DuetChatInput
+---@param context table
+---@return string
 function M.make_duet_llm_shot(context, chat_input)
     local resolved_chat_input = M.get_or_eval_value(chat_input)
-    local template = type(resolved_chat_input) == 'table' and M.get_or_eval_value(resolved_chat_input.template) or ''
+    resolved_chat_input = vim.deepcopy(resolved_chat_input) or {}
+    local template = M.get_or_eval_value(resolved_chat_input.template) or ''
+    resolved_chat_input.template = nil
 
-    template = shared_utils.replace_string_literal(
-        template,
-        '{{{non_editable_region_before}}}',
-        context.non_editable_region_before
-    )
-    template = shared_utils.replace_string_literal(
-        template,
-        '{{{editable_region_before_cursor}}}',
-        context.editable_region_before_cursor
-    )
-    template = shared_utils.replace_string_literal(
-        template,
-        '{{{editable_region_after_cursor}}}',
-        context.editable_region_after_cursor
-    )
-    template = shared_utils.replace_string_literal(
-        template,
-        '{{{non_editable_region_after}}}',
-        context.non_editable_region_after
-    )
+    local parts = {}
+    local last_pos = 1
 
-    return template:gsub('{{{.-}}}', '')
+    while true do
+        local start_pos, end_pos = template:find('{{{.-}}}', last_pos)
+        if not start_pos then
+            table.insert(parts, template:sub(last_pos))
+            break
+        end
+
+        table.insert(parts, template:sub(last_pos, start_pos - 1))
+
+        local key = template:sub(start_pos + 3, end_pos - 3)
+        local value = resolved_chat_input[key]
+
+        if type(value) == 'function' then
+            value = value(context)
+        end
+
+        if type(value) == 'string' then
+            table.insert(parts, value)
+        end
+
+        last_pos = end_pos + 1
+    end
+
+    local results = table.concat(parts)
+    results = results:gsub('{{{.-}}}', '')
+
+    return results
 end
 
 function M.make_curl_args(end_point, headers, data_file, timeout)

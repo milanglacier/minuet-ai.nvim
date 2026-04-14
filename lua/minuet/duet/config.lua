@@ -48,6 +48,14 @@ local default_system = {
     guidelines = make_default_guidelines,
 }
 
+local function get_context_value(key)
+    return function(context)
+        return context[key] or ''
+    end
+end
+
+
+---@type minuet.DuetChatInput
 local default_chat_input = {
     template = function()
         return render_markers [[{{{non_editable_region_before}}}
@@ -56,6 +64,10 @@ local default_chat_input = {
 {{{editable_region_end}}}
 {{{non_editable_region_after}}}]]
     end,
+    non_editable_region_before = get_context_value 'non_editable_region_before',
+    editable_region_before_cursor = get_context_value 'editable_region_before_cursor',
+    editable_region_after_cursor = get_context_value 'editable_region_after_cursor',
+    non_editable_region_after = get_context_value 'non_editable_region_after',
 }
 
 local default_few_shots = function()
@@ -170,8 +182,16 @@ local function make_openai_compatible_options()
     }
 end
 
+---@alias minuet.DuetChatInputFunction fun(context: table): string
+
+--- Configuration for formatting duet chat input to the LLM
 ---@class minuet.DuetChatInput
----@field template string|function
+---@field template string|fun(): string Template string with placeholders for context parts
+---@field non_editable_region_before string|minuet.DuetChatInputFunction
+---@field editable_region_before_cursor string|minuet.DuetChatInputFunction
+---@field editable_region_after_cursor string|minuet.DuetChatInputFunction
+---@field non_editable_region_after string|minuet.DuetChatInputFunction
+
 
 ---@class minuet.DuetConfig
 ---@field provider string
