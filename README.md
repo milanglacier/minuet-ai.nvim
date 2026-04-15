@@ -95,11 +95,11 @@ Just as dancers move during a minuet.
 
 ![example-virtual-text](./assets/example-virtual-text.png)
 
+https://github.com/user-attachments/assets/e0c4f2bd-0361-45b4-8eb4-0f49356bd7d9
+
 **With duet (next-edit prediction)**:
 
-![example-duet](./assets/example-duet.jpg)
-
-https://github.com/user-attachments/assets/e0c4f2bd-0361-45b4-8eb4-0f49356bd7d9
+https://github.com/user-attachments/assets/b98699d5-b81d-4061-a1b3-d6f581c6b9b0
 
 <!-- The link above is a showcase video for the virtual text feature, hosted -->
 <!-- externally on GitHub. -->
