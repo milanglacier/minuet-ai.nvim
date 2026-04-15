@@ -79,7 +79,7 @@ local function predict()
                 return
             end
 
-            local parsed, err = utils.parse_duet_response(text)
+            local parsed, err = utils.parse_duet_response(text, current_context)
             if not parsed then
                 utils.notify('Minuet duet returned invalid output: ' .. err, 'warn', vim.log.levels.WARN)
                 return

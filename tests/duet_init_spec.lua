@@ -2,6 +2,58 @@ local helpers = require 'tests.helpers'
 
 return {
     {
+        name = 'duet.action.predict trims duplicated non-editable region text from the duet response',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    provider = 'test',
+                    editable_region = {
+                        lines_before = 0,
+                        lines_after = 0,
+                        before_region_filter_length = 3,
+                        after_region_filter_length = 3,
+                    },
+                    preview = {
+                        cursor = '|',
+                    },
+                },
+            }
+
+            local pending_callback
+
+            package.loaded['minuet.duet.backends.test'] = {
+                complete = function(_, callback)
+                    pending_callback = callback
+                end,
+            }
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+
+            local bufnr = helpers.create_buffer({ 'before', 'return 1', 'after' }, { 2, 8 })
+
+            duet.action.predict()
+            helpers.expect_truthy(pending_callback, 'backend callback was not captured')
+
+            pending_callback [[<editable_region_start>
+before
+return 42<cursor_position>
+after
+<editable_region_end>]]
+
+            helpers.wait_until(function()
+                return duet.action.is_visible()
+            end, 1000, 'duet preview did not become visible')
+
+            duet.action.apply()
+
+            helpers.expect_equal(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), { 'before', 'return 42', 'after' })
+            helpers.expect_equal(vim.api.nvim_win_get_cursor(0), { 2, 8 })
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
         name = 'duet.action.predict followed by apply updates the buffer and cursor',
         run = function()
             helpers.setup_root_config {

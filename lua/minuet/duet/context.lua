@@ -1,9 +1,25 @@
 local M = {}
 
+---@class minuet.DuetContextRange
+---@field start_row integer
+---@field end_row integer
+
+---@class minuet.DuetContext
+---@field bufnr integer
+---@field changedtick integer
+---@field non_editable_region_before string
+---@field editable_region_before_cursor string
+---@field editable_region_after_cursor string
+---@field non_editable_region_after string
+---@field original_lines string[]
+---@field range minuet.DuetContextRange
+
 local function join_lines(lines)
     return table.concat(lines, '\n')
 end
 
+---@param bufnr integer
+---@return minuet.DuetContext
 function M.build(bufnr)
     local config = require('minuet').config.duet
     local cursor = vim.api.nvim_win_get_cursor(0)

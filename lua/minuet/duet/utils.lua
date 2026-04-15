@@ -136,7 +136,68 @@ local function count_occurrences(text, needle)
     return count
 end
 
-function M.parse_duet_response(text)
+---@param text string
+---@return string
+local function trim_boundary_newlines(text)
+    if text:sub(1, 1) == '\n' then
+        text = text:sub(2)
+    end
+    if text:sub(-1) == '\n' then
+        text = text:sub(1, -2)
+    end
+    return text
+end
+
+---@class minuet.DuetParseCursor
+---@field row_offset integer
+---@field col integer
+
+---@class minuet.DuetParseResult
+---@field lines string[]
+---@field cursor minuet.DuetParseCursor
+
+---@class minuet.DuetFilterContext
+---@field non_editable_region_before? string
+---@field non_editable_region_after? string
+
+---@param inner string
+---@param context minuet.DuetFilterContext?
+---@return string
+local function filter_inner_text(inner, context)
+    if type(inner) ~= 'string' or inner == '' or type(context) ~= 'table' then
+        return inner
+    end
+
+    local config = M.get_config() or {}
+    local editable_region = config.editable_region or {}
+    local before_region_filter_length = math.max(editable_region.before_region_filter_length or 0, 0)
+    local after_region_filter_length = math.max(editable_region.after_region_filter_length or 0, 0)
+    local filtered_inner = inner
+
+    if before_region_filter_length > 0 and type(context.non_editable_region_before) == 'string' then
+        local match_before = shared_utils.find_longest_match(filtered_inner, context.non_editable_region_before)
+        local match_len = vim.fn.strchars(match_before)
+        if match_len >= before_region_filter_length then
+            filtered_inner = vim.fn.strcharpart(filtered_inner, match_len)
+        end
+    end
+
+    if after_region_filter_length > 0 and type(context.non_editable_region_after) == 'string' then
+        local match_after = shared_utils.find_longest_match(context.non_editable_region_after, filtered_inner)
+        local match_len = vim.fn.strchars(match_after)
+        if match_len >= after_region_filter_length then
+            local filtered_len = vim.fn.strchars(filtered_inner)
+            filtered_inner = vim.fn.strcharpart(filtered_inner, 0, filtered_len - match_len)
+        end
+    end
+
+    return filtered_inner
+end
+
+---@param text string
+---@param context minuet.DuetFilterContext?
+---@return minuet.DuetParseResult?, string?
+function M.parse_duet_response(text, context)
     local markers = get_markers()
 
     if type(text) ~= 'string' or text == '' then
@@ -158,12 +219,9 @@ function M.parse_duet_response(text)
     end
 
     local inner = text:sub(start_end + 1, end_pos - 1)
-    if inner:sub(1, 1) == '\n' then
-        inner = inner:sub(2)
-    end
-    if inner:sub(-1) == '\n' then
-        inner = inner:sub(1, -2)
-    end
+    inner = trim_boundary_newlines(inner)
+    inner = filter_inner_text(inner, context)
+    inner = trim_boundary_newlines(inner)
 
     if count_occurrences(inner, markers.cursor_position) ~= 1 then
         return nil, 'expected exactly one cursor marker inside editable region'

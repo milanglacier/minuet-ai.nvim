@@ -54,6 +54,42 @@ ba<cursor_position>r
         end,
     },
     {
+        name = 'duet.utils filters duplicated non-editable region text before parsing cursor position',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    editable_region = {
+                        before_region_filter_length = 3,
+                        after_region_filter_length = 3,
+                    },
+                },
+            }
+
+            local utils = helpers.reload 'minuet.duet.utils'
+            local parsed, err = utils.parse_duet_response(
+                [[<editable_region_start>
+prefix line
+foo
+ba<cursor_position>r
+suffix line
+<editable_region_end>]],
+                {
+                    non_editable_region_before = 'prefix line',
+                    non_editable_region_after = 'suffix line',
+                }
+            )
+
+            helpers.expect_equal(err, nil)
+            helpers.expect_equal(parsed, {
+                lines = { 'foo', 'bar' },
+                cursor = {
+                    row_offset = 1,
+                    col = 2,
+                },
+            })
+        end,
+    },
+    {
         name = 'duet.utils rejects responses with an invalid marker layout',
         run = function()
             helpers.setup_root_config()
