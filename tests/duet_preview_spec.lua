@@ -8,13 +8,13 @@ return {
     {
         name = 'duet.preview renders the cursor on an unchanged line',
         run = function()
-            helpers.setup_root_config({
+            helpers.setup_root_config {
                 duet = {
                     preview = {
                         cursor = '|',
                     },
                 },
-            })
+            }
 
             local preview = helpers.reload 'minuet.duet.preview'
             local bufnr = helpers.create_buffer({ 'alpha', 'beta' }, { 1, 0 })
@@ -53,13 +53,13 @@ return {
     {
         name = 'duet.preview renders inserted lines as virtual lines',
         run = function()
-            helpers.setup_root_config({
+            helpers.setup_root_config {
                 duet = {
                     preview = {
                         cursor = '|',
                     },
                 },
-            })
+            }
 
             local preview = helpers.reload 'minuet.duet.preview'
             local bufnr = helpers.create_buffer({ 'alpha' }, { 1, 0 })

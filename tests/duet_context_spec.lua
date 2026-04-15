@@ -4,14 +4,14 @@ return {
     {
         name = 'duet.context.build captures the editable region around the cursor',
         run = function()
-            helpers.setup_root_config({
+            helpers.setup_root_config {
                 duet = {
                     editable_region = {
                         lines_before = 1,
                         lines_after = 1,
                     },
                 },
-            })
+            }
 
             local context = helpers.reload 'minuet.duet.context'
             local bufnr = helpers.create_buffer({ 'zero', 'one', 'two', 'three' }, { 3, 2 })
@@ -34,14 +34,14 @@ return {
     {
         name = 'duet.context.build handles an empty buffer',
         run = function()
-            helpers.setup_root_config({
+            helpers.setup_root_config {
                 duet = {
                     editable_region = {
                         lines_before = 2,
                         lines_after = 2,
                     },
                 },
-            })
+            }
 
             local context = helpers.reload 'minuet.duet.context'
             local bufnr = helpers.create_buffer({ '' }, { 1, 0 })

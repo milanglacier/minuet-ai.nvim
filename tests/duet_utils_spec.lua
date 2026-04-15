@@ -8,13 +8,13 @@ return {
 
             local utils = helpers.reload 'minuet.duet.utils'
 
-            local system_prompt = utils.make_system_prompt({
+            local system_prompt = utils.make_system_prompt {
                 template = 'before {{{alpha}}} {{{beta}}} {{{missing}}}',
                 alpha = 'A',
                 beta = function()
                     return 'B'
                 end,
-            })
+            }
             local shot = utils.make_duet_llm_shot({
                 before = 'left',
                 after = 'right',

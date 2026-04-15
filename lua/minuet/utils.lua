@@ -89,11 +89,7 @@ function M.make_system_prompt(template, n_completion)
 
     if type(n_completion_template) == 'string' and type(n_completion) == 'number' then
         n_completion_template = string.format(n_completion_template, n_completion)
-        system_prompt = M.replace_string_literal(
-            system_prompt,
-            '{{{n_completion_template}}}',
-            n_completion_template
-        )
+        system_prompt = M.replace_string_literal(system_prompt, '{{{n_completion_template}}}', n_completion_template)
     end
 
     template.template = nil

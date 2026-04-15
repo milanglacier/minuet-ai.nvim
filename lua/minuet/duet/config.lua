@@ -54,7 +54,6 @@ local function get_context_value(key)
     end
 end
 
-
 ---@type minuet.DuetChatInput
 local default_chat_input = {
     template = function()
@@ -191,7 +190,6 @@ end
 ---@field editable_region_before_cursor string|minuet.DuetChatInputFunction
 ---@field editable_region_after_cursor string|minuet.DuetChatInputFunction
 ---@field non_editable_region_after string|minuet.DuetChatInputFunction
-
 
 ---@class minuet.DuetConfig
 ---@field provider string
