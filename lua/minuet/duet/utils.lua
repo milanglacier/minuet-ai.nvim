@@ -160,8 +160,10 @@ end
 ---@field non_editable_region_before? string
 ---@field non_editable_region_after? string
 
+---@alias minuet.DuetParseContext minuet.DuetFilterContext|minuet.DuetContext
+
 ---@param inner string
----@param context minuet.DuetFilterContext?
+---@param context minuet.DuetParseContext?
 ---@return string
 local function filter_inner_text(inner, context)
     if type(inner) ~= 'string' or inner == '' or type(context) ~= 'table' then
@@ -195,7 +197,7 @@ local function filter_inner_text(inner, context)
 end
 
 ---@param text string
----@param context minuet.DuetFilterContext?
+---@param context minuet.DuetParseContext?
 ---@return minuet.DuetParseResult?, string?
 function M.parse_duet_response(text, context)
     local markers = get_markers()
