@@ -14,10 +14,6 @@ local M = {}
 ---@field original_lines string[]
 ---@field range minuet.DuetContextRange
 
-local function join_lines(lines)
-    return table.concat(lines, '\n')
-end
-
 ---@param bufnr integer
 ---@return minuet.DuetContext
 function M.build(bufnr)
@@ -56,10 +52,10 @@ function M.build(bufnr)
     return {
         bufnr = bufnr,
         changedtick = vim.api.nvim_buf_get_changedtick(bufnr),
-        non_editable_region_before = join_lines(non_editable_region_before),
-        editable_region_before_cursor = join_lines(editable_region_before_cursor),
-        editable_region_after_cursor = join_lines(editable_region_after_cursor),
-        non_editable_region_after = join_lines(non_editable_region_after),
+        non_editable_region_before = table.concat(non_editable_region_before, '\n'),
+        editable_region_before_cursor = table.concat(editable_region_before_cursor, '\n'),
+        editable_region_after_cursor = table.concat(editable_region_after_cursor, '\n'),
+        non_editable_region_after = table.concat(non_editable_region_after, '\n'),
         original_lines = editable_region_lines,
         range = {
             start_row = start_row,

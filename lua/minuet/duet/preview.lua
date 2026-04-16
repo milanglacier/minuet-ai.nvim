@@ -22,18 +22,22 @@ local diff = (vim.text and vim.text.diff) or vim.diff
 
 ---@alias MinuetDuetHunk integer[]
 
-local function join_lines(lines)
-    if not lines or #lines == 0 then
-        return ''
-    end
-
-    return table.concat(lines, '\n') .. '\n'
-end
-
 ---@return MinuetDuetHunk[]
 local function get_hunks(state)
-    local original = join_lines(state.original_lines)
-    local proposed = join_lines(state.proposed_lines)
+    local original
+    if not state.original_lines or #state.original_lines == 0 then
+        original = ''
+    else
+        original = table.concat(state.original_lines, '\n') .. '\n'
+    end
+
+    local proposed
+    if not state.proposed_lines or #state.proposed_lines == 0 then
+        proposed = ''
+    else
+        proposed = table.concat(state.proposed_lines, '\n') .. '\n'
+    end
+
     local hunks = diff(original, proposed, {
         result_type = 'indices',
         algorithm = 'histogram',
