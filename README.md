@@ -1454,9 +1454,9 @@ require('minuet').setup {
             after_region_filter_length = 30, -- Trim duplicated text from the end of the model output when it repeats non-editable text after the region.
         },
         markers = {
-            editable_region_start = '<editable_region_start>', -- Marker that wraps the start of the editable region in prompts and responses.
-            editable_region_end = '<editable_region_end>', -- Marker that wraps the end of the editable region in prompts and responses.
-            cursor_position = '<cursor_position>', -- Marker the model must preserve exactly once to indicate the final cursor position.
+            editable_region_start = '<editable_region>', -- Marker that wraps the start of the editable region in prompts and responses.
+            editable_region_end = '</editable_region>', -- Marker that wraps the end of the editable region in prompts and responses.
+            cursor_position = '<cursor_position/>', -- Marker the model must preserve exactly once to indicate the final cursor position.
         },
         preview = {
             cursor = '', -- Virtual marker shown at the predicted cursor location in the preview.

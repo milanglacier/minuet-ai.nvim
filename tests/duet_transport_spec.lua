@@ -23,9 +23,9 @@ return {
                         },
                         provider_options = {
                             openai_compatible = {
-                                end_point = [[<editable_region_start>
-return 42<cursor_position>
-<editable_region_end>]],
+                                end_point = [[<editable_region>
+return 42<cursor_position/>
+</editable_region>]],
                                 model = 'fixture-model',
                                 name = 'Fixture',
                             },

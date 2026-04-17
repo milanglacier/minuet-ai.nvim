@@ -1,7 +1,7 @@
 local default_markers = {
-    editable_region_start = '<editable_region_start>',
-    editable_region_end = '<editable_region_end>',
-    cursor_position = '<cursor_position>',
+    editable_region_start = '<editable_region>',
+    editable_region_end = '</editable_region>',
+    cursor_position = '<cursor_position/>',
 }
 local function get_markers()
     local markers = default_markers

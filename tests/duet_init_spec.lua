@@ -35,11 +35,11 @@ return {
             duet.action.predict()
             helpers.expect_truthy(pending_callback, 'backend callback was not captured')
 
-            pending_callback [[<editable_region_start>
+            pending_callback [[<editable_region>
 before
-return 42<cursor_position>
+return 42<cursor_position/>
 after
-<editable_region_end>]]
+</editable_region>]]
 
             helpers.wait_until(function()
                 return duet.action.is_visible()
@@ -89,9 +89,9 @@ after
             helpers.expect_equal(seen_context.original_lines, { 'return 1' })
             helpers.expect_truthy(pending_callback, 'backend callback was not captured')
 
-            pending_callback [[<editable_region_start>
-return 42<cursor_position>
-<editable_region_end>]]
+            pending_callback [[<editable_region>
+return 42<cursor_position/>
+</editable_region>]]
 
             helpers.wait_until(function()
                 return duet.action.is_visible()
@@ -136,9 +136,9 @@ return 42<cursor_position>
             helpers.expect_truthy(pending_callback, 'backend callback was not captured')
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 7' })
 
-            pending_callback [[<editable_region_start>
-return 42<cursor_position>
-<editable_region_end>]]
+            pending_callback [[<editable_region>
+return 42<cursor_position/>
+</editable_region>]]
 
             vim.wait(50, function()
                 return false
@@ -179,9 +179,9 @@ return 42<cursor_position>
             duet.action.predict()
             helpers.expect_truthy(pending_callback, 'backend callback was not captured')
 
-            pending_callback [[<editable_region_start>
-return 42<cursor_position>
-<editable_region_end>]]
+            pending_callback [[<editable_region>
+return 42<cursor_position/>
+</editable_region>]]
 
             helpers.wait_until(function()
                 return duet.action.is_visible()
@@ -228,9 +228,9 @@ return 42<cursor_position>
             duet.action.predict()
             helpers.expect_truthy(pending_callback, 'backend callback was not captured')
 
-            pending_callback [[<editable_region_start>
-return 42<cursor_position>
-<editable_region_end>]]
+            pending_callback [[<editable_region>
+return 42<cursor_position/>
+</editable_region>]]
 
             helpers.wait_until(function()
                 return duet.action.is_visible()

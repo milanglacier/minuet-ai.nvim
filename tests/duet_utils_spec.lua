@@ -38,10 +38,10 @@ return {
             helpers.setup_root_config()
 
             local utils = helpers.reload 'minuet.duet.utils'
-            local parsed, err = utils.parse_duet_response [[<editable_region_start>
+            local parsed, err = utils.parse_duet_response [[<editable_region>
 foo
-ba<cursor_position>r
-<editable_region_end>]]
+ba<cursor_position/>r
+</editable_region>]]
 
             helpers.expect_equal(err, nil)
             helpers.expect_equal(parsed, {
@@ -59,11 +59,11 @@ ba<cursor_position>r
             helpers.setup_root_config()
 
             local utils = helpers.reload 'minuet.duet.utils'
-            local parsed, err = utils.parse_duet_response [[<editable_region_start>
+            local parsed, err = utils.parse_duet_response [[<editable_region>
 
 foo
-ba<cursor_position>r
-<editable_region_end>]]
+ba<cursor_position/>r
+</editable_region>]]
 
             helpers.expect_equal(err, nil)
             helpers.expect_equal(parsed, {
@@ -89,12 +89,12 @@ ba<cursor_position>r
 
             local utils = helpers.reload 'minuet.duet.utils'
             local parsed, err = utils.parse_duet_response(
-                [[<editable_region_start>
+                [[<editable_region>
 prefix line
 foo
-ba<cursor_position>r
+ba<cursor_position/>r
 suffix line
-<editable_region_end>]],
+</editable_region>]],
                 {
                     non_editable_region_before = 'prefix line',
                     non_editable_region_after = 'suffix line',
@@ -125,12 +125,12 @@ suffix line
 
             local utils = helpers.reload 'minuet.duet.utils'
             local parsed, err = utils.parse_duet_response(
-                [[<editable_region_start>
+                [[<editable_region>
 prefix line
 foo
 bar
-suffix<cursor_position> line
-<editable_region_end>]],
+suffix<cursor_position/> line
+</editable_region>]],
                 {
                     non_editable_region_before = 'prefix line',
                     non_editable_region_after = 'suffix line',
@@ -161,12 +161,12 @@ suffix<cursor_position> line
 
             local utils = helpers.reload 'minuet.duet.utils'
             local parsed, err = utils.parse_duet_response(
-                [[<editable_region_start>
+                [[<editable_region>
 prefix line
 foo
-bar<cursor_position>
+bar<cursor_position/>
 
-<editable_region_end>]],
+</editable_region>]],
                 {
                     non_editable_region_before = 'prefix line',
                 }
@@ -188,9 +188,9 @@ bar<cursor_position>
             helpers.setup_root_config()
 
             local utils = helpers.reload 'minuet.duet.utils'
-            local parsed, err = utils.parse_duet_response [[<editable_region_start>
+            local parsed, err = utils.parse_duet_response [[<editable_region>
 foo
-<editable_region_end>]]
+</editable_region>]]
 
             helpers.expect_equal(parsed, nil)
             helpers.expect_match(err, 'cursor marker')
