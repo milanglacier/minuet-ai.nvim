@@ -54,6 +54,28 @@ ba<cursor_position>r
         end,
     },
     {
+        name = 'duet.utils preserves leading empty line when no duplicated left context is trimmed',
+        run = function()
+            helpers.setup_root_config()
+
+            local utils = helpers.reload 'minuet.duet.utils'
+            local parsed, err = utils.parse_duet_response [[<editable_region_start>
+
+foo
+ba<cursor_position>r
+<editable_region_end>]]
+
+            helpers.expect_equal(err, nil)
+            helpers.expect_equal(parsed, {
+                lines = { '', 'foo', 'bar' },
+                cursor = {
+                    row_offset = 2,
+                    col = 2,
+                },
+            })
+        end,
+    },
+    {
         name = 'duet.utils filters duplicated non-editable region text before parsing cursor position',
         run = function()
             helpers.setup_root_config {
@@ -85,6 +107,77 @@ suffix line
                 cursor = {
                     row_offset = 1,
                     col = 2,
+                },
+            })
+        end,
+    },
+    {
+        name = 'duet.utils clamps cursor to replacement end when it falls inside duplicated right context',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    editable_region = {
+                        before_region_filter_length = 3,
+                        after_region_filter_length = 3,
+                    },
+                },
+            }
+
+            local utils = helpers.reload 'minuet.duet.utils'
+            local parsed, err = utils.parse_duet_response(
+                [[<editable_region_start>
+prefix line
+foo
+bar
+suffix<cursor_position> line
+<editable_region_end>]],
+                {
+                    non_editable_region_before = 'prefix line',
+                    non_editable_region_after = 'suffix line',
+                }
+            )
+
+            helpers.expect_equal(err, nil)
+            helpers.expect_equal(parsed, {
+                lines = { 'foo', 'bar' },
+                cursor = {
+                    row_offset = 1,
+                    col = 3,
+                },
+            })
+        end,
+    },
+    {
+        name = 'duet.utils preserves trailing empty line after trimming duplicated left context',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    editable_region = {
+                        before_region_filter_length = 3,
+                        after_region_filter_length = 0,
+                    },
+                },
+            }
+
+            local utils = helpers.reload 'minuet.duet.utils'
+            local parsed, err = utils.parse_duet_response(
+                [[<editable_region_start>
+prefix line
+foo
+bar<cursor_position>
+
+<editable_region_end>]],
+                {
+                    non_editable_region_before = 'prefix line',
+                }
+            )
+
+            helpers.expect_equal(err, nil)
+            helpers.expect_equal(parsed, {
+                lines = { 'foo', 'bar', '' },
+                cursor = {
+                    row_offset = 1,
+                    col = 3,
                 },
             })
         end,

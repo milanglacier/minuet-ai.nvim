@@ -137,14 +137,19 @@ local function count_occurrences(text, needle)
 end
 
 ---@param text string
+---@param side? 'left'|'right'|'both'
 ---@return string
-local function trim_boundary_newlines(text)
-    if text:sub(1, 1) == '\n' then
+local function trim_boundary_newlines(text, side)
+    side = side or 'both'
+
+    if (side == 'left' or side == 'both') and text:sub(1, 1) == '\n' then
         text = text:sub(2)
     end
-    if text:sub(-1) == '\n' then
+
+    if (side == 'right' or side == 'both') and text:sub(-1) == '\n' then
         text = text:sub(1, -2)
     end
+
     return text
 end
 
@@ -162,38 +167,61 @@ end
 
 ---@alias minuet.DuetParseContext minuet.DuetFilterContext|minuet.DuetContext
 
+---Trim duplicated non-editable text from the start of the editable response.
+---The boolean return is true only when duplicated left context was removed;
+---callers use it to decide whether a left boundary newline was only a separator.
 ---@param inner string
 ---@param context minuet.DuetParseContext?
----@return string
-local function filter_inner_text(inner, context)
+---@return string inner The possibly trimmed response body.
+---@return boolean trimmed True when duplicated left context was removed.
+local function trim_inner_left(inner, context)
     if type(inner) ~= 'string' or inner == '' or type(context) ~= 'table' then
-        return inner
+        return inner, false
     end
 
     local config = M.get_config() or {}
     local editable_region = config.editable_region or {}
     local before_region_filter_length = math.max(editable_region.before_region_filter_length or 0, 0)
-    local after_region_filter_length = math.max(editable_region.after_region_filter_length or 0, 0)
-    local filtered_inner = inner
 
     if before_region_filter_length > 0 and type(context.non_editable_region_before) == 'string' then
-        local match_before = shared_utils.find_longest_match(filtered_inner, context.non_editable_region_before)
+        local match_before = shared_utils.find_longest_match(inner, context.non_editable_region_before)
         local match_len = vim.fn.strchars(match_before)
         if match_len >= before_region_filter_length then
-            filtered_inner = vim.fn.strcharpart(filtered_inner, match_len)
+            inner = vim.fn.strcharpart(inner, match_len)
+            return inner, true
         end
     end
+
+    return inner, false
+end
+
+---Trim duplicated non-editable text from the end of the editable response.
+---The boolean return is true only when duplicated right context was removed;
+---callers use it to decide whether a right boundary newline was only a separator.
+---@param inner string
+---@param context minuet.DuetParseContext?
+---@return string inner The possibly trimmed response body.
+---@return boolean trimmed True when duplicated right context was removed.
+local function trim_inner_right(inner, context)
+    if type(inner) ~= 'string' or inner == '' or type(context) ~= 'table' then
+        return inner, false
+    end
+
+    local config = M.get_config() or {}
+    local editable_region = config.editable_region or {}
+    local after_region_filter_length = math.max(editable_region.after_region_filter_length or 0, 0)
 
     if after_region_filter_length > 0 and type(context.non_editable_region_after) == 'string' then
-        local match_after = shared_utils.find_longest_match(context.non_editable_region_after, filtered_inner)
+        local match_after = shared_utils.find_longest_match(context.non_editable_region_after, inner)
         local match_len = vim.fn.strchars(match_after)
         if match_len >= after_region_filter_length then
-            local filtered_len = vim.fn.strchars(filtered_inner)
-            filtered_inner = vim.fn.strcharpart(filtered_inner, 0, filtered_len - match_len)
+            local inner_len = vim.fn.strchars(inner)
+            inner = vim.fn.strcharpart(inner, 0, inner_len - match_len)
+            return inner, true
         end
     end
 
-    return filtered_inner
+    return inner, false
 end
 
 ---@param text string
@@ -222,8 +250,11 @@ function M.parse_duet_response(text, context)
 
     local inner = text:sub(start_end + 1, end_pos - 1)
     inner = trim_boundary_newlines(inner)
-    inner = filter_inner_text(inner, context)
-    inner = trim_boundary_newlines(inner)
+    local trimmed_left
+    inner, trimmed_left = trim_inner_left(inner, context)
+    if trimmed_left then
+        inner = trim_boundary_newlines(inner, 'left')
+    end
 
     if count_occurrences(inner, markers.cursor_position) ~= 1 then
         return nil, 'expected exactly one cursor marker inside editable region'
@@ -232,9 +263,20 @@ function M.parse_duet_response(text, context)
     local cursor_pos, cursor_end = inner:find(markers.cursor_position, 1, true)
     local before = inner:sub(1, cursor_pos - 1)
     local after = inner:sub(cursor_end + 1)
+    local cursor_offset = #before
     local text_without_cursor = before .. after
 
-    local cursor_lines = vim.split(before, '\n', { plain = true })
+    local trimmed_right
+    text_without_cursor, trimmed_right = trim_inner_right(text_without_cursor, context)
+    if trimmed_right then
+        text_without_cursor = trim_boundary_newlines(text_without_cursor, 'right')
+    end
+
+    if cursor_offset > #text_without_cursor then
+        cursor_offset = #text_without_cursor
+    end
+
+    local cursor_lines = vim.split(text_without_cursor:sub(1, cursor_offset), '\n', { plain = true })
     local replacement_lines = vim.split(text_without_cursor, '\n', { plain = true })
 
     if #cursor_lines == 0 then
