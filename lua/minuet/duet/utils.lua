@@ -235,17 +235,17 @@ function M.parse_duet_response(text, context)
     end
 
     if count_occurrences(text, markers.editable_region_start) ~= 1 then
-        return nil, 'expected exactly one editable region start marker'
+        return nil, 'expected exactly one editable region start marker: ' .. text
     end
 
     if count_occurrences(text, markers.editable_region_end) ~= 1 then
-        return nil, 'expected exactly one editable region end marker'
+        return nil, 'expected exactly one editable region end marker: ' .. text
     end
 
     local start_pos, start_end = text:find(markers.editable_region_start, 1, true)
     local end_pos = text:find(markers.editable_region_end, start_end + 1, true)
     if not start_pos or not end_pos then
-        return nil, 'failed to locate editable region markers'
+        return nil, 'failed to locate editable region markers: ' .. text
     end
 
     local inner = text:sub(start_end + 1, end_pos - 1)
@@ -257,7 +257,7 @@ function M.parse_duet_response(text, context)
     end
 
     if count_occurrences(inner, markers.cursor_position) ~= 1 then
-        return nil, 'expected exactly one cursor marker inside editable region'
+        return nil, 'expected exactly one cursor marker inside editable region: ' .. text
     end
 
     local cursor_pos, cursor_end = inner:find(markers.cursor_position, 1, true)
