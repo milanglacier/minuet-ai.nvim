@@ -183,13 +183,39 @@ bar<cursor_position/>
         end,
     },
     {
-        name = 'duet.utils rejects responses with an invalid marker layout',
+        name = 'duet.utils places cursor at the editable region end when the marker is missing',
+        run = function()
+            helpers.setup_root_config {
+                notify = 'verbose',
+            }
+
+            local utils = helpers.reload 'minuet.duet.utils'
+            local notifications, restore_notifications = helpers.capture_notifications()
+            local parsed, err = utils.parse_duet_response [[<editable_region>
+foo
+</editable_region>]]
+            restore_notifications()
+
+            helpers.expect_equal(err, nil)
+            helpers.expect_equal(parsed, {
+                lines = { 'foo' },
+                cursor = {
+                    row_offset = 0,
+                    col = 3,
+                },
+            })
+            helpers.expect_equal(#notifications, 1)
+            helpers.expect_match(notifications[1].msg, 'cursor marker')
+        end,
+    },
+    {
+        name = 'duet.utils rejects responses with multiple cursor markers',
         run = function()
             helpers.setup_root_config()
 
             local utils = helpers.reload 'minuet.duet.utils'
             local parsed, err = utils.parse_duet_response [[<editable_region>
-foo
+f<cursor_position/>o<cursor_position/>o
 </editable_region>]]
 
             helpers.expect_equal(parsed, nil)

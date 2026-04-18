@@ -256,7 +256,15 @@ function M.parse_duet_response(text, context)
         inner = trim_boundary_newlines(inner, 'left')
     end
 
-    if count_occurrences(inner, markers.cursor_position) ~= 1 then
+    local cursor_marker_count = count_occurrences(inner, markers.cursor_position)
+    if cursor_marker_count == 0 then
+        M.notify(
+            'Minuet duet response did not include a cursor marker; placing the cursor at the end of the editable region.',
+            'verbose',
+            vim.log.levels.INFO
+        )
+        inner = inner .. markers.cursor_position
+    elseif cursor_marker_count > 1 then
         return nil, 'expected exactly one cursor marker inside editable region: ' .. text
     end
 
