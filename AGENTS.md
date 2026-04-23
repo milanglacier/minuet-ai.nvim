@@ -8,3 +8,5 @@
 - Add a helper only when it represents a meaningful concept, is reused, isolates
   nontrivial behavior, or clearly reduces complexity without hiding simple
   local logic.
+- Add type annotations for new or changed code where practical, especially for
+  public APIs, parameters, return values, and non-obvious table shapes.
