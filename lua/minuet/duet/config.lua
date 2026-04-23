@@ -197,10 +197,15 @@ end
 ---@field before_region_filter_length integer
 ---@field after_region_filter_length integer
 
+---@class minuet.DuetNonEditableRegion
+---@field context_window integer
+---@field context_ratio number
+
 ---@class minuet.DuetConfig
 ---@field provider string
 ---@field request_timeout integer
 ---@field editable_region minuet.DuetEditableRegion
+---@field non_editable_region minuet.DuetNonEditableRegion
 ---@field markers { editable_region_start: string, editable_region_end: string, cursor_position: string }
 ---@field preview { cursor: string }
 ---@field provider_options table<string, table>
@@ -212,6 +217,10 @@ local M = {
         lines_after = 15,
         before_region_filter_length = 30,
         after_region_filter_length = 30,
+    },
+    non_editable_region = {
+        context_window = 40000,
+        context_ratio = 0.75,
     },
     markers = vim.deepcopy(default_markers),
     preview = {

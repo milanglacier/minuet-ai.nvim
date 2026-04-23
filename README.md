@@ -1453,6 +1453,10 @@ require('minuet').setup {
             before_region_filter_length = 30, -- Trim duplicated text from the start of the model output when it repeats non-editable text before the region.
             after_region_filter_length = 30, -- Trim duplicated text from the end of the model output when it repeats non-editable text after the region.
         },
+        non_editable_region = {
+            context_window = 40000, -- Maximum characters of non-editable context included around the editable region.
+            context_ratio = 0.75, -- Ratio of non-editable context before vs. after the editable region when truncation is needed.
+        },
         markers = {
             editable_region_start = '<editable_region>', -- Marker that wraps the start of the editable region in prompts and responses.
             editable_region_end = '</editable_region>', -- Marker that wraps the end of the editable region in prompts and responses.

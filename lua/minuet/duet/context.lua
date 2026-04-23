@@ -14,6 +14,53 @@ local M = {}
 ---@field original_lines string[]
 ---@field range minuet.DuetContextRange
 
+---@param context_before string
+---@param context_after string
+---@param config minuet.DuetConfig
+---@return string, string
+local function truncate_non_editable_regions(context_before, context_after, config)
+    local non_editable_region = config.non_editable_region or {}
+    local context_window = math.max(non_editable_region.context_window or 0, 0)
+    local context_ratio = non_editable_region.context_ratio or 0.75
+    local n_chars_before = vim.fn.strchars(context_before)
+    local n_chars_after = vim.fn.strchars(context_after)
+    local is_incomplete_before = false
+    local is_incomplete_after = false
+
+    if n_chars_before + n_chars_after > context_window then
+        if n_chars_before < context_window * context_ratio then
+            -- Before context fits its budget; spend the remaining window after the editable region.
+            context_after = vim.fn.strcharpart(context_after, 0, context_window - n_chars_before)
+            is_incomplete_after = true
+        elseif n_chars_after < context_window * (1 - context_ratio) then
+            -- After context fits its budget; spend the remaining window before the editable region.
+            context_before = vim.fn.strcharpart(context_before, n_chars_before + n_chars_after - context_window)
+            is_incomplete_before = true
+        else
+            -- Both sides exceed their budgets; split the window by context_ratio.
+            context_after = vim.fn.strcharpart(context_after, 0, math.floor(context_window * (1 - context_ratio)))
+            context_before =
+                vim.fn.strcharpart(context_before, n_chars_before - math.floor(context_window * context_ratio))
+            is_incomplete_before = true
+            is_incomplete_after = true
+        end
+    end
+
+    if is_incomplete_before then
+        -- Drop the first line because suffix truncation may start in the middle of a line.
+        local _, rest = context_before:match '([^\n]*)\n(.*)'
+        context_before = rest or context_before
+    end
+
+    if is_incomplete_after then
+        -- Drop the last line because prefix truncation may end in the middle of a line.
+        local content = context_after:match '(.*)[\n][^\n]*$'
+        context_after = content or context_after
+    end
+
+    return context_before, context_after
+end
+
 ---@param bufnr integer
 ---@return minuet.DuetContext
 function M.build(bufnr)
@@ -49,13 +96,18 @@ function M.build(bufnr)
         table.insert(editable_region_after_cursor, editable_region_lines[index])
     end
 
+    local non_editable_region_before_text = table.concat(non_editable_region_before, '\n')
+    local non_editable_region_after_text = table.concat(non_editable_region_after, '\n')
+    non_editable_region_before_text, non_editable_region_after_text =
+        truncate_non_editable_regions(non_editable_region_before_text, non_editable_region_after_text, config)
+
     return {
         bufnr = bufnr,
         changedtick = vim.api.nvim_buf_get_changedtick(bufnr),
-        non_editable_region_before = table.concat(non_editable_region_before, '\n'),
+        non_editable_region_before = non_editable_region_before_text,
         editable_region_before_cursor = table.concat(editable_region_before_cursor, '\n'),
         editable_region_after_cursor = table.concat(editable_region_after_cursor, '\n'),
-        non_editable_region_after = table.concat(non_editable_region_after, '\n'),
+        non_editable_region_after = non_editable_region_after_text,
         original_lines = editable_region_lines,
         range = {
             start_row = start_row,
