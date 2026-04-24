@@ -406,7 +406,7 @@ M.provider_options = {
         transform = {},
     },
     openai_fim_compatible = {
-        model = 'deepseek-chat',
+        model = 'deepseek-v4-flash',
         end_point = 'https://api.deepseek.com/beta/completions',
         api_key = 'DEEPSEEK_API_KEY',
         name = 'Deepseek',

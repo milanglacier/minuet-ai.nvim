@@ -567,15 +567,10 @@ computing power, please refer to [recipes.md](./recipes.md).
 # Selecting a Provider or Model
 
 The `gemini-2.0-flash` and `codestral` models offer high-quality output with
-free and fast processing. For optimal quality, though with significantly slower
-generation speed, consider using the `deepseek-chat` model, which is compatible
-with both `openai-fim-compatible` and `openai-compatible` providers. For local
-LLM inference, you can deploy either `qwen-2.5-coder` or `deepseek-coder-v2`
-through Ollama using the `openai-fim-compatible` provider.
-
-As of January 28, 2025: Due to high server demand, Deepseek users may
-experience significant response delays or timeout. We recommend trying
-alternative providers instead.
+free and fast processing. The `deepseek-v4-flash` model, used with the
+`openai_fim_compatible` provider, is an alternative for low-cost APIs and fast
+inference. For local LLM inference, you can deploy either `qwen-2.5-coder` or
+`deepseek-coder-v2` through Ollama using the `openai-fim-compatible` provider.
 
 We **do not** recommend using thinking models, as this mode significantly
 increases latency—even with the fastest models. However, if you choose to use
