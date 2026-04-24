@@ -428,28 +428,11 @@ require('minuet').setup {
 <details>
 
 ```lua
--- you can use deepseek with both openai_fim_compatible or openai_compatible provider
+-- you can use deepseek with both openai_fim_compatible
 require('minuet').setup {
     provider = 'openai_fim_compatible',
     provider_options = {
         openai_fim_compatible = {
-            api_key = 'DEEPSEEK_API_KEY',
-            name = 'deepseek',
-            optional = {
-                max_tokens = 256,
-                top_p = 0.9,
-            },
-        },
-    },
-}
-
-
--- or
-require('minuet').setup {
-    provider = 'openai_compatible',
-    provider_options = {
-        openai_compatible = {
-            end_point = 'https://api.deepseek.com/chat/completions',
             api_key = 'DEEPSEEK_API_KEY',
             name = 'deepseek',
             optional = {
@@ -1180,7 +1163,7 @@ that the model for `llama.cpp` must be determined when you launch the
 ```lua
 provider_options = {
     openai_fim_compatible = {
-        model = 'deepseek-chat',
+        model = 'deepseek-v4-flash',
         end_point = 'https://api.deepseek.com/beta/completions',
         api_key = 'DEEPSEEK_API_KEY',
         name = 'Deepseek',
