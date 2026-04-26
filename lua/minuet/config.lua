@@ -207,6 +207,9 @@ local M = {
             -- if true, warn the user when LSP inline completion is enabled
             -- while Minuet virtual text is also configured for use.
             warn_on_virtualtext = true,
+            -- if true, warn the user when both LSP completion and inline
+            -- completion are enabled. Enabling only one of them is recommended.
+            warn_on_lsp_completion = true,
             -- Enables automatic inline completion for these filetypes.
             enabled_auto_trigger_ft = {},
             -- Filetypes excluded from inline completion autotriggering.

@@ -434,6 +434,19 @@ function M.setup()
         )
     end
 
+    if
+        config.lsp.inline_completion.enable
+        and config.lsp.completion.enable
+        and config.lsp.inline_completion.warn_on_lsp_completion
+    then
+        vim.notify(
+            'Minuet LSP completion and LSP inline completion are both enabled. '
+                .. 'Enabling only one of them is recommended. '
+                .. 'Set lsp.inline_completion.warn_on_lsp_completion = false to suppress this warning.',
+            vim.log.levels.WARN
+        )
+    end
+
     if config.lsp.inline_completion.enable and not vim.lsp.inline_completion then
         vim.notify('Minuet LSP inline completion requires nvim.lsp.inline_completion', vim.log.levels.WARN)
     end

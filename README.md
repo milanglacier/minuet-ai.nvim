@@ -349,6 +349,8 @@ Minuet can also expose suggestions through Neovim's built-in
 require('minuet').setup {
     lsp = {
         enabled_ft = { 'toml', 'lua', 'cpp' },
+        -- It is recommended to disable completion when use inline_completion
+        completion = { enable = false },
         inline_completion = {
             enable = true,
             enabled_auto_trigger_ft = { 'cpp', 'lua' },
@@ -382,7 +384,7 @@ useful baseline, but in practice it only covers automatic triggering. Minuet's
 `virtualtext` frontend supports a much more comprehensive workflow: it supports
 both manual invocation and automatic triggering, keeps suggestions in sync as
 you continue typing, and lets you accept longer suggestions incrementally,
-including accepting only part of a completion instead of committing the entire
+including accepting only part of a completion instead of the entire
 suggestion at once.
 
 When using LSP inline completion, avoid enabling Minuet `virtualtext` at the
@@ -625,6 +627,9 @@ default_config = {
             -- if true, warn when LSP inline completion is enabled while
             -- Minuet virtual text is also configured for use.
             warn_on_virtualtext = true,
+            -- if true, warn when both LSP completion and inline completion
+            -- are enabled. Enabling only one of them is recommended.
+            warn_on_lsp_completion = true,
             -- Enables automatic inline completion using `vim.lsp.inline_completion.enable`
             -- for these filetypes.
             enabled_auto_trigger_ft = {},
