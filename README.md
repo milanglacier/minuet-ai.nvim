@@ -1129,6 +1129,29 @@ provider_options = {
 }
 ```
 
+**Disabling thinking for reasoning models:**
+
+| Provider         | Configuration                                                        |
+| ---------------- | -------------------------------------------------------------------- |
+| **OpenRouter**   | `reasoning_effort = 'none'` (or `'minimal'`, depending on the model) |
+| **DeepSeek API** | `thinking = { type = 'disabled' }`                                   |
+
+Note: When using DeepSeek models via OpenRouter, set `reasoning_effort =
+'none'`.
+
+```lua
+provider_options = {
+    openai_compatible = {
+        optional = {
+            -- Disable thinking for reasoning models
+            reasoning_effort = 'none', -- or 'minimal'
+            -- or
+            thinking = { type = 'disabled' },
+        },
+    },
+}
+```
+
 </details>
 
 ## OpenAI-FIM-compatible
@@ -1386,7 +1409,7 @@ require('minuet').setup {
             openai_compatible = {
                 model = 'deepseek/deepseek-v4-flash',
                 optional = {
-                    -- Disable thinking is recommended
+                    -- Disable thinking is recommended.
                     reasoning_effort = 'none',
                     -- prioritize throughput for faster completion
                     provider = {
