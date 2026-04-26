@@ -622,6 +622,7 @@ default_config = {
             -- Filetypes excluded from autotriggering. Useful when `enabled_auto_trigger_ft` = { '*' }
             disabled_auto_trigger_ft = {},
         },
+        -- Minuet's own virtualtext frontend is recommended **over** lsp.inline_completion
         inline_completion = {
             enable = false,
             -- if true, warn when LSP inline completion is enabled while
