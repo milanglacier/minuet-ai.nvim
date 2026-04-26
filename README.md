@@ -1137,17 +1137,14 @@ provider_options = {
 | **DeepSeek API**     | `thinking = { type = 'disabled' }`                                         |
 | **Various Provider** | `reasoning_effort = 'none'`                                                |
 
-Note: When using DeepSeek models via OpenRouter, set `reasoning_effort =
-'none'`.
-
 ```lua
 provider_options = {
     openai_compatible = {
         optional = {
             -- Disable thinking for reasoning models
-            reasoning = { effort = 'none' }, -- or "minimal", depending on the model. This is for openrouter API
-            -- or reasoning_effort = 'none', -- or 'minimal', denpnding on the model. This is for various proviers.
-            -- or thinking = { type = 'disabled' } for Deepseek API
+            reasoning = { effort = 'none' }, -- or "minimal", depending on the model (OpenRouter)
+            -- reasoning_effort = 'none', -- or "minimal", depending on the model (various providers)
+            -- thinking = { type = 'disabled' } -- DeepSeek API
         },
     },
 }
