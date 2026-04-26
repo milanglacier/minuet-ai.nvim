@@ -1,3 +1,33 @@
+# Version 0.9.0 (2026-04-26)
+
+## Breaking Changes
+
+- LSP configuration restructure: The LSP configuration has been reorganized into
+  separate `completion` and `inline_completion` sections:
+
+## Features
+
+- Duet (Next Edit Prediction): Introduced a new experimental feature for
+  next-edit prediction. Duet analyzes the context around the cursor and suggests
+  edits within an editable region. This feature is still highly experimental and
+  remains a WIP.
+- LSP inline completion: Added support for Neovim's built-in
+  `vim.lsp.inline_completion` interface (Neovim 0.12+). Enable via
+  `config.lsp.inline_completion.enable`.
+- New configuration options:
+  - `config.curl_cmd`: Customize the curl command used for HTTP requests.
+  - `config.curl_extra_args`: Pass additional arguments to curl.
+- Provider updates:
+  - Change default `openai_fim_compatible` model from `deepseek-chat` to
+    `deepseek-v4-flash`.
+  - Change OpenAI default model to `gpt-5.4-nano` with prefix-first prompt
+    strategy.
+- Similar to the `openai_fim_compatible` provider, the `openai`, `claude`,
+  `openai_compatible`, and `gemini` providers now support customizing the
+  endpoint, headers, and request body via the `transform` option.
+- Remove dependency on `plenary.nvim`. Minuet now uses the built-in
+  `vim.system` API for HTTP requests.
+
 # Version 0.8.0 (2025-12-13)
 
 ## Breaking Change
