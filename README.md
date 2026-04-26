@@ -1384,9 +1384,10 @@ require('minuet').setup {
                 },
             },
             openai_compatible = {
-                model = 'minimax/minimax-m2.7',
+                model = 'deepseek/deepseek-v4-flash',
                 optional = {
-                    reasoning_effort = 'minimal',
+                    -- Disable thinking is recommended
+                    reasoning_effort = 'none',
                     -- prioritize throughput for faster completion
                     provider = {
                         sort = 'throughput',
