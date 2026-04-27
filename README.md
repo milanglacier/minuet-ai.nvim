@@ -813,11 +813,12 @@ When use chat-based LLMs, there are two ways for constructing the prompt:
 placing the prefix (context before the cursor) before the suffix (context after
 the cursor), or placing the suffix before the prefix.
 
-By default, `minuet` uses the **prefix-first** style for the OpenAI and Gemini
-providers, and the **suffix-first** style for OpenAI-Compatible and Claude
-providers. It is recommended that you experiment with both strategies to
-determine which yields the best results, particularly if you are using an
-OpenAI-compatible provider with various models.
+By default, `minuet` uses the **prefix-first** style for the OpenAI, Gemini,
+and OpenAI-Compatible (with `deepseek-v4-flash` as the default model)
+providers, and the **suffix-first** style for Claude providers. It is
+recommended that you experiment with both strategies to determine which yields
+the best results, particularly if you are using an OpenAI-compatible provider
+with various models.
 
 Below is an example code snippet demonstrating how to switch between these two
 prompt construction methods:
@@ -1111,7 +1112,7 @@ The following config is the default.
 ```lua
 provider_options = {
     openai_compatible = {
-        model = 'mistralai/devstral-small',
+        model = 'deepseek/deepseek-v4-flash',
         system = "see [Prompt] section for the default value",
         few_shots = "see [Prompt] section for the default value",
         chat_input = "See [Prompt Section for default value]",
@@ -1505,7 +1506,7 @@ require('minuet').setup {
                 transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
             },
             openai_compatible = {
-                model = 'minimax/minimax-m2.7', -- Default model for OpenAI-compatible chat providers.
+                model = 'deepseek/deepseek-v4-flash', -- Default model for OpenAI-compatible chat providers.
                 api_key = 'OPENROUTER_API_KEY', -- Environment variable name, or a function that returns the API key.
                 end_point = 'https://openrouter.ai/api/v1/chat/completions', -- Must be a chat-completions-compatible endpoint.
                 name = 'Openrouter', -- Provider label used in events and notifications.

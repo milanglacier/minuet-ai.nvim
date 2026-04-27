@@ -55,11 +55,12 @@ We utilize two distinct strategies when constructing prompts:
 
 1. **Prefix First Style**: This involves including the code preceding the
    cursor initially, followed by the code succeeding the cursor. This approach
-   is used for the **OpenAI** and **Gemini** providers.
+   is used for the **OpenAI**, **Gemini**, and **OpenAI-Compatible** (with
+   `deepseek-v4-flash` as the default model) providers.
 
 2. **Suffix First Style**: This method involves including the code following
    the cursor initially, and then the code preceding the cursor. It is employed
-   for OpenAI-Compatible and Claude providers.
+   for the **Claude** provider.
 
 To access the **Suffix First Style** default prompt, use:
 
