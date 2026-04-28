@@ -10,8 +10,9 @@
     - [Completion](#completion)
     - [Inline completion](#inline-completion)
   - [LLM Provider Examples](#llm-provider-examples)
-    - [Openrouter Kimi-K2](#openrouter-kimi-k2)
-    - [Deepseek](#deepseek)
+    - [Openrouter deepseek-v4-flash](#openrouter-deepseek-v4-flash)
+    - [Opencode Go deepseek-v4-flash](#opencode-go-deepseek-v4-flash)
+    - [Deepseek deepseek-v4-flash](#deepseek-deepseek-v4-flash)
     - [Ollama Qwen-2.5-coder:7b](#ollama-qwen-25-coder7b)
     - [Llama.cpp Qwen-2.5-coder:1.5b](#llamacpp-qwen-25-coder15b)
 - [Selecting a Provider or Model](#selecting-a-provider-or-model)
@@ -41,8 +42,12 @@
   - [Default Config](#default-config)
 - [API](#api)
   - [Virtual Text](#virtual-text)
+  - [Duet](#duet)
   - [Lualine](#lualine)
   - [Minuet Event](#minuet-event)
+    - [Standard Completion Events](#standard-completion-events)
+    - [Duet Events](#duet-events)
+    - [Event Data](#event-data)
 - [FAQ](#faq)
   - [Customize `cmp` ui for source icon and kind icon](#customize-cmp-ui-for-source-icon-and-kind-icon)
   - [Customize `blink` ui for source icon and kind icon](#customize-blink-ui-for-source-icon-and-kind-icon)
@@ -394,7 +399,7 @@ same time.
 
 ## LLM Provider Examples
 
-### Openrouter Kimi-K2
+### Openrouter deepseek-v4-flash
 
 <details>
 
@@ -408,7 +413,7 @@ require('minuet').setup {
         openai_compatible = {
             api_key = 'OPENROUTER_API_KEY',
             end_point = 'https://openrouter.ai/api/v1/chat/completions',
-            model = 'moonshotai/kimi-k2',
+            model = 'deepseek/deepseek-v4-flash',
             name = 'Openrouter',
             optional = {
                 max_tokens = 56,
@@ -417,6 +422,8 @@ require('minuet').setup {
                      -- Prioritize throughput for faster completion
                     sort = 'throughput',
                 },
+                -- disable thinking to avoid first token latency
+                reasoning_effort = 'none'
             },
         },
     },
@@ -425,12 +432,40 @@ require('minuet').setup {
 
 </details>
 
-### Deepseek
+### Opencode Go deepseek-v4-flash
 
 <details>
 
 ```lua
--- you can use deepseek with both openai_fim_compatible
+require('minuet').setup {
+    provider = 'openai_compatible',
+    request_timeout = 2.5,
+    throttle = 1500, -- Increase to reduce costs and avoid rate limits
+    debounce = 600, -- Increase to reduce costs and avoid rate limits
+    provider_options = {
+        openai_compatible = {
+            api_key = 'OPENCODE_GO_API_KEY',
+            end_point = 'https://opencode.ai/zen/go/v1/chat/completions',
+            model = 'deepseek-v4-flash',
+            name = 'Opencode',
+            optional = {
+                max_tokens = 56,
+                top_p = 0.9,
+                -- disable thinking to avoid first token latency
+                thinking = { type = 'disabled' },
+            },
+        },
+    },
+}
+```
+
+</details>
+
+### Deepseek deepseek-v4-flash
+
+<details>
+
+```lua
 require('minuet').setup {
     provider = 'openai_fim_compatible',
     provider_options = {
