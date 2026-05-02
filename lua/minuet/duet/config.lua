@@ -28,7 +28,8 @@ local function make_default_prompt()
 
 Input markers:
 - `{{{editable_region_start}}}` and `{{{editable_region_end}}}` wrap the editable region.
-- `{{{cursor_position}}}` marks the current cursor position inside that editable region.]]
+- `{{{cursor_position}}}` marks the current cursor position inside that editable region.
+- When present, the `Recent edits` section shows the user's recent changes as unified diffs (oldest first). Use this to understand the user's editing intent and continue their work accordingly.]]
 end
 
 local function make_default_guidelines()
@@ -57,12 +58,14 @@ end
 ---@type minuet.DuetChatInput
 local default_chat_input = {
     template = function()
-        return render_markers [[{{{non_editable_region_before}}}
+        return render_markers [[{{{diff_history}}}
+{{{non_editable_region_before}}}
 {{{editable_region_start}}}
 {{{editable_region_before_cursor}}}{{{cursor_position}}}{{{editable_region_after_cursor}}}
 {{{editable_region_end}}}
 {{{non_editable_region_after}}}]]
     end,
+    diff_history = get_context_value 'diff_history',
     non_editable_region_before = get_context_value 'non_editable_region_before',
     editable_region_before_cursor = get_context_value 'editable_region_before_cursor',
     editable_region_after_cursor = get_context_value 'editable_region_after_cursor',
@@ -73,7 +76,19 @@ local default_few_shots = function()
     return {
         {
             role = 'user',
-            content = render_markers [[type User = {
+            content = render_markers [[Recent edits (oldest first):
+@@ -1,4 +1,6 @@
+ type User = {
+     id: string;
+     name: string;
++    role?: string;
++    active?: boolean;
+ };
+@@ -6,7 +8,7 @@
+-async function buildRequest(user: User) {
++async function buildRequest(user: User, overrides: Record<string, any> = {}) {
+
+type User = {
     id: string;
     name: string;
     role?: string;
@@ -186,6 +201,7 @@ end
 --- Configuration for formatting duet chat input to the LLM
 ---@class minuet.DuetChatInput
 ---@field template string|fun(): string Template string with placeholders for context parts
+---@field diff_history string|minuet.DuetChatInputFunction
 ---@field non_editable_region_before string|minuet.DuetChatInputFunction
 ---@field editable_region_before_cursor string|minuet.DuetChatInputFunction
 ---@field editable_region_after_cursor string|minuet.DuetChatInputFunction
@@ -201,11 +217,17 @@ end
 ---@field context_window integer
 ---@field context_ratio number
 
+---@class minuet.DuetDiffHistory
+---@field max_entries integer
+---@field max_chars integer
+---@field time_gap integer
+
 ---@class minuet.DuetConfig
 ---@field provider string
 ---@field request_timeout integer
 ---@field editable_region minuet.DuetEditableRegion
 ---@field non_editable_region minuet.DuetNonEditableRegion
+---@field diff_history minuet.DuetDiffHistory
 ---@field markers { editable_region_start: string, editable_region_end: string, cursor_position: string }
 ---@field preview { cursor: string }
 ---@field provider_options table<string, table>
@@ -221,6 +243,11 @@ local M = {
     non_editable_region = {
         context_window = 40000,
         context_ratio = 0.75,
+    },
+    diff_history = {
+        max_entries = 5,
+        max_chars = 2000,
+        time_gap = 30,
     },
     markers = vim.deepcopy(default_markers),
     preview = {

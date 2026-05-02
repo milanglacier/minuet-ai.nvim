@@ -7,6 +7,7 @@ local M = {}
 ---@class minuet.DuetContext
 ---@field bufnr integer
 ---@field changedtick integer
+---@field diff_history string
 ---@field non_editable_region_before string
 ---@field editable_region_before_cursor string
 ---@field editable_region_after_cursor string
@@ -65,6 +66,12 @@ end
 ---@return minuet.DuetContext
 function M.build(bufnr)
     local config = require('minuet').config.duet
+    local diff_history = require('minuet.duet.diff_history')
+
+    -- Build diff history FIRST: the undo walk increments changedtick,
+    -- so we must capture changedtick after this completes.
+    local diff_history_text = diff_history.build(bufnr, config)
+
     local cursor = vim.api.nvim_win_get_cursor(0)
     local all_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
     local line_count = math.max(#all_lines, 1)
@@ -104,6 +111,7 @@ function M.build(bufnr)
     return {
         bufnr = bufnr,
         changedtick = vim.api.nvim_buf_get_changedtick(bufnr),
+        diff_history = diff_history_text,
         non_editable_region_before = non_editable_region_before_text,
         editable_region_before_cursor = table.concat(editable_region_before_cursor, '\n'),
         editable_region_after_cursor = table.concat(editable_region_after_cursor, '\n'),
