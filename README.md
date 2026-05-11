@@ -1441,7 +1441,7 @@ require('minuet').setup {
                 },
             },
             openai_compatible = {
-                model = 'deepseek/deepseek-v4-flash',
+                model = 'google/gemini-3.1-flash-lite-preview',
                 optional = {
                     -- Disable thinking is recommended.
                     reasoning_effort = 'none',
@@ -1541,7 +1541,7 @@ require('minuet').setup {
                 transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
             },
             openai_compatible = {
-                model = 'deepseek/deepseek-v4-flash', -- Default model for OpenAI-compatible chat providers.
+                model = 'google/gemini-3.1-flash-lite-preview', -- Default model for OpenAI-compatible chat providers.
                 api_key = 'OPENROUTER_API_KEY', -- Environment variable name, or a function that returns the API key.
                 end_point = 'https://openrouter.ai/api/v1/chat/completions', -- Must be a chat-completions-compatible endpoint.
                 name = 'Openrouter', -- Provider label used in events and notifications.
