@@ -755,6 +755,10 @@ default_config = {
     after_cursor_filter_length = 15,
     -- Similar to after_cursor_filter_length but trim the completion item from
     -- prefix instead of suffix.
+    --
+    -- Note: FIM completions bypass both filters and the surrounding whitespace
+    -- stripping entirely. FIM models emit intentional leading/trailing
+    -- whitespace, so their output is passed through unmodified.
     before_cursor_filter_length = 2,
     -- proxy port to use
     proxy = nil,
