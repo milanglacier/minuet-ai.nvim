@@ -321,6 +321,10 @@ function M.filter_text(text, context)
         return text
     end
 
+    if config.before_cursor_filter_length <= 0 and config.after_cursor_filter_length <= 0 then
+        return text
+    end
+
     text = M.remove_spaces_single(text or '', true)
     lines_before = M.remove_spaces_single(lines_before or '')
     lines_after = M.remove_spaces_single(lines_after or '')

@@ -759,6 +759,11 @@ default_config = {
     -- Note: FIM completions bypass both filters and the surrounding whitespace
     -- stripping entirely. FIM models emit intentional leading/trailing
     -- whitespace, so their output is passed through unmodified.
+    --
+    -- For chat backends, setting both `after_cursor_filter_length` and
+    -- `before_cursor_filter_length` to 0 also disables text modification
+    -- (including the surrounding whitespace stripping) on completion
+    -- candidates.
     before_cursor_filter_length = 2,
     -- proxy port to use
     proxy = nil,
