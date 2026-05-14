@@ -169,7 +169,7 @@ end
 
 local function make_openai_compatible_options()
     return {
-        model = 'google/gemini-3.1-flash-lite-preview',
+        model = 'google/gemini-3.1-flash-lite',
         api_key = 'OPENROUTER_API_KEY',
         end_point = 'https://openrouter.ai/api/v1/chat/completions',
         name = 'Openrouter',

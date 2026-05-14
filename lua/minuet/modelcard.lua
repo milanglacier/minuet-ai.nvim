@@ -29,7 +29,7 @@ M.models = {
         'gemini-2.5-flash',
         'gemini-2.5-pro',
         'gemini-2.5-flash-lite',
-        'gemini-3.1-flash-lite-preview',
+        'gemini-3.1-flash-lite',
         'gemini-3-flash-preview',
     },
     openai_compatible = {
@@ -46,7 +46,7 @@ M.models = {
             'google/gemini-2.0-flash',
             'google/gemini-2.5-flash',
             'google/gemini-2.5-pro',
-            'google/gemini-3.1-flash-lite-preview',
+            'google/gemini-3.1-flash-lite',
             'google/gemini-3-flash-preview',
             'google/gemma-3-27b-it',
             'anthropic/claude-sonnet-4.6',
