@@ -1519,37 +1519,36 @@ require('minuet').setup {
                 transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
             },
             claude = {
-                model = 'claude-haiku-4-5', -- Default Claude model for duet requests.
-                api_key = 'ANTHROPIC_API_KEY', -- Environment variable name, or a function that returns the API key.
-                end_point = 'https://api.anthropic.com/v1/messages', -- Claude messages endpoint.
-                system = { ... }, -- Same duet system prompt structure as other chat providers.
-                system = { ... }, -- Duet system prompt config; keep the default unless you need a custom rewrite prompt.
-                few_shots = { ... }, -- Example user/assistant turns used to steer the rewrite.
-                chat_input = { ... }, -- Template that serializes editable and non-editable buffer regions.
-                max_tokens = 8192, -- Keep this large; if Claude truncates the rewritten editable region, duet parsing will fail.
-                optional = {}, -- Extra request body fields passed through to the Claude API.
-                transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
+                model = 'claude-haiku-4-5',
+                api_key = 'ANTHROPIC_API_KEY',
+                end_point = 'https://api.anthropic.com/v1/messages',
+                system = { ... },
+                few_shots = { ... },
+                chat_input = { ... },
+                max_tokens = 8192,
+                optional = {},
+                transform = {},
             },
             gemini = {
                 model = 'gemini-3-flash-preview', -- Recommended duet model at the moment.
-                api_key = 'GEMINI_API_KEY', -- Environment variable name, or a function that returns the API key.
-                end_point = 'https://generativelanguage.googleapis.com/v1beta/models', -- Base Gemini models endpoint.
-                system = { ... }, -- Duet system prompt config; keep the default unless you need a custom rewrite prompt.
-                few_shots = { ... }, -- Example user/assistant turns used to steer the rewrite.
-                chat_input = { ... }, -- Template that serializes editable and non-editable buffer regions.
-                optional = {}, -- Extra request body fields passed through to the OpenAI API.
-                transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
+                api_key = 'GEMINI_API_KEY',
+                end_point = 'https://generativelanguage.googleapis.com/v1beta/models',
+                system = { ... },
+                few_shots = { ... },
+                chat_input = { ... },
+                optional = {},
+                transform = {},
             },
             openai_compatible = {
-                model = 'google/gemini-3.1-flash-lite', -- Default model for OpenAI-compatible chat providers.
-                api_key = 'OPENROUTER_API_KEY', -- Environment variable name, or a function that returns the API key.
-                end_point = 'https://openrouter.ai/api/v1/chat/completions', -- Must be a chat-completions-compatible endpoint.
-                name = 'Openrouter', -- Provider label used in events and notifications.
-                system = { ... }, -- Duet system prompt config; keep the default unless you need a custom rewrite prompt.
-                few_shots = { ... }, -- Example user/assistant turns used to steer the rewrite.
-                chat_input = { ... }, -- Template that serializes editable and non-editable buffer regions.
-                optional = {}, -- Extra request body fields passed through to the OpenAI API.
-                transform = {}, -- Optional endpoint/header/body transforms applied before sending the request.
+                model = 'google/gemini-3.1-flash-lite',
+                api_key = 'OPENROUTER_API_KEY',
+                end_point = 'https://openrouter.ai/api/v1/chat/completions',
+                name = 'Openrouter',
+                system = { ... },
+                few_shots = { ... },
+                chat_input = { ... },
+                optional = {},
+                transform = {},
             },
         },
     },
