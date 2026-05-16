@@ -307,6 +307,8 @@ end
 ---@return string?
 function M.filter_text(text, context)
     local config = require('minuet').config
+    local before_cursor_filter_length = M.get_or_eval_value(config.before_cursor_filter_length)
+    local after_cursor_filter_length = M.get_or_eval_value(config.after_cursor_filter_length)
 
     -- Handle nil values
     if not text or not context then
@@ -321,6 +323,10 @@ function M.filter_text(text, context)
         return text
     end
 
+    if before_cursor_filter_length <= 0 and after_cursor_filter_length <= 0 then
+        return text
+    end
+
     text = M.remove_spaces_single(text or '', true)
     lines_before = M.remove_spaces_single(lines_before or '')
     lines_after = M.remove_spaces_single(lines_after or '')
@@ -332,20 +338,20 @@ function M.filter_text(text, context)
     local filtered_text = text
 
     -- Filter based on context before cursor (trim from the beginning of completion)
-    if lines_before and config.before_cursor_filter_length > 0 then
+    if lines_before and before_cursor_filter_length > 0 then
         local match_before = M.find_longest_match(filtered_text, lines_before)
         local match_len = vim.fn.strchars(match_before)
-        if match_before and match_len >= config.before_cursor_filter_length then
+        if match_before and match_len >= before_cursor_filter_length then
             -- Remove the matching part from the beginning of the completion
             filtered_text = vim.fn.strcharpart(filtered_text, match_len)
         end
     end
 
     -- Filter based on context after cursor (trim from the end of completion)
-    if lines_after and config.after_cursor_filter_length > 0 then
+    if lines_after and after_cursor_filter_length > 0 then
         local match_after = M.find_longest_match(lines_after, filtered_text)
         local match_len = vim.fn.strchars(match_after)
-        if match_after and match_len >= config.after_cursor_filter_length then
+        if match_after and match_len >= after_cursor_filter_length then
             -- Remove the matching part from the end of the completion
             local text_len = vim.fn.strchars(filtered_text)
             filtered_text = vim.fn.strcharpart(filtered_text, 0, text_len - match_len)
