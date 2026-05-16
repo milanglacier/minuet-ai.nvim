@@ -94,7 +94,7 @@ function M.complete_openai_base(options, context, callback)
 
             items = common.filter_context_sequences_in_items(items, context)
 
-            items = utils.remove_spaces(items)
+            items = utils.trim_completion_items(items)
 
             callback(items)
         end,

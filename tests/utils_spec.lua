@@ -2,13 +2,13 @@ local helpers = require 'tests.helpers'
 
 return {
     {
-        name = 'utils.remove_spaces skips whitespace-only completion items',
+        name = 'utils.trim_completion_items skips whitespace-only completion items',
         run = function()
             helpers.setup_root_config()
 
             local utils = helpers.reload 'minuet.utils'
 
-            helpers.expect_equal(utils.remove_spaces { '  foo  ', '   ', '\n\t', ' bar' }, { 'foo', 'bar' })
+            helpers.expect_equal(utils.trim_completion_items { '  foo  ', '   ', '\n\t', ' bar' }, { 'foo', 'bar' })
         end,
     },
     {

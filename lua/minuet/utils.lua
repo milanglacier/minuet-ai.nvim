@@ -327,9 +327,9 @@ function M.filter_text(text, context)
         return text
     end
 
-    text = M.remove_spaces_single(text or '', true)
-    lines_before = M.remove_spaces_single(lines_before or '')
-    lines_after = M.remove_spaces_single(lines_after or '')
+    text = M.trim_completion_item(text or '', { keep_leading_newline = true })
+    lines_before = M.trim_completion_item(lines_before or '')
+    lines_after = M.trim_completion_item(lines_after or '')
 
     if not text then
         return
@@ -361,16 +361,19 @@ function M.filter_text(text, context)
     return filtered_text
 end
 
---- Remove the trailing and leading spaces for a single string item
+---@class minuet.TrimCompletionItemOpts
+---@field keep_leading_newline? boolean
+
+--- Remove the trailing and leading whitespace for a single completion item
 ---@param item string
----@param keep_leading_newline? boolean
+---@param opts? minuet.TrimCompletionItemOpts
 ---@return string?
-function M.remove_spaces_single(item, keep_leading_newline)
+function M.trim_completion_item(item, opts)
     if not item:find '%S' then -- skip entries that contain only whitespace
         return nil
     end
 
-    local start_pattern = keep_leading_newline and '^[ \t]+' or '^%s+'
+    local start_pattern = opts and opts.keep_leading_newline and '^[ \t]+' or '^%s+'
 
     -- replace the trailing spaces
     item = item:gsub('%s+$', '')
@@ -380,15 +383,15 @@ function M.remove_spaces_single(item, keep_leading_newline)
     return item
 end
 
---- Remove the trailing and leading spaces for each string in the table
+--- Remove the trailing and leading whitespace for each completion item
 ---@param items string[]
----@param keep_leading_newline? boolean
+---@param opts? minuet.TrimCompletionItemOpts
 ---@return string[]
-function M.remove_spaces(items, keep_leading_newline)
+function M.trim_completion_items(items, opts)
     local new = {}
 
     for _, item in ipairs(items) do
-        local item_processed = M.remove_spaces_single(item, keep_leading_newline)
+        local item_processed = M.trim_completion_item(item, opts)
         if item_processed then
             table.insert(new, item_processed)
         end
