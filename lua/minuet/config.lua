@@ -120,6 +120,16 @@ local default_fim_suffix = function(_, context_after_cursor, _)
     return context_after_cursor
 end
 
+local function default_after_cursor_filter_length()
+    local config = require('minuet').config
+    return (config.provider == 'codestral' or config.provider == 'openai_fim_compatible') and 0 or 15
+end
+
+local function default_before_cursor_filter_length()
+    local config = require('minuet').config
+    return (config.provider == 'codestral' or config.provider == 'openai_fim_compatible') and 0 or 2
+end
+
 ---@class minuet.ChatInputExtraInfo
 ---@field is_incomplete_before boolean
 ---@field is_incomplete_after boolean
@@ -296,10 +306,10 @@ local M = {
     -- 20-character string that exactly matches the 20 characters following the
     -- cursor, the candidate will be truncated by those 20 characters before
     -- being delivered.
-    after_cursor_filter_length = 15,
+    after_cursor_filter_length = default_after_cursor_filter_length,
     -- Similar to after_cursor_filter_length but trim the completion item from
     -- prefix instead of suffix.
-    before_cursor_filter_length = 2,
+    before_cursor_filter_length = default_before_cursor_filter_length,
     proxy = nil,
 }
 

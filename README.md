@@ -752,19 +752,19 @@ default_config = {
     -- 20-character string that exactly matches the 20 characters following the
     -- cursor, the candidate will be truncated by those 20 characters before
     -- being delivered.
-    after_cursor_filter_length = 15,
+
+    -- The default is 0 for FIM model, and 15 for chat model
+    after_cursor_filter_length = function() end,
     -- Similar to after_cursor_filter_length but trim the completion item from
     -- prefix instead of suffix.
     --
-    -- Note: FIM completions bypass both filters and the surrounding whitespace
-    -- stripping entirely. FIM models emit intentional leading/trailing
-    -- whitespace, so their output is passed through unmodified.
+    -- Note: FIM completions do not strip surrounding whitespace by default.
+    -- Their default filter lengths are 0 because FIM models emit intentional
+    -- leading/trailing whitespace. Setting positive filter lengths keeps
+    -- duplicate context filtering enabled for FIM completions.
     --
-    -- For chat backends, setting both `after_cursor_filter_length` and
-    -- `before_cursor_filter_length` to 0 also disables text modification
-    -- (including the surrounding whitespace stripping) on completion
-    -- candidates.
-    before_cursor_filter_length = 2,
+    -- The default is 0 for FIM model, and 2 for chat model
+    before_cursor_filter_length = function() end,
     -- proxy port to use
     proxy = nil,
     -- **List** of functions to execute. If any function returns `false`, Minuet

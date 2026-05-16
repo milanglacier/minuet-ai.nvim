@@ -11,7 +11,11 @@ function M.openai_get_text_fn_stream(json)
 end
 
 local function prepare_fim_items(items, context)
-    return vim.tbl_filter(function(x) return type(x) == 'string' and x:find '%S' end, items)
+    local filtered_items = common.filter_context_sequences_in_items(items, context)
+    local non_empty_items = vim.tbl_filter(function(x)
+        return type(x) == 'string' and x:find '%S' ~= nil
+    end, filtered_items)
+    return non_empty_items
 end
 
 function M.complete_openai_base(options, context, callback)
