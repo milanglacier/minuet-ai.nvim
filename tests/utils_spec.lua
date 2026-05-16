@@ -30,4 +30,33 @@ return {
             )
         end,
     },
+    {
+        name = 'utils.no_stream_decode ignores non-string extracted text',
+        run = function()
+            helpers.setup_root_config()
+
+            local utils = helpers.reload 'minuet.utils'
+            local data_file = vim.fn.tempname()
+            vim.fn.writefile({ '{}' }, data_file)
+
+            local result = utils.no_stream_decode(
+                {
+                    code = 0,
+                    stdout = vim.json.encode {
+                        choices = {
+                            { text = { 'not a string' } },
+                        },
+                    },
+                },
+                data_file,
+                'TestProvider',
+                function(json)
+                    return json.choices[1].text
+                end
+            )
+
+            helpers.expect_falsy(result)
+            helpers.expect_falsy(vim.uv.fs_stat(data_file))
+        end,
+    },
 }
