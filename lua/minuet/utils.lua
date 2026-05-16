@@ -389,7 +389,7 @@ function M.remove_spaces(items, keep_leading_newline)
 
     for _, item in ipairs(items) do
         local item_processed = M.remove_spaces_single(item, keep_leading_newline)
-        if item then
+        if item_processed then
             table.insert(new, item_processed)
         end
     end
