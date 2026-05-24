@@ -7,6 +7,10 @@ local function get_text_fn_stream(json)
     return json.delta.text
 end
 
+local function get_text_fn_no_steam(json)
+    return json.content[1].text
+end
+
 function M.complete(context, callback)
     local root_config = require('minuet').config
     local duet_config = root_config.duet
@@ -76,7 +80,14 @@ function M.complete(context, callback)
                 timestamp = timestamp,
             })
 
-            local text = utils.stream_decode(result, data_file, 'Claude', get_text_fn_stream)
+            local text
+
+            if options.stream then
+                text = utils.stream_decode(result, data_file, 'Claude', get_text_fn_stream)
+            else
+                text = utils.no_stream_decode(result, data_file, 'Claude', get_text_fn_no_steam)
+            end
+
             callback(text)
         end,
         on_spawn_error = function()
