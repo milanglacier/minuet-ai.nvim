@@ -684,13 +684,10 @@ end
 ---@return string[]
 function M.make_curl_args(end_point, headers, data_file)
     local config = require('minuet').config
-
+    local curl_extra_args = M.get_or_eval_value(config.curl_extra_args)
     local args = {}
 
-    local curl_extra_args = type(config.curl_extra_args) == 'function'
-        and config.curl_extra_args() or config.curl_extra_args
-
-    for _, arg in ipairs(curl_extra_args) do
+    for _, arg in ipairs(curl_extra_args or {}) do
         table.insert(args, arg)
     end
 
