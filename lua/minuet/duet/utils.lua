@@ -119,7 +119,6 @@ function M.make_curl_args(end_point, headers, data_file, timeout)
 end
 
 M.stream_decode = shared_utils.stream_decode
-M.no_stream_decode = shared_utils.no_stream_decode
 M.run_event = shared_utils.run_event
 
 function M.get_changedtick(bufnr)
