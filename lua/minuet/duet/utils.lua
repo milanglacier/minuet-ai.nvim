@@ -86,19 +86,25 @@ end
 
 function M.make_curl_args(end_point, headers, data_file, timeout)
     local root_config = M.get_root_config()
-    local args = { '-L' }
+    local curl_extra_args = M.get_or_eval_value(root_config.curl_extra_args)
+    local args = {}
 
-    for _, arg in ipairs(root_config.curl_extra_args or {}) do
+    for _, arg in ipairs(curl_extra_args or {}) do
         table.insert(args, arg)
     end
+
+    table.insert(args, '-L')
 
     for key, value in pairs(headers) do
         table.insert(args, '-H')
         table.insert(args, key .. ': ' .. value)
     end
 
-    table.insert(args, '--max-time')
-    table.insert(args, tostring(timeout))
+    if timeout > 0 then
+        table.insert(args, '--max-time')
+        table.insert(args, tostring(timeout))
+    end
+
     table.insert(args, '-d')
     table.insert(args, '@' .. data_file)
 

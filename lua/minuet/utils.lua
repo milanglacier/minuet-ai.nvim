@@ -684,18 +684,25 @@ end
 ---@return string[]
 function M.make_curl_args(end_point, headers, data_file)
     local config = require('minuet').config
+    local curl_extra_args = M.get_or_eval_value(config.curl_extra_args)
+    local args = {}
 
-    local args = { '-L' }
-    for _, arg in ipairs(config.curl_extra_args) do
+    for _, arg in ipairs(curl_extra_args or {}) do
         table.insert(args, arg)
     end
+
+    table.insert(args, '-L')
 
     for k, v in pairs(headers) do
         table.insert(args, '-H')
         table.insert(args, k .. ': ' .. v)
     end
-    table.insert(args, '--max-time')
-    table.insert(args, tostring(config.request_timeout))
+
+    if config.request_timeout > 0 then
+        table.insert(args, '--max-time')
+        table.insert(args, tostring(config.request_timeout))
+    end
+
     table.insert(args, '-d')
     table.insert(args, '@' .. data_file)
 
