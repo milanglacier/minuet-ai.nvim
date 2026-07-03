@@ -28,7 +28,9 @@ local function make_default_prompt()
 
 Input markers:
 - `{{{editable_region_start}}}` and `{{{editable_region_end}}}` wrap the editable region.
-- `{{{cursor_position}}}` marks the current cursor position inside that editable region.]]
+- `{{{cursor_position}}}` marks the current cursor position inside that editable region.
+
+The input may begin with a recent-edits section: one or more entries of the form `User edited "<file>":` followed by a unified diff of a change the user recently made, ordered from oldest to newest. Use these edits to infer the user's intent and predict the most likely next edit; the newest entries are the most relevant.]]
 end
 
 local function make_default_guidelines()
@@ -39,7 +41,8 @@ local function make_default_guidelines()
 4. For any text or code inside the editable region that is not intended to change, copy it verbatim. Do not paraphrase, refactor, reformat, or otherwise alter unchanged content.
 5. Make only the smallest changes necessary to satisfy the requested edit.
 6. Do not return explanations, markdown fences, or any content outside the editable region block.
-7. Make the rewrite coherent with the surrounding non-editable text.]]
+7. Make the rewrite coherent with the surrounding non-editable text.
+8. Never repeat the recent-edits section or any diff syntax in your output; return only the rewritten editable region.]]
 end
 
 local default_system = {
@@ -57,11 +60,20 @@ end
 ---@type minuet.DuetChatInput
 local default_chat_input = {
     template = function()
-        return render_markers [[{{{non_editable_region_before}}}
+        return render_markers [[{{{recent_edits}}}{{{non_editable_region_before}}}
 {{{editable_region_start}}}
 {{{editable_region_before_cursor}}}{{{cursor_position}}}{{{editable_region_after_cursor}}}
 {{{editable_region_end}}}
 {{{non_editable_region_after}}}]]
+    end,
+    -- The value absorbs the separator so an empty history leaves no blank
+    -- leading lines in the rendered prompt.
+    recent_edits = function(context)
+        local recent_edits = context.recent_edits or ''
+        if recent_edits == '' then
+            return ''
+        end
+        return recent_edits .. '\n\n'
     end,
     non_editable_region_before = get_context_value 'non_editable_region_before',
     editable_region_before_cursor = get_context_value 'editable_region_before_cursor',
@@ -73,7 +85,19 @@ local default_few_shots = function()
     return {
         {
             role = 'user',
-            content = render_markers [[type User = {
+            content = render_markers [[User edited "src/api/users.ts":
+
+```diff
+@@ -1,4 +1,6 @@
+ type User = {
+     id: string;
+     name: string;
++    role?: string;
++    active?: boolean;
+ };
+```
+
+type User = {
     id: string;
     name: string;
     role?: string;
@@ -186,6 +210,7 @@ end
 --- Configuration for formatting duet chat input to the LLM
 ---@class minuet.DuetChatInput
 ---@field template string|fun(): string Template string with placeholders for context parts
+---@field recent_edits string|minuet.DuetChatInputFunction
 ---@field non_editable_region_before string|minuet.DuetChatInputFunction
 ---@field editable_region_before_cursor string|minuet.DuetChatInputFunction
 ---@field editable_region_after_cursor string|minuet.DuetChatInputFunction
@@ -201,11 +226,21 @@ end
 ---@field context_window integer
 ---@field context_ratio number
 
+---@class minuet.DuetRecentEdits
+---@field enabled boolean
+---@field debounce integer milliseconds of idle typing before an edit burst is flushed
+---@field max_events integer global cap on stored edit events across all buffers
+---@field max_total_chars integer total character budget of formatted events kept and sent
+---@field diff_context_lines integer context lines around each hunk in the unified diff
+---@field max_buffer_size integer bytes; buffers larger than this are not tracked
+---@field max_event_chars integer a single edit burst diff larger than this is dropped
+
 ---@class minuet.DuetConfig
 ---@field provider string
 ---@field request_timeout integer
 ---@field editable_region minuet.DuetEditableRegion
 ---@field non_editable_region minuet.DuetNonEditableRegion
+---@field recent_edits minuet.DuetRecentEdits
 ---@field markers { editable_region_start: string, editable_region_end: string, cursor_position: string }
 ---@field preview { cursor: string }
 ---@field provider_options table<string, table>
@@ -221,6 +256,15 @@ local M = {
     non_editable_region = {
         context_window = 40000,
         context_ratio = 0.75,
+    },
+    recent_edits = {
+        enabled = true,
+        debounce = 1500,
+        max_events = 15,
+        max_total_chars = 8000,
+        diff_context_lines = 3,
+        max_buffer_size = 1000000,
+        max_event_chars = 2000,
     },
     markers = vim.deepcopy(default_markers),
     preview = {

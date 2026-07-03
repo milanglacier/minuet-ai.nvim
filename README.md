@@ -38,6 +38,7 @@
   - [`Minuet duet`](#minuet-duet)
   - [`Minuet lsp`](#minuet-lsp)
 - [Duet (Next Edit Prediction)](#duet-next-edit-prediction)
+  - [Recent Edits](#recent-edits)
   - [TODO](#todo)
   - [Default Config](#default-config)
 - [API](#api)
@@ -1484,9 +1485,39 @@ region, including the cursor marker; if the response is truncated, the parser
 will reject it. Leave the limit unset when the provider allows that, or set it
 large enough to cover the full rewritten region.
 
+## Recent Edits
+
+Duet records your recent edits in the background and includes them in the
+prompt, giving the model the strongest signal for predicting the next edit:
+what you just changed.
+
+The recorder is lightweight: while you type it only restarts a debounce timer.
+When you pause typing (`recent_edits.debounce` milliseconds), leave insert
+mode, or trigger `:Minuet duet predict`, the accumulated burst of changes is
+diffed against the previous snapshot and stored as a single edit event. Events
+are kept in one global, cross-buffer timeline and rendered into the prompt as
+unified diffs, ordered from oldest to newest:
+
+````text
+User edited "lua/minuet/utils.lua":
+
+```diff
+@@ -42,7 +42,7 @@
+ local function notify(msg, level)
+-    vim.notify(msg)
++    vim.notify(msg, level)
+ end
+```
+````
+
+Custom `chat_input` templates can place the rendered history with the
+`{{{recent_edits}}}` placeholder; the raw string is also available as the
+`recent_edits` field of the context passed to `chat_input` value functions.
+Set `recent_edits.enabled = false` to disable the recorder entirely.
+
 ## TODO
 
-- [ ] Implement a proper diff mechanism to include recent edit changes in prompts.
+- [x] Implement a proper diff mechanism to include recent edit changes in prompts.
 - [ ] Add support for specialized NES models (Zeta, Sweep).
 - [ ] Integrate with Inception's hosted API.
 - [ ] Implement automatically triggered duet prediction.
@@ -1507,6 +1538,15 @@ require('minuet').setup {
         non_editable_region = {
             context_window = 40000, -- Maximum characters of non-editable context included around the editable region.
             context_ratio = 0.75, -- Ratio of non-editable context before vs. after the editable region when truncation is needed.
+        },
+        recent_edits = {
+            enabled = true, -- Record recent edits in the background and include them in duet prompts.
+            debounce = 1500, -- Milliseconds of typing pause before an edit burst is recorded as one event.
+            max_events = 15, -- Maximum number of edit events kept across all buffers.
+            max_total_chars = 8000, -- Total character budget of the formatted edit history sent in prompts.
+            diff_context_lines = 3, -- Context lines around each hunk in the unified diff.
+            max_buffer_size = 1000000, -- Buffers larger than this (bytes) are not tracked.
+            max_event_chars = 2000, -- A single edit burst whose diff exceeds this is dropped.
         },
         markers = {
             editable_region_start = '<editable_region>', -- Marker that wraps the start of the editable region in prompts and responses.

@@ -1,5 +1,6 @@
 local api = vim.api
 local context = require 'minuet.duet.context'
+local edits = require 'minuet.duet.edits'
 local preview = require 'minuet.duet.preview'
 local utils = require 'minuet.duet.utils'
 
@@ -42,6 +43,10 @@ local function predict()
     local state = get_state(bufnr)
 
     clear_state(bufnr, state)
+
+    -- Record edits made since the last idle flush so the freshest burst is
+    -- part of the prompt's recent-edits history.
+    edits.flush(bufnr)
 
     local current_context = context.build(bufnr)
     local provider_name = current_provider()
@@ -166,6 +171,8 @@ function M.setup()
         end,
         desc = '[minuet.duet] clear state on buf wipeout',
     })
+
+    edits.setup(M.augroup)
 end
 
 return M
