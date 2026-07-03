@@ -109,6 +109,34 @@ local function push_event(bufnr, unified)
     end
 end
 
+---Trim a unified diff to the leading whole hunks that fit the budget, so an
+---oversized burst (a large paste or refactor, often the strongest intent
+---signal) keeps its head instead of vanishing from history. Cutting mid-hunk
+---would produce an invalid diff, so returns nil when not even the first hunk
+---fits.
+---@param unified string
+---@param budget integer
+---@return string?
+local function truncate_to_hunks(unified, budget)
+    if #unified <= budget then
+        return unified
+    end
+
+    local kept_end = nil
+    local search_from = 1
+    while true do
+        local boundary = unified:find('\n@@', search_from, true)
+        local hunk_end = boundary and (boundary - 1) or #unified
+        if hunk_end > budget then
+            break
+        end
+        kept_end = hunk_end
+        search_from = boundary + 1
+    end
+
+    return kept_end and unified:sub(1, kept_end) or nil
+end
+
 ---Synchronously flush the pending edit burst for a buffer: diff the baseline
 ---against the current text, record an event when the diff is non-empty, and
 ---reset the baseline. Establishes the baseline without emitting an event when
@@ -158,13 +186,17 @@ function M.flush(bufnr)
     end
 
     unified = unified:gsub('\n$', '')
-    -- An empty diff (e.g. undo back to the baseline) or an oversized burst is
-    -- not worth an event.
-    if unified == '' or #unified > config.max_event_chars then
+    -- An empty diff (e.g. undo back to the baseline) is not worth an event.
+    if unified == '' then
         return
     end
 
-    push_event(bufnr, unified)
+    local bounded = truncate_to_hunks(unified, config.max_event_chars)
+    if not bounded then
+        return
+    end
+
+    push_event(bufnr, bounded)
 end
 
 ---Formatted edit history for the prompt: stored events ordered oldest to
@@ -180,9 +212,10 @@ function M.render()
     return table.concat(parts, '\n\n')
 end
 
----@return minuet.DuetEditEvent[] oldest first
+---@return minuet.DuetEditEvent[] oldest first; a copy, so callers cannot
+---corrupt the recorder's total_chars accounting by mutating it
 function M.get_events()
-    return internal.events
+    return vim.deepcopy(internal.events)
 end
 
 ---Drop all events and buffer baselines and close all timers.

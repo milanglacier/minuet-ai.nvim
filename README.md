@@ -1546,7 +1546,7 @@ require('minuet').setup {
             max_total_chars = 8000, -- Total character budget of the formatted edit history sent in prompts.
             diff_context_lines = 3, -- Context lines around each hunk in the unified diff.
             max_buffer_size = 1000000, -- Buffers larger than this (bytes) are not tracked.
-            max_event_chars = 2000, -- A single edit burst whose diff exceeds this is dropped.
+            max_event_chars = 2000, -- A single edit burst whose diff exceeds this is truncated to the leading whole hunks that fit (dropped if not even the first hunk fits).
         },
         markers = {
             editable_region_start = '<editable_region>', -- Marker that wraps the start of the editable region in prompts and responses.

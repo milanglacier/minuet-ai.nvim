@@ -146,7 +146,7 @@ return {
         end,
     },
     {
-        name = 'duet.edits drops tracking state on BufUnload',
+        name = 'duet.edits drops tracking state on a real :bunload and re-tracks from disk',
         run = function()
             helpers.setup_root_config {}
 
@@ -154,22 +154,36 @@ return {
             duet.setup()
             local edits = require 'minuet.duet.edits'
 
-            local bufnr = create_normal_buffer { 'return 1' }
-            edits.track(bufnr)
+            local path = vim.fn.tempname() .. '.lua'
+            vim.fn.writefile({ 'return 1' }, path)
+            vim.cmd.edit(path)
+            local bufnr = vim.api.nvim_get_current_buf()
 
-            vim.api.nvim_exec_autocmds('BufUnload', { buffer = bufnr, modeline = false })
+            -- Park a scratch buffer in the window so the file buffer can be
+            -- unloaded, then fire the real BufUnload via :bunload.
+            local scratch = vim.api.nvim_create_buf(true, true)
+            vim.api.nvim_set_current_buf(scratch)
+            vim.cmd(('bunload %d'):format(bufnr))
 
-            -- With the baseline dropped, the first flush only re-baselines;
-            -- if the state had survived the unload this would emit an event.
-            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            -- Re-displaying the unloaded buffer reloads it from disk through
+            -- the real BufReadPost/BufEnter chain, which must re-track it.
+            vim.fn.writefile({ 'return 2' }, path)
+            vim.api.nvim_set_current_buf(bufnr)
+
             edits.flush(bufnr)
-            helpers.expect_equal(#edits.get_events(), 0, 'unload should have dropped the baseline')
+            helpers.expect_equal(#edits.get_events(), 0, 'the reload after unload must not be recorded as a user edit')
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 3' })
             edits.flush(bufnr)
-            helpers.expect_equal(#edits.get_events(), 1, 'the buffer should be re-tracked after the unload')
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1, 'the buffer should be re-tracked after the unload')
+            helpers.expect_match(events[1].diff, '%-return 2', 'the baseline should be the reloaded disk content')
+            helpers.expect_match(events[1].diff, '%+return 3')
 
             helpers.delete_buffer(bufnr)
+            helpers.delete_buffer(scratch)
+            vim.fn.delete(path)
         end,
     },
     {
@@ -285,7 +299,41 @@ return {
         end,
     },
     {
-        name = 'duet.edits drops a single burst larger than max_event_chars',
+        name = 'duet.edits truncates an oversized burst to the leading hunks that fit',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        max_event_chars = 90,
+                    },
+                },
+            }
+            local edits = require 'minuet.duet.edits'
+
+            local lines = {}
+            for i = 1, 20 do
+                lines[i] = 'line ' .. i
+            end
+            local bufnr = create_normal_buffer(lines)
+            edits.track(bufnr)
+
+            -- Two edits far apart produce two hunks; the budget fits only the
+            -- first one.
+            vim.api.nvim_buf_set_lines(bufnr, 0, 1, false, { 'changed 1' })
+            vim.api.nvim_buf_set_lines(bufnr, 19, 20, false, { 'changed 20' })
+            edits.flush(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1, 'an oversized multi-hunk burst should be kept, truncated')
+            helpers.expect_truthy(#events[1].diff <= 90, 'the truncated diff must fit max_event_chars')
+            helpers.expect_match(events[1].diff, '%+changed 1')
+            helpers.expect_falsy(events[1].diff:match '%+changed 20', 'the hunk beyond the budget should be cut')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits drops a burst whose first hunk already exceeds max_event_chars',
         run = function()
             helpers.setup_root_config {
                 duet = {
@@ -302,9 +350,70 @@ return {
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 42' })
             edits.flush(bufnr)
 
-            helpers.expect_equal(#edits.get_events(), 0, 'an oversized burst should be dropped')
+            helpers.expect_equal(
+                #edits.get_events(),
+                0,
+                'truncating mid-hunk would be invalid, so the burst is dropped'
+            )
 
             helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits never tracks buffers larger than max_buffer_size',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        max_buffer_size = 16,
+                    },
+                },
+            }
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'this line alone is well beyond sixteen bytes' }
+            edits.track(bufnr)
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'still far too large for the size guard' })
+            edits.flush(bufnr)
+
+            helpers.expect_equal(#edits.get_events(), 0, 'oversized buffers should never produce edit events')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits cancels the pending debounce when the buffer is wiped out',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        debounce = 20,
+                    },
+                },
+            }
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            vim.api.nvim_exec_autocmds('TextChanged', { buffer = bufnr, modeline = false })
+
+            -- Real wipeout while the debounce timer armed above is pending.
+            vim.v.errmsg = ''
+            vim.api.nvim_buf_delete(bufnr, { force = true })
+
+            -- Pump the loop well past the debounce: the closed timer must not
+            -- fire, and nothing may error.
+            vim.wait(100, function()
+                return false
+            end, 10)
+            helpers.expect_equal(#edits.get_events(), 0, 'the pending flush must not fire after wipeout')
+            helpers.expect_equal(vim.v.errmsg, '', 'wipeout with a pending debounce must not raise')
         end,
     },
     {

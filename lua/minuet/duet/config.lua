@@ -233,7 +233,7 @@ end
 ---@field max_total_chars integer total character budget of formatted events kept and sent
 ---@field diff_context_lines integer context lines around each hunk in the unified diff
 ---@field max_buffer_size integer bytes; buffers larger than this are not tracked
----@field max_event_chars integer a single edit burst diff larger than this is dropped
+---@field max_event_chars integer a single edit burst diff larger than this is truncated to the leading whole hunks that fit (dropped when not even the first hunk fits)
 
 ---@class minuet.DuetConfig
 ---@field provider string
