@@ -115,6 +115,64 @@ return {
         end,
     },
     {
+        name = 'duet.edits re-baselines on BufReadPost so a reload is not recorded as a user edit',
+        run = function()
+            helpers.setup_root_config {}
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+
+            -- Simulate a disk reload (:e!, autoread): the buffer content is
+            -- replaced and BufReadPost fires afterwards.
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            vim.api.nvim_exec_autocmds('BufReadPost', { buffer = bufnr, modeline = false })
+
+            edits.flush(bufnr)
+            helpers.expect_equal(#edits.get_events(), 0, 'a reload must not be recorded as a user edit')
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 3' })
+            edits.flush(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1)
+            helpers.expect_match(events[1].diff, '%-return 2', 'the baseline should be the reloaded content')
+            helpers.expect_match(events[1].diff, '%+return 3')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits drops tracking state on BufUnload',
+        run = function()
+            helpers.setup_root_config {}
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+
+            vim.api.nvim_exec_autocmds('BufUnload', { buffer = bufnr, modeline = false })
+
+            -- With the baseline dropped, the first flush only re-baselines;
+            -- if the state had survived the unload this would emit an event.
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            edits.flush(bufnr)
+            helpers.expect_equal(#edits.get_events(), 0, 'unload should have dropped the baseline')
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 3' })
+            edits.flush(bufnr)
+            helpers.expect_equal(#edits.get_events(), 1, 'the buffer should be re-tracked after the unload')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
         name = 'duet.edits skips empty diffs but still resets the baseline',
         run = function()
             helpers.setup_root_config {}

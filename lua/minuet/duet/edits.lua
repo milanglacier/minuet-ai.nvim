@@ -227,12 +227,25 @@ end
 ---Register the recorder autocmds into the duet augroup.
 ---@param augroup integer
 function M.setup(augroup)
-    api.nvim_create_autocmd({ 'BufEnter', 'BufReadPost' }, {
+    api.nvim_create_autocmd('BufEnter', {
         group = augroup,
         callback = function(info)
             M.track(info.buf)
         end,
         desc = '[minuet.duet.edits] establish edit baseline',
+    })
+
+    api.nvim_create_autocmd('BufReadPost', {
+        group = augroup,
+        callback = function(info)
+            -- A disk read (:e!, autoread, checktime) replaces the buffer
+            -- content without the user editing it. Re-capture the baseline so
+            -- the reload is never diffed as if it were a user edit; any
+            -- pending burst was discarded by the reload as well.
+            drop_buffer_state(info.buf)
+            M.track(info.buf)
+        end,
+        desc = '[minuet.duet.edits] re-establish edit baseline after a disk read',
     })
 
     api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI', 'TextChangedP' }, {
@@ -249,12 +262,16 @@ function M.setup(augroup)
         desc = '[minuet.duet.edits] flush edit burst on insert leave',
     })
 
-    api.nvim_create_autocmd('BufWipeout', {
+    -- Dropping on unload (not just wipeout) bounds memory: without it every
+    -- buffer visited in a session would keep a full-text baseline alive
+    -- indefinitely. An unloaded buffer cannot be edited, and re-entering it
+    -- reloads from disk and re-tracks via BufEnter/BufReadPost.
+    api.nvim_create_autocmd({ 'BufUnload', 'BufWipeout' }, {
         group = augroup,
         callback = function(info)
             drop_buffer_state(info.buf)
         end,
-        desc = '[minuet.duet.edits] drop edit tracking state on buf wipeout',
+        desc = '[minuet.duet.edits] drop edit tracking state on buf unload',
     })
 
     -- The current buffer was opened before the autocmds above existed.
