@@ -4,7 +4,7 @@ local M = {}
 
 ---@class minuet.DuetEditEvent
 ---@field bufnr integer
----@field filename string buffer name relative to cwd, or '[No Name]'
+---@field filename string home-relative buffer name ('~'-shortened), or '[No Name]'
 ---@field diff string unified diff hunks without file headers or trailing newline
 ---@field text string fully formatted prompt block for this event
 
@@ -109,6 +109,13 @@ local function truncate_to_hunks(unified, budget)
     return kept_end and unified:sub(1, kept_end) or nil
 end
 
+---@param display_name string
+---@param diff string
+---@return string
+local function format_event(display_name, diff)
+    return string.format('User edited "%s":\n\n```diff\n%s\n```', display_name, diff)
+end
+
 ---@param bufnr integer
 ---@param unified string
 local function push_event(bufnr, unified)
@@ -118,18 +125,22 @@ local function push_event(bufnr, unified)
     end
 
     local name = api.nvim_buf_get_name(bufnr)
-    local filename = name == '' and '[No Name]' or vim.fn.fnamemodify(name, ':~:.')
+    -- Home-relative (rather than cwd-relative) names keep the history
+    -- unambiguous when the cwd changes between flushes (e.g. project.nvim):
+    -- the same file never appears under two names, and same-named files from
+    -- different project roots never collide.
+    local filename = name == '' and '[No Name]' or vim.fn.fnamemodify(name, ':~')
 
     -- Cap the diff so the formatted event on its own also fits
     -- max_total_chars; otherwise the eviction loop below would immediately
     -- evict the event it just pushed, silently keeping the history empty.
-    local overhead = #string.format('User edited "%s":\n\n```diff\n\n```', filename)
+    local overhead = #format_event(filename, '')
     local bounded = truncate_to_hunks(unified, math.min(config.max_event_chars, config.max_total_chars - overhead))
     if not bounded then
         return
     end
 
-    local text = string.format('User edited "%s":\n\n```diff\n%s\n```', filename, bounded)
+    local text = format_event(filename, bounded)
 
     table.insert(internal.events, {
         bufnr = bufnr,

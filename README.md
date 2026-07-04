@@ -1499,7 +1499,7 @@ are kept in one global, cross-buffer timeline and rendered into the prompt as
 unified diffs, ordered from oldest to newest:
 
 ````text
-User edited "lua/minuet/utils.lua":
+User edited "~/projects/minuet-ai.nvim/lua/minuet/utils.lua":
 
 ```diff
 @@ -42,7 +42,7 @@
@@ -1509,6 +1509,11 @@ User edited "lua/minuet/utils.lua":
  end
 ```
 ````
+
+File names are shown relative to your home directory, independent of the
+current working directory. Histories spanning multiple projects therefore
+stay unambiguous even when plugins like project.nvim change the working
+directory between edits.
 
 Custom `chat_input` templates can place the rendered history with the
 `{{{recent_edits}}}` placeholder; the raw string is also available as the

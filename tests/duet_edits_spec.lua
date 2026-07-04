@@ -212,7 +212,7 @@ return {
         end,
     },
     {
-        name = 'duet.edits keeps a chronological cross-buffer history with relative filenames',
+        name = 'duet.edits keeps a chronological cross-buffer history with home-relative filenames',
         run = function()
             helpers.setup_root_config {}
             local edits = require 'minuet.duet.edits'
@@ -232,13 +232,69 @@ return {
             helpers.expect_equal(#events, 2)
             helpers.expect_equal(events[1].filename, '[No Name]')
             helpers.expect_match(events[1].diff, '%+local a = 2')
-            helpers.expect_equal(events[2].filename, 'duet_edits_spec_named.lua')
+            helpers.expect_equal(
+                events[2].filename,
+                vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr_b), ':~'),
+                'filenames are stored home-relative'
+            )
             helpers.expect_match(events[2].diff, '%+local b = 2')
 
-            helpers.expect_match(edits.render(), 'local a = 2.*local b = 2', 'render should join events oldest first')
+            local rendered = edits.render()
+            helpers.expect_match(rendered, 'local a = 2.*local b = 2', 'render should join events oldest first')
+            helpers.expect_match(rendered, 'User edited ".*duet_edits_spec_named%.lua"')
 
             helpers.delete_buffer(bufnr_a)
             helpers.delete_buffer(bufnr_b)
+        end,
+    },
+    {
+        name = 'duet.edits names events home-relative, independent of the cwd',
+        run = function()
+            helpers.setup_root_config {}
+            local edits = require 'minuet.duet.edits'
+
+            local root_a = vim.fn.tempname()
+            local root_b = vim.fn.tempname()
+            vim.fn.mkdir(root_a, 'p')
+            vim.fn.mkdir(root_b, 'p')
+            vim.fn.writefile({ 'return 1' }, root_a .. '/init.lua')
+            vim.fn.writefile({ 'return 1' }, root_b .. '/init.lua')
+
+            local original_cwd = vim.fn.getcwd()
+
+            -- Same relative filename in two project roots, each flushed under
+            -- a different cwd (a project.nvim-style chdir between edits).
+            vim.cmd.cd(root_a)
+            vim.cmd.edit(root_a .. '/init.lua')
+            local bufnr_a = vim.api.nvim_get_current_buf()
+            edits.track(bufnr_a)
+            vim.api.nvim_buf_set_lines(bufnr_a, 0, -1, false, { 'return 2' })
+            edits.flush(bufnr_a)
+
+            vim.cmd.cd(root_b)
+            vim.cmd.edit(root_b .. '/init.lua')
+            local bufnr_b = vim.api.nvim_get_current_buf()
+            edits.track(bufnr_b)
+            vim.api.nvim_buf_set_lines(bufnr_b, 0, -1, false, { 'return 3' })
+            edits.flush(bufnr_b)
+            vim.cmd.cd(original_cwd)
+
+            local function count_name(rendered, name)
+                local _, count = rendered:gsub(vim.pesc('User edited "' .. name .. '"'), '')
+                return count
+            end
+
+            -- The cwd at flush (or render) time is irrelevant: each file
+            -- keeps its full home-relative name, so the two init.lua never
+            -- collide and the same file can never appear under two names.
+            local rendered = edits.render()
+            helpers.expect_equal(count_name(rendered, vim.fn.fnamemodify(root_a, ':~') .. '/init.lua'), 1)
+            helpers.expect_equal(count_name(rendered, vim.fn.fnamemodify(root_b, ':~') .. '/init.lua'), 1)
+
+            helpers.delete_buffer(bufnr_a)
+            helpers.delete_buffer(bufnr_b)
+            vim.fn.delete(root_a, 'rf')
+            vim.fn.delete(root_b, 'rf')
         end,
     },
     {
