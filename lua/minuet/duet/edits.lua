@@ -317,6 +317,14 @@ function M.setup(augroup)
         desc = '[minuet.duet.edits] flush edit burst on insert leave',
     })
 
+    api.nvim_create_autocmd('BufLeave', {
+        group = augroup,
+        callback = function(info)
+            M.flush(info.buf)
+        end,
+        desc = '[minuet.duet.edits] flush edit burst on buffer leave',
+    })
+
     -- Dropping on unload (not just wipeout) bounds memory: without it every
     -- buffer visited in a session would keep a full-text baseline alive
     -- indefinitely. An unloaded buffer cannot be edited, and re-entering it

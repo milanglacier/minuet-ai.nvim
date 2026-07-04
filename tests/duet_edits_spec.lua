@@ -115,6 +115,53 @@ return {
         end,
     },
     {
+        name = 'duet.edits flushes a buffer switch before predicting in another buffer',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    provider = 'test',
+                    recent_edits = {
+                        debounce = 10000,
+                    },
+                },
+            }
+
+            local seen_context
+            package.loaded['minuet.duet.backends.test'] = {
+                complete = function(context, _)
+                    seen_context = context
+                end,
+            }
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr_a = create_normal_buffer { 'local a = 1' }
+            edits.track(bufnr_a)
+            local bufnr_b = create_normal_buffer { 'local b = 1' }
+            edits.track(bufnr_b)
+
+            vim.api.nvim_set_current_buf(bufnr_a)
+            vim.api.nvim_buf_set_lines(bufnr_a, 0, -1, false, { 'local a = 2' })
+            vim.api.nvim_exec_autocmds('TextChanged', { buffer = bufnr_a, modeline = false })
+
+            vim.api.nvim_set_current_buf(bufnr_b)
+            vim.api.nvim_buf_set_lines(bufnr_b, 0, -1, false, { 'local b = 2' })
+            duet.action.predict()
+
+            helpers.expect_truthy(seen_context, 'backend did not receive a request')
+            helpers.expect_match(
+                seen_context.recent_edits,
+                'local a = 2.*local b = 2',
+                'the prompt should preserve cross-buffer edit order'
+            )
+
+            helpers.delete_buffer(bufnr_a)
+            helpers.delete_buffer(bufnr_b)
+        end,
+    },
+    {
         name = 'duet.edits re-baselines on BufReadPost so a reload is not recorded as a user edit',
         run = function()
             helpers.setup_root_config {}
@@ -495,7 +542,7 @@ return {
         end,
     },
     {
-        name = 'duet.edits cancels the pending debounce when the buffer is wiped out',
+        name = 'duet.edits flushes once and cancels the debounce when the buffer is wiped out',
         run = function()
             helpers.setup_root_config {
                 duet = {
@@ -518,13 +565,14 @@ return {
             -- Real wipeout while the debounce timer armed above is pending.
             vim.v.errmsg = ''
             vim.api.nvim_buf_delete(bufnr, { force = true })
+            helpers.expect_equal(#edits.get_events(), 1, 'BufLeave should flush before wipeout')
 
             -- Pump the loop well past the debounce: the closed timer must not
-            -- fire, and nothing may error.
+            -- fire again, and nothing may error.
             vim.wait(100, function()
                 return false
             end, 10)
-            helpers.expect_equal(#edits.get_events(), 0, 'the pending flush must not fire after wipeout')
+            helpers.expect_equal(#edits.get_events(), 1, 'the pending timer must not duplicate the BufLeave flush')
             helpers.expect_equal(vim.v.errmsg, '', 'wipeout with a pending debounce must not raise')
         end,
     },
