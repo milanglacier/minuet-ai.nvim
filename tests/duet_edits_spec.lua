@@ -360,6 +360,62 @@ return {
         end,
     },
     {
+        name = 'duet.edits.render returns an empty string while disabled at runtime',
+        run = function()
+            helpers.setup_root_config {}
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            edits.flush(bufnr)
+            helpers.expect_match(edits.render(), '%+return 2')
+
+            require('minuet').config.duet.recent_edits.enabled = false
+            helpers.expect_equal(edits.render(), '', 'disabling must hide recorded history from prompts')
+
+            require('minuet').config.duet.recent_edits.enabled = true
+            helpers.expect_match(edits.render(), '%+return 2', 're-enabling should restore the recorded history')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits truncates a burst that alone would exceed max_total_chars instead of self-evicting',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        max_total_chars = 120,
+                    },
+                },
+            }
+            local edits = require 'minuet.duet.edits'
+
+            local lines = {}
+            for i = 1, 20 do
+                lines[i] = 'line ' .. i
+            end
+            local bufnr = create_normal_buffer(lines)
+            edits.track(bufnr)
+
+            -- Two hunks whose formatted event exceeds max_total_chars even
+            -- though the diff fits max_event_chars: the event must be
+            -- truncated to fit rather than evicting itself from the history.
+            vim.api.nvim_buf_set_lines(bufnr, 0, 1, false, { 'changed 1' })
+            vim.api.nvim_buf_set_lines(bufnr, 19, 20, false, { 'changed 20' })
+            edits.flush(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1, 'the event must not evict itself from the history')
+            helpers.expect_truthy(#events[1].text <= 120, 'the formatted event must fit max_total_chars')
+            helpers.expect_match(events[1].diff, '%+changed 1')
+            helpers.expect_falsy(events[1].diff:match '%+changed 20', 'the diff should be truncated to fit the budget')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
         name = 'duet.edits never tracks buffers larger than max_buffer_size',
         run = function()
             helpers.setup_root_config {

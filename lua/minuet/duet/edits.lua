@@ -81,34 +81,6 @@ function M.track(bufnr)
     }
 end
 
----@param bufnr integer
----@param unified string
-local function push_event(bufnr, unified)
-    local config = get_config()
-    if not config then
-        return
-    end
-
-    local name = api.nvim_buf_get_name(bufnr)
-    local filename = name == '' and '[No Name]' or vim.fn.fnamemodify(name, ':~:.')
-    local text = string.format('User edited "%s":\n\n```diff\n%s\n```', filename, unified)
-
-    table.insert(internal.events, {
-        bufnr = bufnr,
-        filename = filename,
-        diff = unified,
-        text = text,
-    })
-    internal.total_chars = internal.total_chars + #text
-
-    while
-        #internal.events > 0 and (#internal.events > config.max_events or internal.total_chars > config.max_total_chars)
-    do
-        local evicted = table.remove(internal.events, 1)
-        internal.total_chars = internal.total_chars - #evicted.text
-    end
-end
-
 ---Trim a unified diff to the leading whole hunks that fit the budget, so an
 ---oversized burst (a large paste or refactor, often the strongest intent
 ---signal) keeps its head instead of vanishing from history. Cutting mid-hunk
@@ -135,6 +107,44 @@ local function truncate_to_hunks(unified, budget)
     end
 
     return kept_end and unified:sub(1, kept_end) or nil
+end
+
+---@param bufnr integer
+---@param unified string
+local function push_event(bufnr, unified)
+    local config = get_config()
+    if not config then
+        return
+    end
+
+    local name = api.nvim_buf_get_name(bufnr)
+    local filename = name == '' and '[No Name]' or vim.fn.fnamemodify(name, ':~:.')
+
+    -- Cap the diff so the formatted event on its own also fits
+    -- max_total_chars; otherwise the eviction loop below would immediately
+    -- evict the event it just pushed, silently keeping the history empty.
+    local overhead = #string.format('User edited "%s":\n\n```diff\n\n```', filename)
+    local bounded = truncate_to_hunks(unified, math.min(config.max_event_chars, config.max_total_chars - overhead))
+    if not bounded then
+        return
+    end
+
+    local text = string.format('User edited "%s":\n\n```diff\n%s\n```', filename, bounded)
+
+    table.insert(internal.events, {
+        bufnr = bufnr,
+        filename = filename,
+        diff = bounded,
+        text = text,
+    })
+    internal.total_chars = internal.total_chars + #text
+
+    while
+        #internal.events > 0 and (#internal.events > config.max_events or internal.total_chars > config.max_total_chars)
+    do
+        local evicted = table.remove(internal.events, 1)
+        internal.total_chars = internal.total_chars - #evicted.text
+    end
 end
 
 ---Synchronously flush the pending edit burst for a buffer: diff the baseline
@@ -191,19 +201,20 @@ function M.flush(bufnr)
         return
     end
 
-    local bounded = truncate_to_hunks(unified, config.max_event_chars)
-    if not bounded then
-        return
-    end
-
-    push_event(bufnr, bounded)
+    push_event(bufnr, unified)
 end
 
 ---Formatted edit history for the prompt: stored events ordered oldest to
----newest, joined by blank lines. Returns an empty string when there is no
----history. The stored events are already bounded by max_total_chars.
+---newest, joined by blank lines. Returns an empty string when the recorder is
+---disabled or there is no history. The stored events are already bounded by
+---max_total_chars.
 ---@return string
 function M.render()
+    local config = get_config()
+    if not config or not config.enabled then
+        return ''
+    end
+
     local parts = {}
     for _, event in ipairs(internal.events) do
         table.insert(parts, event.text)
