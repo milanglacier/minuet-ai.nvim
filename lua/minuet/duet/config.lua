@@ -231,9 +231,11 @@ end
 ---@field debounce integer milliseconds of idle typing before an edit burst is flushed
 ---@field max_events integer global cap on stored edit events across all buffers
 ---@field max_total_chars integer total character budget of formatted events kept and sent
----@field diff_context_lines integer context lines around each hunk in the unified diff
+---@field diff_context_lines integer context lines around each hunk (the -U argument of the external diff, which merges touching hunks itself)
 ---@field max_buffer_size integer bytes; buffers larger than this are not tracked
 ---@field max_event_chars integer a single edit burst diff larger than this is truncated to the leading whole hunks that fit (dropped when not even the first hunk fits)
+---@field diff_program string external diff program invoked as `PROG -U<n> OLD NEW`; must emit unified diffs and exit with 0 (identical), 1 (differences), or >= 2 (error)
+---@field flush_timeout integer milliseconds a prompt-building flush waits for in-flight diffs before proceeding with slightly stale history
 
 ---@class minuet.DuetConfig
 ---@field provider string
@@ -265,6 +267,8 @@ local M = {
         diff_context_lines = 3,
         max_buffer_size = 1000000,
         max_event_chars = 2000,
+        diff_program = 'diff',
+        flush_timeout = 200,
     },
     markers = vim.deepcopy(default_markers),
     preview = {

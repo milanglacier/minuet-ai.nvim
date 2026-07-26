@@ -1494,9 +1494,23 @@ what you just changed.
 The recorder is lightweight: while you type it only restarts a debounce timer.
 When you pause typing (`recent_edits.debounce` milliseconds), leave insert
 mode, or trigger `:Minuet duet predict`, the accumulated burst of changes is
-diffed against the previous snapshot and stored as a single edit event. Events
-are kept in one global, cross-buffer timeline and rendered into the prompt as
-unified diffs, ordered from oldest to newest:
+diffed against the previous snapshot and stored as a single edit event.
+Snapshots are kept as files in Neovim's private temp directory (created with
+`0700` permissions and removed when Neovim exits), and the diff runs in an
+external `diff` process off the main thread, so tracked buffers cost neither
+Lua heap nor editor latency. A prediction waits at most
+`recent_edits.flush_timeout` milliseconds for in-flight diffs and then
+proceeds with slightly stale history, so a wedged diff can never stall a
+prediction. Note that snapshots put buffer content on disk for the lifetime
+of the buffer — the same class of exposure as swap or undo files — so leave
+the recorder disabled if you edit buffers whose content must never touch
+disk. The recorder requires an executable `diff` (any program with GNU/POSIX
+diff's `-U` flag and exit-code contract works, configurable via
+`recent_edits.diff_program`); on Windows, install diffutils or point
+`diff_program` at an equivalent. If the program is missing, the recorder
+stays off and notifies once. Events are kept in one global, cross-buffer
+timeline and rendered into the prompt as unified diffs, ordered from oldest
+to newest:
 
 ````text
 User edited "~/projects/minuet-ai.nvim/lua/minuet/utils.lua":
@@ -1552,6 +1566,8 @@ require('minuet').setup {
             diff_context_lines = 3, -- Context lines around each hunk in the unified diff.
             max_buffer_size = 1000000, -- Buffers larger than this (bytes) are not tracked.
             max_event_chars = 2000, -- A single edit burst whose diff exceeds this is truncated to the leading whole hunks that fit (dropped if not even the first hunk fits).
+            diff_program = 'diff', -- External diff program invoked as `PROG -U<n> OLD NEW`; must emit unified diffs and exit 0 (identical) / 1 (differences) / >= 2 (error).
+            flush_timeout = 200, -- Max milliseconds a prediction waits for in-flight diffs before proceeding with slightly stale history.
         },
         markers = {
             editable_region_start = '<editable_region>', -- Marker that wraps the start of the editable region in prompts and responses.

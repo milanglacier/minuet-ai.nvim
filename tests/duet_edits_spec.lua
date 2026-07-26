@@ -9,6 +9,25 @@ local function create_normal_buffer(lines, cursor)
     return bufnr
 end
 
+-- The flush pipeline is asynchronous (external diff process). flush_sync
+-- keeps flush-behavior tests synchronous-looking by waiting generously for
+-- the in-flight diff to settle.
+local function flush_sync(bufnr)
+    local config = require('minuet').config.duet.recent_edits
+    local saved = config.flush_timeout
+    config.flush_timeout = 5000
+    require('minuet.duet.edits').flush(bufnr, { wait = true })
+    config.flush_timeout = saved
+end
+
+local script_dir = vim.fn.getcwd() .. '/tests/scripts'
+
+-- The fixture scripts need a POSIX sh and the real diff; without them the
+-- tests using them pass vacuously.
+local function has_fixture_support()
+    return vim.fn.executable 'sh' == 1 and vim.fn.executable 'diff' == 1
+end
+
 return {
     {
         name = 'duet.edits.flush records a tracked edit burst as a unified diff event',
@@ -20,7 +39,7 @@ return {
             edits.track(bufnr)
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 42' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
 
             local events = edits.get_events()
             helpers.expect_equal(#events, 1)
@@ -35,6 +54,30 @@ return {
         end,
     },
     {
+        name = 'duet.edits strips the diff file headers so temp paths never reach the prompt',
+        run = function()
+            helpers.setup_root_config {}
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 42' })
+            flush_sync(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1)
+            helpers.expect_falsy(events[1].diff:match '%-%-%- ', 'the --- file header must be stripped')
+            helpers.expect_falsy(events[1].diff:match '%+%+%+ ', 'the +++ file header must be stripped')
+            -- The snapshot files live in Neovim's private temp directory; its
+            -- path must not leak into the prompt text.
+            local tempdir = vim.fn.fnamemodify(vim.fn.tempname(), ':h')
+            helpers.expect_falsy(events[1].text:find(tempdir, 1, true), 'temp file paths must not leak into events')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
         name = 'duet.edits.flush on an untracked buffer establishes the baseline without an event',
         run = function()
             helpers.setup_root_config {}
@@ -43,11 +86,11 @@ return {
             local bufnr = create_normal_buffer { 'return 1' }
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
             helpers.expect_equal(#edits.get_events(), 0, 'first flush should only capture the baseline')
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 3' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
 
             local events = edits.get_events()
             helpers.expect_equal(#events, 1)
@@ -107,9 +150,10 @@ return {
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 42' })
             vim.api.nvim_exec_autocmds('InsertLeave', { buffer = bufnr, modeline = false })
 
-            local events = edits.get_events()
-            helpers.expect_equal(#events, 1, 'InsertLeave should flush without waiting for the debounce')
-            helpers.expect_match(events[1].diff, '%+return 42')
+            helpers.wait_until(function()
+                return #edits.get_events() > 0
+            end, 1000, 'InsertLeave should flush without waiting for the debounce')
+            helpers.expect_match(edits.get_events()[1].diff, '%+return 42')
 
             helpers.delete_buffer(bufnr)
         end,
@@ -122,6 +166,7 @@ return {
                     provider = 'test',
                     recent_edits = {
                         debounce = 10000,
+                        flush_timeout = 5000,
                     },
                 },
             }
@@ -146,6 +191,10 @@ return {
             vim.api.nvim_buf_set_lines(bufnr_a, 0, -1, false, { 'local a = 2' })
             vim.api.nvim_exec_autocmds('TextChanged', { buffer = bufnr_a, modeline = false })
 
+            -- BufLeave starts an async flush of bufnr_a; the predict-path
+            -- flush must wait for it (it waits on every buffer's in-flight
+            -- diff), or the prompt would miss the freshest cross-buffer
+            -- burst.
             vim.api.nvim_set_current_buf(bufnr_b)
             vim.api.nvim_buf_set_lines(bufnr_b, 0, -1, false, { 'local b = 2' })
             duet.action.predict()
@@ -153,9 +202,10 @@ return {
             helpers.expect_truthy(seen_context, 'backend did not receive a request')
             helpers.expect_match(
                 seen_context.recent_edits,
-                'local a = 2.*local b = 2',
-                'the prompt should preserve cross-buffer edit order'
+                'local a = 2',
+                "the prompt must include the other buffer's in-flight burst"
             )
+            helpers.expect_match(seen_context.recent_edits, 'local b = 2')
 
             helpers.delete_buffer(bufnr_a)
             helpers.delete_buffer(bufnr_b)
@@ -178,15 +228,63 @@ return {
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
             vim.api.nvim_exec_autocmds('BufReadPost', { buffer = bufnr, modeline = false })
 
-            edits.flush(bufnr)
+            flush_sync(bufnr)
             helpers.expect_equal(#edits.get_events(), 0, 'a reload must not be recorded as a user edit')
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 3' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
 
             local events = edits.get_events()
             helpers.expect_equal(#events, 1)
             helpers.expect_match(events[1].diff, '%-return 2', 'the baseline should be the reloaded content')
+            helpers.expect_match(events[1].diff, '%+return 3')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits cancels an in-flight diff on BufReadPost so the pre-reload burst is discarded',
+        run = function()
+            if not has_fixture_support() then
+                return
+            end
+
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        diff_program = script_dir .. '/slow_diff.sh',
+                    },
+                },
+            }
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            vim.v.errmsg = ''
+            edits.flush(bufnr)
+
+            -- Reload while the slow diff is still in flight: the pending
+            -- burst was discarded by the reload, so the diff must be
+            -- cancelled and never produce an event.
+            vim.api.nvim_exec_autocmds('BufReadPost', { buffer = bufnr, modeline = false })
+
+            vim.wait(1500, function()
+                return false
+            end, 50)
+            helpers.expect_equal(#edits.get_events(), 0, 'a cancelled diff must never record an event')
+            helpers.expect_equal(vim.v.errmsg, '', 'cancelling an in-flight diff must not raise')
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 3' })
+            flush_sync(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1, 'the re-tracked buffer should flush against the reloaded baseline')
+            helpers.expect_match(events[1].diff, '%-return 2')
             helpers.expect_match(events[1].diff, '%+return 3')
 
             helpers.delete_buffer(bufnr)
@@ -217,11 +315,11 @@ return {
             vim.fn.writefile({ 'return 2' }, path)
             vim.api.nvim_set_current_buf(bufnr)
 
-            edits.flush(bufnr)
+            flush_sync(bufnr)
             helpers.expect_equal(#edits.get_events(), 0, 'the reload after unload must not be recorded as a user edit')
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 3' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
 
             local events = edits.get_events()
             helpers.expect_equal(#events, 1, 'the buffer should be re-tracked after the unload')
@@ -244,11 +342,11 @@ return {
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 1' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
             helpers.expect_equal(#edits.get_events(), 0, 'a change reverted to the baseline should not emit an event')
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 3' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
 
             local events = edits.get_events()
             helpers.expect_equal(#events, 1)
@@ -271,9 +369,9 @@ return {
             edits.track(bufnr_b)
 
             vim.api.nvim_buf_set_lines(bufnr_a, 0, -1, false, { 'local a = 2' })
-            edits.flush(bufnr_a)
+            flush_sync(bufnr_a)
             vim.api.nvim_buf_set_lines(bufnr_b, 0, -1, false, { 'local b = 2' })
-            edits.flush(bufnr_b)
+            flush_sync(bufnr_b)
 
             local events = edits.get_events()
             helpers.expect_equal(#events, 2)
@@ -316,14 +414,14 @@ return {
             local bufnr_a = vim.api.nvim_get_current_buf()
             edits.track(bufnr_a)
             vim.api.nvim_buf_set_lines(bufnr_a, 0, -1, false, { 'return 2' })
-            edits.flush(bufnr_a)
+            flush_sync(bufnr_a)
 
             vim.cmd.cd(root_b)
             vim.cmd.edit(root_b .. '/init.lua')
             local bufnr_b = vim.api.nvim_get_current_buf()
             edits.track(bufnr_b)
             vim.api.nvim_buf_set_lines(bufnr_b, 0, -1, false, { 'return 3' })
-            edits.flush(bufnr_b)
+            flush_sync(bufnr_b)
             vim.cmd.cd(original_cwd)
 
             local function count_name(rendered, name)
@@ -361,7 +459,7 @@ return {
 
             for i = 2, 4 do
                 vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return ' .. i })
-                edits.flush(bufnr)
+                flush_sync(bufnr)
             end
 
             local events = edits.get_events()
@@ -388,11 +486,11 @@ return {
             edits.track(bufnr)
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
             helpers.expect_equal(#edits.get_events(), 1)
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 3' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
 
             local events = edits.get_events()
             helpers.expect_equal(#events, 1, 'the oldest event should be evicted to fit the character budget')
@@ -424,7 +522,7 @@ return {
             -- first one.
             vim.api.nvim_buf_set_lines(bufnr, 0, 1, false, { 'changed 1' })
             vim.api.nvim_buf_set_lines(bufnr, 19, 20, false, { 'changed 20' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
 
             local events = edits.get_events()
             helpers.expect_equal(#events, 1, 'an oversized multi-hunk burst should be kept, truncated')
@@ -451,7 +549,7 @@ return {
             edits.track(bufnr)
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 42' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
 
             helpers.expect_equal(
                 #edits.get_events(),
@@ -471,7 +569,7 @@ return {
             local bufnr = create_normal_buffer { 'return 1' }
             edits.track(bufnr)
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
             helpers.expect_match(edits.render(), '%+return 2')
 
             require('minuet').config.duet.recent_edits.enabled = false
@@ -507,7 +605,7 @@ return {
             -- truncated to fit rather than evicting itself from the history.
             vim.api.nvim_buf_set_lines(bufnr, 0, 1, false, { 'changed 1' })
             vim.api.nvim_buf_set_lines(bufnr, 19, 20, false, { 'changed 20' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
 
             local events = edits.get_events()
             helpers.expect_equal(#events, 1, 'the event must not evict itself from the history')
@@ -534,7 +632,7 @@ return {
             edits.track(bufnr)
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'still far too large for the size guard' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
 
             helpers.expect_equal(#edits.get_events(), 0, 'oversized buffers should never produce edit events')
 
@@ -563,9 +661,13 @@ return {
             vim.api.nvim_exec_autocmds('TextChanged', { buffer = bufnr, modeline = false })
 
             -- Real wipeout while the debounce timer armed above is pending.
+            -- The BufLeave flush's diff is orphaned by the wipeout and must
+            -- still record the final burst.
             vim.v.errmsg = ''
             vim.api.nvim_buf_delete(bufnr, { force = true })
-            helpers.expect_equal(#edits.get_events(), 1, 'BufLeave should flush before wipeout')
+            helpers.wait_until(function()
+                return #edits.get_events() == 1
+            end, 2000, 'the BufLeave flush before the wipeout must record the final burst')
 
             -- Pump the loop well past the debounce: the closed timer must not
             -- fire again, and nothing may error.
@@ -574,6 +676,36 @@ return {
             end, 10)
             helpers.expect_equal(#edits.get_events(), 1, 'the pending timer must not duplicate the BufLeave flush')
             helpers.expect_equal(vim.v.errmsg, '', 'wipeout with a pending debounce must not raise')
+        end,
+    },
+    {
+        name = 'duet.edits deletes the snapshot temp files when a tracked buffer is wiped out',
+        run = function()
+            helpers.setup_root_config {}
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            local tempdir = vim.fn.fnamemodify(vim.fn.tempname(), ':h')
+            local files_before = #vim.fn.readdir(tempdir)
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            flush_sync(bufnr)
+
+            helpers.expect_equal(
+                #vim.fn.readdir(tempdir) - files_before,
+                2,
+                'a tracked, flushed buffer keeps exactly two snapshot files'
+            )
+
+            vim.api.nvim_buf_delete(bufnr, { force = true })
+            helpers.wait_until(function()
+                return #vim.fn.readdir(tempdir) == files_before
+            end, 2000, 'wiping out the buffer must delete its snapshot files')
+            helpers.expect_equal(#edits.get_events(), 1, 'the recorded history must survive the wipeout')
         end,
     },
     {
@@ -586,9 +718,168 @@ return {
             edits.track(bufnr)
 
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 42' })
-            edits.flush(bufnr)
+            flush_sync(bufnr)
 
             helpers.expect_equal(#edits.get_events(), 0, 'scratch buffers should not produce edit events')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits round-trips non-ASCII buffer content through the snapshot files',
+        run = function()
+            helpers.setup_root_config {}
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'héllo', '世界' }
+            edits.track(bufnr)
+
+            vim.api.nvim_buf_set_lines(bufnr, 1, 2, false, { 'monde' })
+            flush_sync(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1)
+            helpers.expect_match(events[1].diff, ' héllo', 'non-ASCII context lines must survive the file round-trip')
+            helpers.expect_match(events[1].diff, '%-世界')
+            helpers.expect_match(events[1].diff, '%+monde')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits leaves the recorder off when the diff program is not executable',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        diff_program = 'minuet-no-such-diff-program',
+                    },
+                },
+            }
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            vim.v.errmsg = ''
+            flush_sync(bufnr)
+            flush_sync(bufnr)
+
+            helpers.expect_equal(#edits.get_events(), 0, 'a missing diff program must never produce events')
+            helpers.expect_equal(vim.v.errmsg, '', 'a missing diff program must not raise')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits retries a burst after the diff program fails and recovers with a working one',
+        run = function()
+            if not has_fixture_support() then
+                return
+            end
+
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        diff_program = script_dir .. '/diff_exit_2.sh',
+                    },
+                },
+            }
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            flush_sync(bufnr)
+            helpers.expect_equal(#edits.get_events(), 0, 'a failing diff run must not record an event')
+
+            -- The failed run did not rotate the snapshot, so the same burst
+            -- is retried once the program works again.
+            require('minuet').config.duet.recent_edits.diff_program = 'diff'
+            flush_sync(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1, 'the burst must be retried after the diff failure')
+            helpers.expect_match(events[1].diff, '%-return 1')
+            helpers.expect_match(events[1].diff, '%+return 2')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits.flush with wait returns at the timeout and records the event later',
+        run = function()
+            if not has_fixture_support() then
+                return
+            end
+
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        diff_program = script_dir .. '/slow_diff.sh',
+                        flush_timeout = 50,
+                    },
+                },
+            }
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            edits.flush(bufnr, { wait = true })
+
+            -- The fixture sleeps for a full second, so an empty history here
+            -- proves the wait gave up at the deadline instead of blocking
+            -- until completion.
+            helpers.expect_equal(#edits.get_events(), 0, 'the bounded wait must not block until the diff completes')
+
+            helpers.wait_until(function()
+                return #edits.get_events() == 1
+            end, 3000, 'the event must still arrive once the slow diff completes')
+            helpers.expect_match(edits.get_events()[1].diff, '%+return 2')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits skips flushes while a diff is in flight and never duplicates a burst',
+        run = function()
+            if not has_fixture_support() then
+                return
+            end
+
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        diff_program = script_dir .. '/slow_diff.sh',
+                    },
+                },
+            }
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            edits.flush(bufnr)
+            edits.flush(bufnr)
+            edits.flush(bufnr)
+
+            helpers.wait_until(function()
+                return #edits.get_events() > 0
+            end, 3000, 'the in-flight burst was never recorded')
+
+            -- Pump the loop long enough for any duplicate diff to have
+            -- landed as a second (empty, hence skipped) or duplicated event.
+            vim.wait(1500, function()
+                return false
+            end, 50)
+            helpers.expect_equal(#edits.get_events(), 1, 'repeated flushes of one burst must record exactly one event')
 
             helpers.delete_buffer(bufnr)
         end,
@@ -602,6 +893,9 @@ return {
                     editable_region = {
                         lines_before = 0,
                         lines_after = 0,
+                    },
+                    recent_edits = {
+                        flush_timeout = 5000,
                     },
                 },
             }

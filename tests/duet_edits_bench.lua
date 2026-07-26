@@ -1,22 +1,15 @@
 -- Benchmarks the duet edit recorder's main resource costs:
 --   1. per-change debounce and autocmd callback overhead
---   2. full-buffer snapshot and diff latency for sparse and bulk edits
---   3. Lua heap retained by per-buffer baselines
+--   2. temp-file snapshot write and end-to-end async flush latency for
+--      sparse and bulk edits (write pending file + external diff + record)
+--   3. Lua heap retained by per-buffer tracking state (paths and ticks; the
+--      snapshot text itself lives on disk, not the Lua heap)
 --
 -- Run from the repository root with:
 --   nvim --headless -u NONE -i NONE --cmd "set noswapfile" \
 --     +"luafile tests/duet_edits_bench.lua" +"qa!"
 
 local api = vim.api
-
----@diagnostic disable-next-line: deprecated
-local diff = (vim.text and vim.text.diff) or vim.diff
-
----@param bufnr integer
----@return string
-local function snapshot(bufnr)
-    return table.concat(api.nvim_buf_get_lines(bufnr, 0, -1, false), '\n') .. '\n'
-end
 
 ---@param line_count integer
 ---@return string[]
@@ -29,11 +22,36 @@ local function make_source_lines(line_count)
 end
 
 ---@param line_count integer
-local function benchmark_diff_patterns(line_count)
+local function benchmark_flush_patterns(line_count)
+    local helpers = require 'tests.helpers'
+    helpers.setup_root_config {
+        duet = {
+            recent_edits = {
+                -- Never let the bounded wait truncate a measured flush or
+                -- leak an in-flight diff into the next measurement.
+                flush_timeout = 30000,
+                -- Keep even the full-replacement diff as an event so the
+                -- measurement covers the entire record path.
+                max_event_chars = 1e9,
+                max_total_chars = 1e9,
+                max_buffer_size = 2000000,
+            },
+        },
+    }
+    local edits = require 'minuet.duet.edits'
+
     local bufnr = api.nvim_create_buf(true, false)
     local original = make_source_lines(line_count)
     api.nvim_buf_set_lines(bufnr, 0, -1, false, original)
-    local baseline = snapshot(bufnr)
+    local buffer_bytes = api.nvim_buf_get_offset(bufnr, api.nvim_buf_line_count(bufnr))
+
+    local snapshot_path = vim.fn.tempname()
+    local started = vim.uv.hrtime()
+    vim.fn.writefile(api.nvim_buf_get_lines(bufnr, 0, -1, false), snapshot_path)
+    local write_ms = (vim.uv.hrtime() - started) / 1e6
+    vim.uv.fs_unlink(snapshot_path)
+
+    edits.track(bufnr)
 
     for _, i in ipairs {
         10,
@@ -47,14 +65,11 @@ local function benchmark_diff_patterns(line_count)
         })
     end
 
-    local started = vim.uv.hrtime()
-    local current = snapshot(bufnr)
-    local sparse_diff = diff(baseline, current, {
-        result_type = 'unified',
-        ctxlen = 3,
-        algorithm = 'histogram',
-    })
+    started = vim.uv.hrtime()
+    edits.flush(bufnr, { wait = true })
     local sparse_ms = (vim.uv.hrtime() - started) / 1e6
+    local events = edits.get_events()
+    local sparse_bytes = #events > 0 and #events[#events].diff or 0
 
     local replacement = {}
     for i = 1, line_count do
@@ -63,26 +78,26 @@ local function benchmark_diff_patterns(line_count)
     api.nvim_buf_set_lines(bufnr, 0, -1, false, replacement)
 
     started = vim.uv.hrtime()
-    current = snapshot(bufnr)
-    local replacement_diff = diff(baseline, current, {
-        result_type = 'unified',
-        ctxlen = 3,
-        algorithm = 'histogram',
-    })
+    edits.flush(bufnr, { wait = true })
     local replacement_ms = (vim.uv.hrtime() - started) / 1e6
+    events = edits.get_events()
+    local replacement_bytes = #events > 0 and #events[#events].diff or 0
 
     print(
         string.format(
-            '%5d lines, %4.0f KB: sparse %.2f ms (%d-byte diff); full replacement %.2f ms (%.2f MB diff)',
+            '%5d lines, %4.0f KB: snapshot write %.2f ms; sparse flush %.2f ms (%d-byte diff);'
+                .. ' full replacement flush %.2f ms (%.2f MB diff)',
             line_count,
-            #baseline / 1024,
+            buffer_bytes / 1024,
+            write_ms,
             sparse_ms,
-            #sparse_diff,
+            sparse_bytes,
             replacement_ms,
-            #replacement_diff / 1024 / 1024
+            replacement_bytes / 1024 / 1024
         )
     )
 
+    edits.reset()
     api.nvim_buf_delete(bufnr, { force = true })
 end
 
@@ -143,7 +158,7 @@ local function benchmark_change_callback()
     api.nvim_del_augroup_by_id(group)
 end
 
-local function benchmark_baseline_memory()
+local function benchmark_tracking_memory()
     local helpers = require 'tests.helpers'
     helpers.setup_root_config {
         duet = {
@@ -177,11 +192,13 @@ local function benchmark_baseline_memory()
 
     local first = buffers[1]
     local buffer_bytes = api.nvim_buf_get_offset(first, api.nvim_buf_line_count(first))
-    local baseline_heap_kb = heap_after_tracking - heap_after_buffers
+    local tracking_heap_kb = heap_after_tracking - heap_after_buffers
 
     print(string.format('buffers: %d x %.0f KB', #buffers, buffer_bytes / 1024))
-    print(string.format('Lua heap retained by edit baselines: %.2f MB', baseline_heap_kb / 1024))
-    print(string.format('retained baseline per buffer: %.0f KB', baseline_heap_kb / #buffers))
+    print(string.format('Lua heap retained by edit tracking state: %.2f KB', tracking_heap_kb))
+    print(
+        string.format('retained per buffer: %.2f KB (snapshot text lives in temp files)', tracking_heap_kb / #buffers)
+    )
 
     edits.reset()
     for _, bufnr in ipairs(buffers) do
@@ -189,13 +206,13 @@ local function benchmark_baseline_memory()
     end
 end
 
-print 'Diff latency'
+print 'Snapshot and flush latency'
 for _, line_count in ipairs { 2000, 10000, 18000 } do
-    benchmark_diff_patterns(line_count)
+    benchmark_flush_patterns(line_count)
 end
 
 print '\nChange callback'
 benchmark_change_callback()
 
-print '\nBaseline memory'
-benchmark_baseline_memory()
+print '\nTracking state memory'
+benchmark_tracking_memory()

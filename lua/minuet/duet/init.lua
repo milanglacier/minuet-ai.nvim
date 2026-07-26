@@ -45,8 +45,9 @@ local function predict()
     clear_state(bufnr, state)
 
     -- Record edits made since the last idle flush so the freshest burst is
-    -- part of the prompt's recent-edits history.
-    edits.flush(bufnr)
+    -- part of the prompt's recent-edits history; wait (bounded) for the
+    -- in-flight diffs so the history is as fresh as possible.
+    edits.flush(bufnr, { wait = true })
 
     local current_context = context.build(bufnr)
     local provider_name = current_provider()
