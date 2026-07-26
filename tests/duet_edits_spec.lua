@@ -709,6 +709,58 @@ return {
         end,
     },
     {
+        name = 'duet.edits.reset cancels an orphaned in-flight diff so no event lands after the reset',
+        run = function()
+            if not has_fixture_support() then
+                return
+            end
+
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        diff_program = script_dir .. '/slow_diff.sh',
+                    },
+                },
+            }
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            -- Set, not count: reset also unlinks snapshots of other tracked
+            -- buffers (e.g. the one setup tracked), so the total may shrink.
+            local tempdir = vim.fn.fnamemodify(vim.fn.tempname(), ':h')
+            local files_before = {}
+            for _, file in ipairs(vim.fn.readdir(tempdir)) do
+                files_before[file] = true
+            end
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+
+            -- Wipe out while the slow diff is in flight: the diff becomes an
+            -- orphan; the reset must cancel it instead of letting it record
+            -- an event into the freshly-emptied history.
+            edits.flush(bufnr)
+            vim.v.errmsg = ''
+            vim.api.nvim_buf_delete(bufnr, { force = true })
+            edits.reset()
+
+            vim.wait(1500, function()
+                return false
+            end, 50)
+            helpers.expect_equal(#edits.get_events(), 0, 'a reset must cancel orphaned diffs, not record them later')
+            helpers.expect_equal(vim.v.errmsg, '', 'cancelling an orphaned diff must not raise')
+            for _, file in ipairs(vim.fn.readdir(tempdir)) do
+                helpers.expect_truthy(
+                    files_before[file],
+                    'the cancelled orphan must not leave snapshot files behind: ' .. file
+                )
+            end
+        end,
+    },
+    {
         name = 'duet.edits never tracks non-file buffers',
         run = function()
             helpers.setup_root_config {}

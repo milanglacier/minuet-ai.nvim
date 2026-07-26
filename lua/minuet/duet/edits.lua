@@ -19,6 +19,11 @@ local M = {}
 local internal = {
     ---@type table<integer, minuet.DuetEditBufferState>
     buffers = {},
+    ---States whose buffer died with a diff still in flight. They are no
+    ---longer reachable through `buffers`, so reset needs this set to cancel
+    ---them; a completing orphan removes itself.
+    ---@type table<minuet.DuetEditBufferState, true>
+    orphans = {},
     ---@type minuet.DuetEditEvent[] oldest first
     events = {},
     total_chars = 0,
@@ -48,6 +53,21 @@ local function is_trackable(bufnr)
     return api.nvim_buf_get_offset(bufnr, api.nvim_buf_line_count(bufnr)) <= config.max_buffer_size
 end
 
+---Cancel a state's in-flight diff, if any, and delete its snapshot files.
+---Nils the process field before killing: the late on_exit callback compares
+---its process object against state.process and reduces to a no-op after this
+---swap, so a cancelled diff can never record an event.
+---@param state minuet.DuetEditBufferState
+local function cancel_state(state)
+    local process = state.process
+    state.process = nil
+    if process then
+        process:kill(15)
+    end
+    vim.uv.fs_unlink(state.snapshot_file)
+    vim.uv.fs_unlink(state.pending_file)
+end
+
 ---Stop tracking a buffer. With `finalize` (buffer unload/wipeout after the
 ---BufLeave flush) an in-flight diff is left running as an orphan so the
 ---final burst still gets recorded; otherwise (reload, reset, guard failures)
@@ -68,21 +88,13 @@ local function drop_buffer_state(bufnr, finalize)
 
     if finalize and state.process then
         -- The on_exit callback records the orphan's event and deletes the
-        -- files.
+        -- files. Registered in the orphan set so reset can still cancel it.
         state.orphaned = true
+        internal.orphans[state] = true
         return
     end
 
-    -- Nil the field before killing: the late on_exit callback compares its
-    -- process object against state.process and reduces to a no-op after this
-    -- swap, so a cancelled diff can never record an event.
-    local process = state.process
-    state.process = nil
-    if process then
-        process:kill(15)
-    end
-    vim.uv.fs_unlink(state.snapshot_file)
-    vim.uv.fs_unlink(state.pending_file)
+    cancel_state(state)
 end
 
 ---Write the whole buffer to a temp file. writefile terminates every line
@@ -93,8 +105,11 @@ end
 ---@return integer? changedtick captured just before the write, nil when the write failed
 local function write_snapshot(bufnr, path)
     local changedtick = api.nvim_buf_get_changedtick(bufnr)
-    local ok = pcall(vim.fn.writefile, api.nvim_buf_get_lines(bufnr, 0, -1, false), path)
-    return ok and changedtick or nil
+    -- writefile signals failure both by raising (caught by the pcall) and by
+    -- returning -1; check both, since diffing against a bad snapshot would
+    -- record a wrong burst rather than skip one.
+    local ok, ret = pcall(vim.fn.writefile, api.nvim_buf_get_lines(bufnr, 0, -1, false), path)
+    return (ok and ret == 0) and changedtick or nil
 end
 
 ---Start tracking a buffer by snapshotting it to a temp file without emitting
@@ -296,6 +311,7 @@ local function start_flush(bufnr)
                 -- The buffer died after this final burst's pending file was
                 -- written (BufLeave flush, then unload/wipeout): record the
                 -- burst, then delete the files nobody else owns anymore.
+                internal.orphans[state] = nil
                 local unified = extract_hunks(result)
                 if unified then
                     push_event(bufnr, filename, unified)
@@ -474,11 +490,16 @@ function M.get_events()
     return vim.deepcopy(internal.events)
 end
 
----Drop all events and buffer snapshots, cancel in-flight diffs, close all
----timers, and delete the snapshot temp files.
+---Drop all events and buffer snapshots, cancel in-flight diffs (including
+---orphans whose buffer already died), close all timers, and delete the
+---snapshot temp files.
 function M.reset()
     for bufnr in pairs(internal.buffers) do
         drop_buffer_state(bufnr)
+    end
+    for state in pairs(internal.orphans) do
+        internal.orphans[state] = nil
+        cancel_state(state)
     end
     internal.events = {}
     internal.total_chars = 0
