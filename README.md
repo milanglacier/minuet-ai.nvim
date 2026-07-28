@@ -1492,9 +1492,9 @@ prompt, giving the model the strongest signal for predicting the next edit:
 what you just changed.
 
 The recorder is lightweight: while you type it only restarts a debounce timer.
-When you pause typing (`recent_edits.debounce` milliseconds), leave insert
-mode, or trigger `:Minuet duet predict`, the accumulated burst of changes is
-diffed against the previous snapshot and stored as a single edit event.
+When you pause typing (`recent_edits.debounce` milliseconds), switch
+buffers, or trigger `:Minuet duet predict`, the accumulated burst of changes
+is diffed against the previous snapshot and stored as a single edit event.
 Snapshots are kept as files in Neovim's private temp directory (created with
 `0700` permissions and removed when Neovim exits), and the diff runs in an
 external `diff` process off the main thread, so tracked buffers cost neither

@@ -136,9 +136,15 @@ return {
         end,
     },
     {
-        name = 'duet.edits flushes immediately on InsertLeave',
+        name = 'duet.edits coalesces bursts across InsertLeave into one debounced event',
         run = function()
-            helpers.setup_root_config {}
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        debounce = 20,
+                    },
+                },
+            }
 
             local duet = helpers.reload 'minuet.duet'
             duet.setup()
@@ -147,13 +153,21 @@ return {
             local bufnr = create_normal_buffer { 'return 1' }
             edits.track(bufnr)
 
-            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 42' })
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            vim.api.nvim_exec_autocmds('TextChangedI', { buffer = bufnr, modeline = false })
+            vim.api.nvim_exec_autocmds('InsertLeave', { buffer = bufnr, modeline = false })
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 3' })
+            vim.api.nvim_exec_autocmds('TextChangedI', { buffer = bufnr, modeline = false })
             vim.api.nvim_exec_autocmds('InsertLeave', { buffer = bufnr, modeline = false })
 
             helpers.wait_until(function()
                 return #edits.get_events() > 0
-            end, 1000, 'InsertLeave should flush without waiting for the debounce')
-            helpers.expect_match(edits.get_events()[1].diff, '%+return 42')
+            end, 1000, 'debounced edit burst was not flushed')
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1, 'InsertLeave must not split the burst into separate events')
+            helpers.expect_match(events[1].diff, '%-return 1')
+            helpers.expect_match(events[1].diff, '%+return 3')
 
             helpers.delete_buffer(bufnr)
         end,
