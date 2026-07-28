@@ -867,6 +867,94 @@ return {
         end,
     },
     {
+        name = 'duet.edits setup recovers after the diff program becomes executable',
+        run = function()
+            if not has_fixture_support() then
+                return
+            end
+
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        diff_program = 'minuet-no-such-diff-program',
+                    },
+                },
+            }
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            require('minuet').config.duet.recent_edits.diff_program = 'diff'
+            duet.setup()
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            flush_sync(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1, 'a successful repeated setup must re-enable the recorder')
+            helpers.expect_match(events[1].diff, '%+return 2')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits repeated setup cleans snapshots before a missing-program return',
+        run = function()
+            if not has_fixture_support() then
+                return
+            end
+
+            helpers.setup_root_config {}
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            local tempdir = vim.fn.fnamemodify(vim.fn.tempname(), ':h')
+            local files_before = {}
+            for _, file in ipairs(vim.fn.readdir(tempdir)) do
+                files_before[file] = true
+            end
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            flush_sync(bufnr)
+
+            local snapshot_files = {}
+            for _, file in ipairs(vim.fn.readdir(tempdir)) do
+                if not files_before[file] then
+                    table.insert(snapshot_files, tempdir .. '/' .. file)
+                end
+            end
+            helpers.expect_equal(#snapshot_files, 2, 'a tracked, flushed buffer must own two snapshot files')
+
+            require('minuet').config.duet.recent_edits.diff_program = 'minuet-no-such-diff-program'
+            duet.setup()
+
+            local leaked_files = {}
+            for _, file in ipairs(snapshot_files) do
+                if vim.uv.fs_stat(file) then
+                    table.insert(leaked_files, file)
+                end
+            end
+
+            -- Keep the test isolated even when the assertion fails against a
+            -- regression that leaves recorder state behind.
+            edits.reset()
+            helpers.delete_buffer(bufnr)
+
+            helpers.expect_equal(
+                #leaked_files,
+                0,
+                'a failed repeated setup must clean snapshots from the previous recorder lifecycle'
+            )
+        end,
+    },
+    {
         name = 'duet.edits retries a burst after the diff program fails and recovers with a working one',
         run = function()
             if not has_fixture_support() then

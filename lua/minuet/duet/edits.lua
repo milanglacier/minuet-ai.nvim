@@ -531,6 +531,11 @@ end
 ---and leaves the recorder off.
 ---@param augroup integer
 function M.setup(augroup)
+    -- A repeated setup starts a fresh recorder lifecycle. Tear down its
+    -- snapshots and processes before validating the new configuration; reset
+    -- also clears a previous failure-disable state.
+    M.reset()
+
     local config = get_config()
     if config and config.enabled and vim.fn.executable(config.diff_program) ~= 1 then
         internal.disabled = true

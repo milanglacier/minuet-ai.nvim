@@ -280,3 +280,136 @@ one notification was emitted.
 - `make test` — all 56 tests pass.
 - `make format-check` — passes.
 - `git diff --check` — passes.
+
+## Review round 3 (2026-07-27)
+
+Scope: current branch at `983ba72`, after the round-2 resolution. This pass
+rechecked the two accepted fixes and then exercised setup transitions and the
+bounded wait with a buffer that becomes dirty again while its diff is running.
+The orphan-wait fix itself works, but four additional state-transition issues
+remain.
+
+### Verdict
+
+**Not merge-ready.** A corrected diff configuration cannot recover the recorder
+after the new setup-time disable, and the prediction wait can still omit a
+completed pre-prediction edit from another buffer. Self-disable also leaves
+stale history visible, while a failed repeated setup strands existing
+snapshots until Neovim exits.
+
+Verified in this round:
+
+- `make test` — all 56 tests pass.
+- `make format-check` — passes.
+- `git diff --check` — passes.
+- Missing-program setup followed by `diff_program = 'diff'` and another
+  `duet.setup()` still produced zero events.
+- With the 1 s slow-diff fixture and a 2500 ms timeout, buffer A was changed to
+  `a = 2`, flushed, then changed to `a = 3` while that diff was in flight. A
+  wait from buffer B returned after about 1 s with only the `a = 2` event.
+- After one successful event and a mid-session spawn failure, `render()` still
+  returned the old 57-character event.
+- Re-running setup with a missing program after tracking a buffer, then deleting
+  that buffer, left both snapshot files in the temp directory.
+
+### Findings
+
+#### 1. [P2] Re-enable the recorder after a successful setup
+
+`lua/minuet/duet/edits.lua:535–536` — once a missing executable sets
+`internal.disabled`, a later setup with a corrected, executable
+`diff_program` never clears the flag. The second setup registers all recorder
+autocmds, but `M.track()` continues to reject every buffer through
+`is_trackable()`, so the recorder remains permanently inert unless the
+internal/test-only `reset()` hook is called (which also erases history).
+Clear the failure-disable state on the successful setup path before tracking
+the current buffer.
+
+#### 2. [P2] Flush dirty peer buffers before ending the bounded wait
+
+`lua/minuet/duet/edits.lua:459–461` — after all processes settle, the follow-up
+logic checks only the prediction buffer. If buffer A is edited again while its
+first diff is running, then BufLeave hits the in-flight guard, A's completion
+marks it dirty and re-arms its debounce; a simultaneous prediction in buffer B
+waits for that first diff but returns without flushing A's later edit, even
+with ample timeout remaining. The post-wait dirty scan needs to include
+tracked peer buffers whose BufLeave flush could not start, not just `bufnr`.
+
+#### 3. [P2] Hide history after the recorder disables itself
+
+`lua/minuet/duet/edits.lua:384–388` — if the diff program disappears after
+earlier events were recorded, this branch sets `internal.disabled`, but
+`render()` checks only `config.enabled`. Since no new events can arrive to age
+out the old ones, every later prompt keeps receiving the same stale edit
+history indefinitely despite the user-facing notification saying the recorder
+is disabled. Treat the internal failure-disable flag like the existing runtime
+disable in `render()` while retaining events for a later recovery if desired.
+
+#### 4. [P3] Clean tracked snapshots before returning from failed setup
+
+`lua/minuet/duet/edits.lua:546` — when setup is rerun after the recorder has
+already tracked buffers, `duet.setup()` first clears the shared augroup and
+this early return leaves those states alive without the BufUnload/BufWipeout
+cleanup autocmds. Deleting an idle tracked buffer after that transition
+therefore leaves both content snapshots on disk until Neovim removes its temp
+directory at exit, beyond the documented lifetime of the buffer. Drop existing
+tracking states before returning, or retain a cleanup path while disabled.
+
+## Review round 3 decisions and resolution (2026-07-27)
+
+### Findings 1 and 4 — fixed together
+
+A repeated `duet.setup()` is treated as a fresh recorder lifecycle.
+`edits.reset()` now runs at the start of `edits.setup()`, before validating the
+new recorder configuration. This ordering:
+
+- cancels in-flight and orphaned diff processes;
+- closes debounce timers and deletes all tracked snapshot files;
+- clears the prior event history; and
+- clears `internal.disabled`, allowing a corrected executable configuration to
+  start recording again.
+
+Clearing event history on repeated setup is an accepted trade-off: a full
+plugin reconfiguration starts a new recent-edits session. Autocmd ownership
+remains separate from recorder state cleanup; `duet.setup()` continues to clear
+the shared augroup, while `edits.setup()` owns recorder reset and does not
+remove autocmds itself.
+
+Regression tests:
+
+- `duet.edits setup recovers after the diff program becomes executable`
+  starts with a missing executable, corrects it to `diff`, reruns setup, and
+  verifies that a new edit event is recorded.
+- `duet.edits repeated setup cleans snapshots before a missing-program return`
+  creates both snapshot files, reruns setup with a missing executable, and
+  verifies that the previous recorder lifecycle's files are deleted.
+
+Both tests failed before the fix: recovery recorded zero events and the failed
+setup left two snapshot files behind.
+
+### Finding 2 — intentionally deferred
+
+Recent-edit history is best-effort prompt context, not correctness-sensitive
+application state. The reported omission requires a narrow overlap: a peer
+buffer must change again while its first external diff is still running, and a
+prediction in another buffer must begin before the re-armed debounce flushes
+that second change. The dirty edit remains tracked and is flushed later.
+
+Scanning and repeatedly starting dirty peer buffers inside the bounded wait
+would add state-machine complexity for little practical prompt benefit, so the
+current bounded-staleness behavior is accepted.
+
+### Finding 3 — intentionally deferred
+
+A mid-session spawn failure after successful setup requires the configured diff
+program to disappear or otherwise become unspawnable while Neovim remains
+running. This is considered too unusual to justify additional behavior in this
+patch. Previously recorded events remain factually valid, though subsequent
+edits are absent, and setup recovery now starts a clean recorder lifecycle.
+
+### Verification
+
+- Pre-fix regression run — the two new tests failed for the reviewed reasons.
+- `make test` — all 58 tests pass after the fix.
+- `make format-check` — passes.
+- `git diff --check` — passes.
