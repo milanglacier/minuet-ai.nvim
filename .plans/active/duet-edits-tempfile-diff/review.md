@@ -413,3 +413,31 @@ edits are absent, and setup recovery now starts a clean recorder lifecycle.
 - `make test` — all 58 tests pass after the fix.
 - `make format-check` — passes.
 - `git diff --check` — passes.
+
+## Review round 4 (2026-07-27)
+
+Scope: current branch at `ba89da5`, after the round-3 resolution. This pass
+focused on the new setup-time lifecycle reset, including cancellation and
+recovery while regular and orphaned diffs are still in flight. The findings
+explicitly accepted or deferred in earlier rounds were not reopened.
+
+### Verdict
+
+**Merge-ready under the documented decisions.** No additional correctness
+findings were found. Calling `M.reset()` before validating the new
+configuration closes the two setup-transition holes from round 3 without
+allowing a cancelled process to publish into the new lifecycle.
+
+Verified in this round:
+
+- `make test` — all 58 tests pass.
+- `make format-check` — passes.
+- `git diff --check` — passes.
+- A focused setup-transition probe started both a normal in-flight diff and an
+  orphaned in-flight diff, reran setup with a working program, and pumped the
+  event loop beyond the slow fixture's delay. Neither old event landed, and a
+  subsequent edit recorded successfully under the new lifecycle.
+
+### Findings
+
+None.
