@@ -176,3 +176,107 @@ skipped and the dirty changedtick retries the burst later — the same semantics
 as before, now airtight against a silently-bad snapshot producing a wrong diff.
 No practical way to unit-test a non-raising `-1` return, so this one ships on
 inspection.
+
+## Review round 2 (2026-07-27)
+
+Scope: current branch at `456e3fe`, after the fix follow-up documented above.
+The two original findings are fixed, but a fresh pass over the complete async
+feature found three additional correctness issues.
+
+### Verdict
+
+**Not merge-ready.** The recorder can reverse its documented cross-buffer
+timeline, the bounded prediction wait excludes orphaned diffs, and the
+missing-program setup path does not actually keep the recorder off.
+
+Verified in this round:
+
+- `make test` — all 55 tests pass.
+- `make format-check` — passes.
+- A deterministic two-buffer diff fixture completed the later flush first and
+  produced `FAST_B, SLOW_A`, reversing the flush/edit order.
+- With a 1 s orphaned diff and a 1500 ms timeout, `flush({ wait = true })`
+  returned in 0 ms with no event; the orphan event arrived later.
+- With a missing `diff_program`, setup emitted its warning, then two calls to
+  the real predict path caused a second spawn-failure notification.
+
+### Findings
+
+#### 1. [P2] Order overlapping diff results by flush sequence
+
+`lua/minuet/duet/edits.lua:352–355` — when edits in buffers A and B have
+overlapping async diffs, each completion appends its event immediately. If the
+later B diff completes before the older A diff (for example because A is larger
+or slower), the stored order becomes B then A, so the prompt treats A as the
+newest edit despite documenting an oldest-to-newest cross-buffer timeline.
+With an event/character cap, the late arrival can also evict the genuinely
+newer event. Preserve a sequence assigned when each flush starts and publish
+completed events in that sequence rather than process-exit order.
+
+#### 2. [P2] Include orphaned processes in the bounded wait
+
+`lua/minuet/duet/edits.lua:441–448` — when buffer A is unloaded or wiped after
+its BufLeave diff starts, `drop_buffer_state(..., true)` removes its state from
+`internal.buffers` and moves it to `internal.orphans`. A prediction in buffer B
+therefore considers this wait settled immediately even though A's final diff
+is still running, so the resulting prompt omits an edit that is supposed to be
+covered by the cross-buffer wait. The settled condition needs to inspect the
+orphan set as well.
+
+#### 3. [P2] Keep the missing-program setup path actually disabled
+
+`lua/minuet/duet/edits.lua:530–540` — the failed executable check returns before
+registering autocmds but leaves `internal.disabled` false. Since
+`duet.action.predict()` always calls `edits.flush`, one prediction can still
+create a snapshot and a later prediction tries to spawn the missing program,
+causing a second error notification and leaving temp-file content despite the
+documented “stays off and notifies once” behavior. Mark and cleanly retain the
+recorder as disabled on this path (with a corresponding recovery path when
+setup later succeeds).
+
+## Review round 2 resolution (2026-07-27)
+
+The three findings were considered individually rather than treating every
+theoretical async ordering issue as equally urgent.
+
+### Finding 1 — accepted and deferred
+
+The overlapping-diff ordering issue is real, but unlikely to be observable in
+ordinary editing: users generally edit one buffer at a time and the external
+diff normally completes within milliseconds. Simultaneous multi-buffer edits
+are more likely to come from programmatic operations such as an LSP rename,
+where the relative order of the affected files is usually not meaningful.
+
+A complete fix would also require sequencing and temporarily holding completed
+results until earlier processes finish, adding nontrivial state and
+head-of-line behavior. The current risk does not justify that complexity, so
+this finding is accepted as a known limitation and deferred.
+
+### Finding 2 — fixed
+
+The bounded wait's settled predicate now checks both `internal.buffers` and
+`internal.orphans`. A diff that becomes orphaned because its buffer is unloaded
+or wiped therefore remains part of the existing cross-buffer wait until it
+completes or the configured timeout expires.
+
+Regression test: `duet.edits.flush with wait includes an orphaned in-flight
+diff` starts the slow-diff fixture, deletes its buffer while the process is in
+flight, then flushes another buffer with waiting enabled and verifies that the
+orphan's event has landed before the call returns.
+
+### Finding 3 — fixed
+
+The missing-executable branch of `M.setup()` now sets `internal.disabled =
+true` before notifying and returning. Later prediction-path flushes therefore
+remain inert instead of creating snapshots or attempting to spawn the missing
+program.
+
+The existing missing-program regression test was strengthened to enable and
+capture notifications, call flush twice after setup, and verify that exactly
+one notification was emitted.
+
+### Verification
+
+- `make test` — all 56 tests pass.
+- `make format-check` — passes.
+- `git diff --check` — passes.

@@ -444,6 +444,11 @@ function M.flush(bufnr, opts)
                     return false
                 end
             end
+            for state in pairs(internal.orphans) do
+                if state.process then
+                    return false
+                end
+            end
             return true
         end, 5)
 
@@ -528,6 +533,7 @@ end
 function M.setup(augroup)
     local config = get_config()
     if config and config.enabled and vim.fn.executable(config.diff_program) ~= 1 then
+        internal.disabled = true
         require('minuet.utils').notify(
             string.format(
                 'minuet duet recent-edits recorder disabled: diff program "%s" is not executable.'

@@ -761,6 +761,42 @@ return {
         end,
     },
     {
+        name = 'duet.edits.flush with wait includes an orphaned in-flight diff',
+        run = function()
+            if not has_fixture_support() then
+                return
+            end
+
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        diff_program = script_dir .. '/slow_diff.sh',
+                        flush_timeout = 2000,
+                    },
+                },
+            }
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+            local bufnr_a = create_normal_buffer { 'local a = 1' }
+            edits.track(bufnr_a)
+            vim.api.nvim_buf_set_lines(bufnr_a, 0, -1, false, { 'local a = 2' })
+            edits.flush(bufnr_a)
+            vim.api.nvim_buf_delete(bufnr_a, { force = true })
+
+            local bufnr_b = create_normal_buffer { 'local b = 1' }
+            edits.track(bufnr_b)
+            edits.flush(bufnr_b, { wait = true })
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1, 'the bounded wait must include a diff orphaned by buffer deletion')
+            helpers.expect_match(events[1].diff, '%+local a = 2')
+
+            helpers.delete_buffer(bufnr_b)
+        end,
+    },
+    {
         name = 'duet.edits never tracks non-file buffers',
         run = function()
             helpers.setup_root_config {}
@@ -802,6 +838,7 @@ return {
         name = 'duet.edits leaves the recorder off when the diff program is not executable',
         run = function()
             helpers.setup_root_config {
+                notify = 'verbose',
                 duet = {
                     recent_edits = {
                         diff_program = 'minuet-no-such-diff-program',
@@ -809,6 +846,7 @@ return {
                 },
             }
 
+            local notifications, restore_notifications = helpers.capture_notifications()
             local duet = helpers.reload 'minuet.duet'
             duet.setup()
             local edits = require 'minuet.duet.edits'
@@ -819,9 +857,11 @@ return {
             vim.v.errmsg = ''
             flush_sync(bufnr)
             flush_sync(bufnr)
+            restore_notifications()
 
             helpers.expect_equal(#edits.get_events(), 0, 'a missing diff program must never produce events')
             helpers.expect_equal(vim.v.errmsg, '', 'a missing diff program must not raise')
+            helpers.expect_equal(#notifications, 1, 'a missing diff program must notify only during setup')
 
             helpers.delete_buffer(bufnr)
         end,
