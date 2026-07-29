@@ -1534,6 +1534,29 @@ Custom `chat_input` templates can place the rendered history with the
 `recent_edits` field of the context passed to `chat_input` value functions.
 Set `recent_edits.enabled = false` to disable the recorder entirely.
 
+To keep individual buffers out of the recorder, use
+`recent_edits.enable_predicates`: a list of functions called with a buffer
+number, evaluated before a buffer is tracked or a burst is recorded. A buffer
+is tracked only while every predicate returns true; a rejected buffer is
+never snapshotted to disk, and a predicate that starts failing for an
+already-tracked buffer deletes its snapshots at the next flush. The default
+list rejects dotenv files (`.env`, `.env.*`), which typically hold secrets.
+Overriding the option replaces the default list, so re-add the dotenv guard
+if you still want it. Predicates run at every trackability check — once per
+keystroke for a rejected buffer — so keep them cheap (no I/O or process
+spawns):
+
+```lua
+recent_edits = {
+    enable_predicates = {
+        function(bufnr)
+            local name = vim.api.nvim_buf_get_name(bufnr)
+            return vim.fn.fnamemodify(name, ':t') ~= '.env' and not name:match '/secrets/'
+        end,
+    },
+},
+```
+
 ## TODO
 
 - [x] Implement a proper diff mechanism to include recent edit changes in prompts.
@@ -1568,6 +1591,7 @@ require('minuet').setup {
             max_event_chars = 2000, -- A single edit burst whose diff exceeds this is truncated to the leading whole hunks that fit (dropped if not even the first hunk fits).
             diff_program = 'diff', -- External diff program invoked as `PROG -U<n> OLD NEW`; must emit unified diffs and exit 0 (identical) / 1 (differences) / >= 2 (error).
             flush_timeout = 200, -- Max milliseconds a prediction waits for in-flight diffs before proceeding with slightly stale history.
+            enable_predicates = { ... }, -- Per-buffer predicates called with a buffer number; a buffer is tracked only while all return true. Defaults to rejecting dotenv files (.env, .env.*); overriding replaces that default.
         },
         markers = {
             editable_region_start = '<editable_region>', -- Marker that wraps the start of the editable region in prompts and responses.

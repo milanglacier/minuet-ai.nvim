@@ -236,6 +236,7 @@ end
 ---@field max_event_chars integer a single edit burst diff larger than this is truncated to the leading whole hunks that fit (dropped when not even the first hunk fits)
 ---@field diff_program string external diff program invoked as `PROG -U<n> OLD NEW`; must emit unified diffs and exit with 0 (identical), 1 (differences), or >= 2 (error)
 ---@field flush_timeout integer milliseconds a prompt-building flush waits for in-flight diffs before proceeding with slightly stale history
+---@field enable_predicates (fun(bufnr: integer): boolean)[] predicates called with a buffer number; the recorder tracks a buffer only while all of them return true
 
 ---@class minuet.DuetConfig
 ---@field provider string
@@ -269,6 +270,17 @@ local M = {
         max_event_chars = 2000,
         diff_program = 'diff',
         flush_timeout = 200,
+        -- Overriding this list replaces the default dotenv guard. The
+        -- predicates run at every trackability check (per keystroke for a
+        -- rejected buffer), so keep them cheap: no I/O or process spawns.
+        enable_predicates = {
+            -- Dotenv files (.env, .env.local, ...) typically hold secrets;
+            -- keep them out of the on-disk snapshots and the prompt history.
+            function(bufnr)
+                local tail = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':t')
+                return tail ~= '.env' and not vim.startswith(tail, '.env.')
+            end,
+        },
     },
     markers = vim.deepcopy(default_markers),
     preview = {

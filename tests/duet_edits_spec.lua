@@ -828,6 +828,131 @@ return {
         end,
     },
     {
+        name = 'duet.edits default predicates never track dotenv buffers',
+        run = function()
+            helpers.setup_root_config {}
+            local edits = require 'minuet.duet.edits'
+
+            for _, name in ipairs { '.env', '.env.local' } do
+                local bufnr = create_normal_buffer { 'SECRET=1' }
+                vim.api.nvim_buf_set_name(bufnr, name)
+                edits.track(bufnr)
+
+                vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'SECRET=2' })
+                flush_sync(bufnr)
+
+                helpers.expect_equal(#edits.get_events(), 0, name .. ' must never produce edit events')
+                helpers.delete_buffer(bufnr)
+            end
+
+            -- The guard matches only .env and .env.*; a mere .env prefix
+            -- (.envrc, .environment) must stay tracked.
+            local bufnr = create_normal_buffer { 'export FOO=1' }
+            vim.api.nvim_buf_set_name(bufnr, '.envrc')
+            edits.track(bufnr)
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'export FOO=2' })
+            flush_sync(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1, 'a .env prefix alone must not reject the buffer')
+            helpers.expect_match(events[1].diff, '%+export FOO=2')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits custom enable_predicates replace the default and receive the buffer number',
+        run = function()
+            local seen_bufnr
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        enable_predicates = {
+                            function(bufnr)
+                                seen_bufnr = bufnr
+                                return false
+                            end,
+                        },
+                    },
+                },
+            }
+            local edits = require 'minuet.duet.edits'
+
+            -- An unnamed buffer, so a rejection can only come from the custom
+            -- predicate, not the default dotenv guard it replaced.
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            flush_sync(bufnr)
+
+            helpers.expect_equal(#edits.get_events(), 0, 'a failing predicate must prevent tracking')
+            helpers.expect_equal(seen_bufnr, bufnr, 'predicates must receive the buffer number')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits drops state and snapshots when a predicate starts failing mid-session',
+        run = function()
+            local allow = true
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        enable_predicates = {
+                            function()
+                                return allow
+                            end,
+                        },
+                    },
+                },
+            }
+
+            -- duet.setup clears the duet augroup; without it, stale autocmds
+            -- from earlier tests would track this test's buffer through an
+            -- old recorder instance and skew the temp-file counting below.
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            local tempdir = vim.fn.fnamemodify(vim.fn.tempname(), ':h')
+            local files_before = #vim.fn.readdir(tempdir)
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            flush_sync(bufnr)
+            helpers.expect_equal(#edits.get_events(), 1, 'the buffer is tracked while the predicate passes')
+            helpers.expect_equal(#vim.fn.readdir(tempdir) - files_before, 2, 'a tracked buffer keeps two snapshots')
+
+            allow = false
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 3' })
+            flush_sync(bufnr)
+
+            helpers.expect_equal(#edits.get_events(), 1, 'a burst after the predicate flips must not be recorded')
+            helpers.expect_equal(
+                #vim.fn.readdir(tempdir) - files_before,
+                0,
+                'the failing predicate must delete the snapshot files'
+            )
+
+            -- Flipping back re-tracks from the current content without
+            -- recording the changes made while rejected.
+            allow = true
+            flush_sync(bufnr)
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 4' })
+            flush_sync(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 2, 'a passing predicate must re-track the buffer')
+            helpers.expect_match(events[2].diff, '%-return 3', 'the re-established baseline is the current content')
+            helpers.expect_match(events[2].diff, '%+return 4')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
         name = 'duet.edits round-trips non-ASCII buffer content through the snapshot files',
         run = function()
             helpers.setup_root_config {}

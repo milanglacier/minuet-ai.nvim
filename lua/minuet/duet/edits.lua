@@ -50,7 +50,14 @@ local function is_trackable(bufnr)
         return false
     end
 
-    return api.nvim_buf_get_offset(bufnr, api.nvim_buf_line_count(bufnr)) <= config.max_buffer_size
+    if api.nvim_buf_get_offset(bufnr, api.nvim_buf_line_count(bufnr)) > config.max_buffer_size then
+        return false
+    end
+
+    -- User predicates run last so they only ever see loaded, normal file
+    -- buffers. A predicate that starts failing mid-session is picked up at
+    -- the next flush, which drops the buffer's state and snapshot files.
+    return require('minuet.utils').run_hooks_until_failure(config.enable_predicates, bufnr)
 end
 
 ---Cancel a state's in-flight diff, if any, and delete its snapshot files.
