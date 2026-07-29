@@ -1487,71 +1487,26 @@ large enough to cover the full rewritten region.
 
 ## Recent Edits
 
-Duet records your recent edits in the background and includes them in the
-prompt, giving the model the strongest signal for predicting the next edit:
-what you just changed.
+Duet silently records your recent edits in the background and includes them in
+the prompt, providing the model with the signal needed to predict the next
+edit: what you just changed. This feature is enabled by default. To opt out,
+set `recent_edits.enabled = false`.
 
-The recorder is lightweight: while you type it only restarts a debounce timer.
-When you pause typing (`recent_edits.debounce` milliseconds), switch
-buffers, or trigger `:Minuet duet predict`, the accumulated burst of changes
-is diffed against the previous snapshot and stored as a single edit event.
-Snapshots are kept as files in Neovim's private temp directory (created with
-`0700` permissions and removed when Neovim exits), and the diff runs in an
-external `diff` process off the main thread, so tracked buffers cost neither
-Lua heap nor editor latency. A prediction waits at most
-`recent_edits.flush_timeout` milliseconds for in-flight diffs and then
-proceeds with slightly stale history, so a wedged diff can never stall a
-prediction. Note that snapshots put buffer content on disk for the lifetime
-of the buffer — the same class of exposure as swap or undo files — so leave
-the recorder disabled if you edit buffers whose content must never touch
-disk. The recorder requires an executable `diff` (any program with GNU/POSIX
-diff's `-U` flag and exit-code contract works, configurable via
-`recent_edits.diff_program`); on Windows, install diffutils or point
-`diff_program` at an equivalent. If the program is missing, the recorder
-stays off and notifies once. Events are kept in one global, cross-buffer
-timeline and rendered into the prompt as unified diffs, ordered from oldest
-to newest:
+To prevent sensitive buffers from being tracked in the edit history, configure
+`recent_edits.enable_predicates` with a list of functions, each receiving a
+buffer number. A buffer is only tracked while all predicates return true. If a
+buffer is rejected, it is never snapshotted to disk. By default, the list
+rejects dotenv files (`.env`, `.env.*`). Because predicates run on every
+trackability check, ensure they are highly efficient.
 
-````text
-User edited "~/projects/minuet-ai.nvim/lua/minuet/utils.lua":
-
-```diff
-@@ -42,7 +42,7 @@
- local function notify(msg, level)
--    vim.notify(msg)
-+    vim.notify(msg, level)
- end
-```
-````
-
-File names are shown relative to your home directory, independent of the
-current working directory. Histories spanning multiple projects therefore
-stay unambiguous even when plugins like project.nvim change the working
-directory between edits.
-
-Custom `chat_input` templates can place the rendered history with the
-`{{{recent_edits}}}` placeholder; the raw string is also available as the
-`recent_edits` field of the context passed to `chat_input` value functions.
-Set `recent_edits.enabled = false` to disable the recorder entirely.
-
-To keep individual buffers out of the recorder, use
-`recent_edits.enable_predicates`: a list of functions called with a buffer
-number, evaluated before a buffer is tracked or a burst is recorded. A buffer
-is tracked only while every predicate returns true; a rejected buffer is
-never snapshotted to disk, and a predicate that starts failing for an
-already-tracked buffer deletes its snapshots at the next flush. The default
-list rejects dotenv files (`.env`, `.env.*`), which typically hold secrets.
-Overriding the option replaces the default list, so re-add the dotenv guard
-if you still want it. Predicates run at every trackability check — once per
-keystroke for a rejected buffer — so keep them cheap (no I/O or process
-spawns):
+Example:
 
 ```lua
 recent_edits = {
     enable_predicates = {
         function(bufnr)
             local name = vim.api.nvim_buf_get_name(bufnr)
-            return vim.fn.fnamemodify(name, ':t') ~= '.env' and not name:match '/secrets/'
+            return vim.fn.fnamemodify(name, ':t') ~= '.env'
         end,
     },
 },
