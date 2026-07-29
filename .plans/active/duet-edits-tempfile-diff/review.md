@@ -441,3 +441,71 @@ Verified in this round:
 ### Findings
 
 None.
+
+## Review round 5 (2026-07-29)
+
+Scope: current branch at `a5690e0`, which adds per-buffer
+`recent_edits.enable_predicates` to the recorder. The review confirmed that the
+normal tracking and cleanup paths work, then raised two predicate/documentation
+edge cases and one test-coverage issue.
+
+### Verdict
+
+**Merge-ready under the decisions below.** The orphaned-diff report requires a
+stateful custom predicate to change during a narrow autocmd window and is not
+treated as a P2 correctness problem. The README example will be adjusted
+separately. The test-coverage finding was accepted and fixed in this update.
+
+### Findings and decisions
+
+#### 1. [P2] Re-check predicates before publishing orphaned diffs — no change
+
+The reported sequence is technically possible when a custom predicate reads
+mutable state and a later-registered `BufLeave` autocmd changes that state
+after Minuet starts its asynchronous flush but before `BufUnload` or
+`BufWipeout` orphans the process. The orphan completion path then records the
+already-started burst without the ordinary completion-time trackability
+recheck.
+
+The default predicate only checks the buffer filename and does not naturally
+flip in this window. Reproducing the report therefore requires an unusual
+stateful predicate/autocmd combination. The predicate passed synchronously at
+flush start, before the pending snapshot and diff were created, so that check
+is considered the authorization point for the burst. Predicate failures also
+do not retroactively remove events already in history. This finding is not
+accepted as a P2 issue, and no recorder change was made.
+
+#### 2. [P2] Reject `.env.*` in the override example — deferred
+
+The built-in default correctly rejects both `.env` and `.env.*`; the finding
+only concerns the custom override example in the README. This is not considered
+a substantive recorder problem. The user plans to tweak the example
+separately, so this update intentionally leaves the README unchanged.
+
+#### 3. [P3] Exercise actual replacement in the predicate test — fixed
+
+The previous test installed a custom predicate that returned `false` and used
+an unnamed buffer. It passed whether the custom list replaced the default or
+was appended to it: the default allowed the unnamed buffer and the custom
+predicate rejected it in either case. The test therefore proved only that the
+custom predicate ran and received the buffer number.
+
+The revised test installs a custom predicate that returns `true`, names the
+buffer `.env`, edits it, and requires one event to be recorded. Replacement
+allows the event, while appending the default dotenv guard would reject the
+buffer and leave history empty. The existing buffer-number assertion remains,
+so the test now pins both documented behaviors.
+
+### Update summary
+
+- Changed the replacement test's custom predicate from rejecting to allowing.
+- Changed its buffer from unnamed Lua-like content to a named `.env` buffer.
+- Changed the expected history count from zero to one, making replacement
+  observably different from predicate appending.
+- Made no production-code or README changes.
+
+### Verification
+
+- `make test` — all 61 tests pass.
+- `make format-check` — passes.
+- `git diff --check` — passes.

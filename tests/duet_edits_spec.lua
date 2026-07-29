@@ -871,7 +871,7 @@ return {
                         enable_predicates = {
                             function(bufnr)
                                 seen_bufnr = bufnr
-                                return false
+                                return true
                             end,
                         },
                     },
@@ -879,15 +879,16 @@ return {
             }
             local edits = require 'minuet.duet.edits'
 
-            -- An unnamed buffer, so a rejection can only come from the custom
-            -- predicate, not the default dotenv guard it replaced.
-            local bufnr = create_normal_buffer { 'return 1' }
+            -- The custom predicate permits a dotenv buffer, proving that it
+            -- replaces rather than supplements the default dotenv guard.
+            local bufnr = create_normal_buffer { 'SECRET=1' }
+            vim.api.nvim_buf_set_name(bufnr, '.env')
             edits.track(bufnr)
 
-            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'SECRET=2' })
             flush_sync(bufnr)
 
-            helpers.expect_equal(#edits.get_events(), 0, 'a failing predicate must prevent tracking')
+            helpers.expect_equal(#edits.get_events(), 1, 'custom predicates must replace the default dotenv guard')
             helpers.expect_equal(seen_bufnr, bufnr, 'predicates must receive the buffer number')
 
             helpers.delete_buffer(bufnr)
