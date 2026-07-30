@@ -28,6 +28,12 @@ local function has_fixture_support()
     return vim.fn.executable 'sh' == 1 and vim.fn.executable 'diff' == 1
 end
 
+-- The recorder owns the MinuetDuetEdits augroup exclusively; the autocmd
+-- count tells whether (and how many times) it registered its autocmds.
+local function count_recorder_autocmds()
+    return #vim.api.nvim_get_autocmds { group = 'MinuetDuetEdits' }
+end
+
 return {
     {
         name = 'duet.edits.flush records a tracked edit burst as a unified diff event',
@@ -106,6 +112,7 @@ return {
             helpers.setup_root_config {
                 duet = {
                     recent_edits = {
+                        enabled = true,
                         debounce = 20,
                     },
                 },
@@ -141,6 +148,7 @@ return {
             helpers.setup_root_config {
                 duet = {
                     recent_edits = {
+                        enabled = true,
                         debounce = 20,
                     },
                 },
@@ -179,6 +187,7 @@ return {
                 duet = {
                     provider = 'test',
                     recent_edits = {
+                        enabled = true,
                         debounce = 10000,
                         flush_timeout = 5000,
                     },
@@ -228,7 +237,13 @@ return {
     {
         name = 'duet.edits re-baselines on BufReadPost so a reload is not recorded as a user edit',
         run = function()
-            helpers.setup_root_config {}
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        enabled = true,
+                    },
+                },
+            }
 
             local duet = helpers.reload 'minuet.duet'
             duet.setup()
@@ -266,6 +281,7 @@ return {
             helpers.setup_root_config {
                 duet = {
                     recent_edits = {
+                        enabled = true,
                         diff_program = script_dir .. '/slow_diff.sh',
                     },
                 },
@@ -307,7 +323,13 @@ return {
     {
         name = 'duet.edits drops tracking state on a real :bunload and re-tracks from disk',
         run = function()
-            helpers.setup_root_config {}
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        enabled = true,
+                    },
+                },
+            }
 
             local duet = helpers.reload 'minuet.duet'
             duet.setup()
@@ -659,6 +681,7 @@ return {
             helpers.setup_root_config {
                 duet = {
                     recent_edits = {
+                        enabled = true,
                         debounce = 20,
                     },
                 },
@@ -695,7 +718,13 @@ return {
     {
         name = 'duet.edits deletes the snapshot temp files when a tracked buffer is wiped out',
         run = function()
-            helpers.setup_root_config {}
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        enabled = true,
+                    },
+                },
+            }
 
             local duet = helpers.reload 'minuet.duet'
             duet.setup()
@@ -732,6 +761,7 @@ return {
             helpers.setup_root_config {
                 duet = {
                     recent_edits = {
+                        enabled = true,
                         diff_program = script_dir .. '/slow_diff.sh',
                     },
                 },
@@ -784,6 +814,7 @@ return {
             helpers.setup_root_config {
                 duet = {
                     recent_edits = {
+                        enabled = true,
                         diff_program = script_dir .. '/slow_diff.sh',
                         flush_timeout = 2000,
                     },
@@ -981,6 +1012,7 @@ return {
                 notify = 'verbose',
                 duet = {
                     recent_edits = {
+                        enabled = true,
                         diff_program = 'minuet-no-such-diff-program',
                     },
                 },
@@ -1016,6 +1048,7 @@ return {
             helpers.setup_root_config {
                 duet = {
                     recent_edits = {
+                        enabled = true,
                         diff_program = 'minuet-no-such-diff-program',
                     },
                 },
@@ -1047,7 +1080,13 @@ return {
                 return
             end
 
-            helpers.setup_root_config {}
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        enabled = true,
+                    },
+                },
+            }
 
             local duet = helpers.reload 'minuet.duet'
             duet.setup()
@@ -1242,6 +1281,121 @@ return {
             helpers.expect_truthy(seen_context, 'backend did not receive a request')
             helpers.expect_match(seen_context.recent_edits, '%-return 1')
             helpers.expect_match(seen_context.recent_edits, '%+return 42')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits default lazy setting registers no recorder autocmds at setup',
+        run = function()
+            helpers.setup_root_config {}
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            helpers.expect_equal(count_recorder_autocmds(), 0, 'the lazy default must not register autocmds at setup')
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            vim.api.nvim_exec_autocmds('TextChanged', { buffer = bufnr, modeline = false })
+            helpers.expect_equal(#edits.get_events(), 0, 'edits before the recorder starts must not be recorded')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits.ensure_setup registers the recorder autocmds once and baselines the current buffer',
+        run = function()
+            helpers.setup_root_config {}
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.ensure_setup()
+
+            local registered = count_recorder_autocmds()
+            helpers.expect_truthy(registered > 0, 'ensure_setup must register the recorder autocmds')
+
+            edits.ensure_setup()
+            helpers.expect_equal(
+                count_recorder_autocmds(),
+                registered,
+                'a repeated ensure_setup must not duplicate autocmds'
+            )
+
+            -- ensure_setup baselined the current buffer, so the next burst is
+            -- diffed against the text it had when the recorder was set up.
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            flush_sync(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1)
+            helpers.expect_match(events[1].diff, '%-return 1')
+            helpers.expect_match(events[1].diff, '%+return 2')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits enabled = true starts the recorder at setup',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        enabled = true,
+                    },
+                },
+            }
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+
+            helpers.expect_truthy(count_recorder_autocmds() > 0, 'enabled = true must register the autocmds at setup')
+        end,
+    },
+    {
+        name = 'duet.edits enabled = false keeps ensure_setup a no-op',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        enabled = false,
+                    },
+                },
+            }
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            require('minuet.duet.edits').ensure_setup()
+
+            helpers.expect_equal(count_recorder_autocmds(), 0, 'enabled = false must never register the autocmds')
+        end,
+    },
+    {
+        name = 'duet.action.predict starts the lazy recorder on first use',
+        run = function()
+            helpers.setup_root_config {
+                duet = {
+                    provider = 'test',
+                },
+            }
+
+            package.loaded['minuet.duet.backends.test'] = {
+                complete = function() end,
+            }
+
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+
+            helpers.expect_equal(count_recorder_autocmds(), 0, 'the recorder must not run before the first prediction')
+
+            local bufnr = create_normal_buffer({ 'return 1' }, { 1, 0 })
+            duet.action.predict()
+
+            helpers.expect_truthy(count_recorder_autocmds() > 0, 'the first prediction must start the recorder')
 
             helpers.delete_buffer(bufnr)
         end,

@@ -30,7 +30,13 @@ local internal = {
     -- Set when the diff program vanishes mid-session, so the recorder fails
     -- once with a notification instead of retrying on every burst.
     disabled = false,
+    -- Whether the recorder autocmds are registered in this lifecycle.
+    started = false,
 }
+
+-- The recorder owns its augroup (rather than sharing minuet.duet's), so it
+-- can clear its own registrations without touching duet's autocmds.
+local augroup_name = 'MinuetDuetEdits'
 
 ---@return minuet.DuetRecentEdits?
 local function get_config()
@@ -533,18 +539,37 @@ local function on_text_changed(info)
     arm_debounce(bufnr, state)
 end
 
----Register the recorder autocmds into the duet augroup. When the recorder is
----enabled but the configured diff program is not executable, notifies once
----and leaves the recorder off.
----@param augroup integer
-function M.setup(augroup)
-    -- A repeated setup starts a fresh recorder lifecycle. Tear down its
-    -- snapshots and processes before validating the new configuration; reset
-    -- also clears a previous failure-disable state.
+---Start a fresh recorder lifecycle: tear down the previous one, including its
+---autocmds. With `enabled = true` the recorder is set up immediately; with
+---`'lazy'` it is set up on the first duet prediction, so users who never
+---invoke duet pay nothing for the recorder.
+function M.setup()
+    -- Reset tears down the previous lifecycle's snapshots and processes and
+    -- clears a previous failure-disable state.
     M.reset()
+    api.nvim_create_augroup(augroup_name, { clear = true })
+    internal.started = false
 
     local config = get_config()
-    if config and config.enabled and vim.fn.executable(config.diff_program) ~= 1 then
+    if config and config.enabled == true then
+        M.ensure_setup()
+    end
+end
+
+---Register the recorder autocmds and baseline the current buffer, unless that
+---already happened in this lifecycle. Idempotent; no-op when disabled by the
+---tri-state config or by an earlier failure. When the configured diff program
+---is not executable, notifies once and leaves the recorder off.
+function M.ensure_setup()
+    local config = get_config()
+    if internal.started or internal.disabled or not config or not config.enabled then
+        return
+    end
+
+    if vim.fn.executable(config.diff_program) ~= 1 then
+        -- Not marked started: the disabled flag alone blocks retries, and a
+        -- reset (which clears it) lets a later start succeed once the
+        -- program is installed.
         internal.disabled = true
         require('minuet.utils').notify(
             string.format(
@@ -557,6 +582,12 @@ function M.setup(augroup)
         )
         return
     end
+
+    internal.started = true
+
+    -- Creating with clear = true guarantees a clean slate, so a registration
+    -- can never stack on top of a previous one.
+    local augroup = api.nvim_create_augroup(augroup_name, { clear = true })
 
     api.nvim_create_autocmd('BufEnter', {
         group = augroup,

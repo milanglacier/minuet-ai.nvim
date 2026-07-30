@@ -44,6 +44,11 @@ local function predict()
 
     clear_state(bufnr, state)
 
+    -- With recent_edits.enabled = 'lazy' the recorder is set up on the first
+    -- prediction rather than at plugin setup, so users who never invoke duet
+    -- pay nothing for it. No-op when already set up or disabled.
+    edits.ensure_setup()
+
     -- Record edits made since the last idle flush so the freshest burst is
     -- part of the prompt's recent-edits history; wait (bounded) for the
     -- in-flight diffs so the history is as fresh as possible.
@@ -173,7 +178,7 @@ function M.setup()
         desc = '[minuet.duet] clear state on buf wipeout',
     })
 
-    edits.setup(M.augroup)
+    edits.setup()
 end
 
 return M

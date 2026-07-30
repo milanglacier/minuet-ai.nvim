@@ -106,14 +106,14 @@ local function benchmark_change_callback()
     helpers.setup_root_config {
         duet = {
             recent_edits = {
+                enabled = true,
                 debounce = 60000,
             },
         },
     }
 
     local edits = require 'minuet.duet.edits'
-    local group = api.nvim_create_augroup('MinuetDuetHotpathBench', { clear = true })
-    edits.setup(group)
+    edits.setup()
 
     local timer = vim.uv.new_timer()
     local iterations = 100000
@@ -155,7 +155,7 @@ local function benchmark_change_callback()
     )
 
     edits.reset()
-    api.nvim_del_augroup_by_id(group)
+    api.nvim_del_augroup_by_name 'MinuetDuetEdits'
 end
 
 local function benchmark_tracking_memory()

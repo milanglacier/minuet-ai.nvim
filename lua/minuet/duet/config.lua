@@ -227,7 +227,7 @@ end
 ---@field context_ratio number
 
 ---@class minuet.DuetRecentEdits
----@field enabled boolean
+---@field enabled boolean|'lazy' 'lazy' starts the recorder on the first duet prediction, true starts it at plugin setup, false disables it entirely
 ---@field debounce integer milliseconds of idle typing before an edit burst is flushed
 ---@field max_events integer global cap on stored edit events across all buffers
 ---@field max_total_chars integer total character budget of formatted events kept and sent
@@ -261,7 +261,7 @@ local M = {
         context_ratio = 0.75,
     },
     recent_edits = {
-        enabled = true,
+        enabled = 'lazy',
         debounce = 1500,
         max_events = 15,
         max_total_chars = 8000,
