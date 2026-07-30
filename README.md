@@ -1493,11 +1493,11 @@ edit: what you just changed. `recent_edits.enabled` controls when the recorder
 runs:
 
 - `'lazy'` (default): recording starts at your first duet prediction, so users
-  who only use inline completion pay no background cost. Edits made before the
-  first prediction are not recorded, so the first prediction of a session has
-  an empty edit history.
+who only use inline completion runs no background overhead. Edits made before
+the first prediction are not recorded, so the first prediction of a session has
+an empty edit history.
 - `true`: recording starts at plugin setup, so even the first prediction
-  carries the session's edit history.
+carries the session's edit history.
 - `false`: the recorder is disabled entirely.
 
 To prevent sensitive buffers from being tracked in the edit history, configure
@@ -1545,7 +1545,7 @@ require('minuet').setup {
             context_ratio = 0.75, -- Ratio of non-editable context before vs. after the editable region when truncation is needed.
         },
         recent_edits = {
-            enabled = 'lazy', -- Record recent edits in the background and include them in duet prompts. 'lazy' starts recording at the first duet prediction, true at plugin setup, false disables the recorder.
+            enabled = 'lazy', -- 'lazy' starts the recorder on the first duet prediction, true starts it at plugin setup, false disables it entirely
             debounce = 1500, -- Milliseconds of typing pause before an edit burst is recorded as one event.
             max_events = 15, -- Maximum number of edit events kept across all buffers.
             max_total_chars = 8000, -- Total character budget of the formatted edit history sent in prompts.
