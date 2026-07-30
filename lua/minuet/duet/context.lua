@@ -11,6 +11,7 @@ local M = {}
 ---@field editable_region_before_cursor string
 ---@field editable_region_after_cursor string
 ---@field non_editable_region_after string
+---@field recent_edits string
 ---@field original_lines string[]
 ---@field range minuet.DuetContextRange
 
@@ -108,6 +109,7 @@ function M.build(bufnr)
         editable_region_before_cursor = table.concat(editable_region_before_cursor, '\n'),
         editable_region_after_cursor = table.concat(editable_region_after_cursor, '\n'),
         non_editable_region_after = non_editable_region_after_text,
+        recent_edits = require('minuet.duet.edits').render(),
         original_lines = editable_region_lines,
         range = {
             start_row = start_row,

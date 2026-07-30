@@ -1,5 +1,6 @@
 local api = vim.api
 local context = require 'minuet.duet.context'
+local edits = require 'minuet.duet.edits'
 local preview = require 'minuet.duet.preview'
 local utils = require 'minuet.duet.utils'
 
@@ -42,6 +43,16 @@ local function predict()
     local state = get_state(bufnr)
 
     clear_state(bufnr, state)
+
+    -- With recent_edits.enabled = 'lazy' the recorder is set up on the first
+    -- prediction rather than at plugin setup, so users who never invoke duet
+    -- pay nothing for it. No-op when already set up or disabled.
+    edits.ensure_setup()
+
+    -- Record edits made since the last idle flush so the freshest burst is
+    -- part of the prompt's recent-edits history; wait (bounded) for the
+    -- in-flight diffs so the history is as fresh as possible.
+    edits.flush(bufnr, { wait = true })
 
     local current_context = context.build(bufnr)
     local provider_name = current_provider()
@@ -166,6 +177,8 @@ function M.setup()
         end,
         desc = '[minuet.duet] clear state on buf wipeout',
     })
+
+    edits.setup()
 end
 
 return M

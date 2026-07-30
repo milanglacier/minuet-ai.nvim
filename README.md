@@ -38,6 +38,7 @@
   - [`Minuet duet`](#minuet-duet)
   - [`Minuet lsp`](#minuet-lsp)
 - [Duet (Next Edit Prediction)](#duet-next-edit-prediction)
+  - [Recent Edits](#recent-edits)
   - [TODO](#todo)
   - [Default Config](#default-config)
 - [API](#api)
@@ -1484,9 +1485,44 @@ region, including the cursor marker; if the response is truncated, the parser
 will reject it. Leave the limit unset when the provider allows that, or set it
 large enough to cover the full rewritten region.
 
+## Recent Edits
+
+Duet silently records your recent edits in the background and includes them in
+the prompt, providing the model with the signal needed to predict the next
+edit: what you just changed. `recent_edits.enabled` controls when the recorder
+runs:
+
+- `'lazy'` (default): recording starts at your first duet prediction, so users
+who only use inline completion runs no background overhead. Edits made before
+the first prediction are not recorded, so the first prediction of a session has
+an empty edit history.
+- `true`: recording starts at plugin setup, so even the first prediction
+carries the session's edit history.
+- `false`: the recorder is disabled entirely.
+
+To prevent sensitive buffers from being tracked in the edit history, configure
+`recent_edits.enable_predicates` with a list of functions, each receiving a
+buffer number. A buffer is only tracked while all predicates return true. If a
+buffer is rejected, it is never snapshotted to disk. By default, the list
+rejects dotenv files (`.env`, `.env.*`). Because predicates run on every
+trackability check, ensure they are highly efficient.
+
+Example:
+
+```lua
+recent_edits = {
+    enable_predicates = {
+        function(bufnr)
+            local name = vim.api.nvim_buf_get_name(bufnr)
+            return vim.fn.fnamemodify(name, ':t') ~= '.env'
+        end,
+    },
+},
+```
+
 ## TODO
 
-- [ ] Implement a proper diff mechanism to include recent edit changes in prompts.
+- [x] Implement a proper diff mechanism to include recent edit changes in prompts.
 - [ ] Add support for specialized NES models (Zeta, Sweep).
 - [ ] Integrate with Inception's hosted API.
 - [ ] Implement automatically triggered duet prediction.
@@ -1507,6 +1543,18 @@ require('minuet').setup {
         non_editable_region = {
             context_window = 40000, -- Maximum characters of non-editable context included around the editable region.
             context_ratio = 0.75, -- Ratio of non-editable context before vs. after the editable region when truncation is needed.
+        },
+        recent_edits = {
+            enabled = 'lazy', -- 'lazy' starts the recorder on the first duet prediction, true starts it at plugin setup, false disables it entirely
+            debounce = 1500, -- Milliseconds of typing pause before an edit burst is recorded as one event.
+            max_events = 15, -- Maximum number of edit events kept across all buffers.
+            max_total_chars = 8000, -- Total character budget of the formatted edit history sent in prompts.
+            diff_context_lines = 3, -- Context lines around each hunk in the unified diff.
+            max_buffer_size = 1000000, -- Buffers larger than this (bytes) are not tracked.
+            max_event_chars = 2000, -- A single edit burst whose diff exceeds this is truncated to the leading whole hunks that fit (dropped if not even the first hunk fits).
+            diff_program = 'diff', -- External diff program invoked as `PROG -U<n> OLD NEW`; must emit unified diffs and exit 0 (identical) / 1 (differences) / >= 2 (error).
+            flush_timeout = 200, -- Max milliseconds a prediction waits for in-flight diffs before proceeding with slightly stale history.
+            enable_predicates = { ... }, -- Per-buffer predicates called with a buffer number; a buffer is tracked only while all return true. Defaults to rejecting dotenv files (.env, .env.*); overriding replaces that default.
         },
         markers = {
             editable_region_start = '<editable_region>', -- Marker that wraps the start of the editable region in prompts and responses.
