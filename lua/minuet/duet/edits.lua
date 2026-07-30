@@ -121,7 +121,7 @@ local function write_snapshot(bufnr, path)
     -- writefile signals failure both by raising (caught by the pcall) and by
     -- returning -1; check both, since diffing against a bad snapshot would
     -- record a wrong burst rather than skip one.
-    local ok, ret = pcall(vim.fn.writefile, api.nvim_buf_get_lines(bufnr, 0, -1, false), path)
+    local ok, ret = pcall(vim.fn.writefile, api.nvim_buf_get_lines(bufnr, 0, -1, false), path, 'S')
     return (ok and ret == 0) and changedtick or nil
 end
 
