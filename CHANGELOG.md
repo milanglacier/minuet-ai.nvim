@@ -1,3 +1,21 @@
+# Version 0.10.0 (2026-07-31)
+
+## Features
+
+- Duet can now use recent edits to provide more relevant next-edit predictions.
+- Inline completion with the OpenAI-compatible provider now uses prefix-first
+  prompts by default.
+- Updated the default models for OpenAI-compatible completions and Duet.
+
+## Improvements
+
+- Improved support for custom request configurations and AWS
+  Bedrock-compatible services.
+
+## Fixes
+
+- Improved whitespace handling for FIM completions.
+
 # Version 0.9.0 (2026-04-26)
 
 ## Breaking Changes
