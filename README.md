@@ -918,7 +918,7 @@ the following is the default configuration for OpenAI:
 ```lua
 provider_options = {
     openai = {
-        model = 'gpt-5.4-nano',
+        model = 'gpt-5.6-luna',
         end_point = 'https://api.openai.com/v1/chat/completions',
         system = "see [Prompt] section for the default value",
         few_shots = "see [Prompt] section for the default value",
@@ -931,7 +931,6 @@ provider_options = {
             -- stop = { 'end' },
             -- max_completion_tokens = 256,
             -- top_p = 0.9,
-            -- reasoning_effort = 'minimal'
             -- reasoning_effort = 'none'
         },
         -- a list of functions to transform the endpoint, header, and request body
@@ -958,7 +957,7 @@ provider_options = {
 ```
 
 Note: If you intend to use GPT-5 series models (e.g., `gpt-5-mini` or
-`gpt-5.4-nano`), keep the following points in mind:
+`gpt-5.6-luna`), keep the following points in mind:
 
 1. Use `max_completion_tokens` instead of `max_tokens`.
 2. These models do not support `top_p` or `temperature` adjustments.
@@ -1566,7 +1565,7 @@ require('minuet').setup {
         },
         provider_options = {
             openai = {
-                model = 'gpt-5.4-mini', -- Default OpenAI model for duet requests.
+                model = 'gpt-5.6-luna', -- Default OpenAI model for duet requests.
                 api_key = 'OPENAI_API_KEY', -- Environment variable name, or a function that returns the API key.
                 end_point = 'https://api.openai.com/v1/chat/completions', -- OpenAI chat completions endpoint.
                 system = { ... }, -- Duet system prompt config; keep the default unless you need a custom rewrite prompt.

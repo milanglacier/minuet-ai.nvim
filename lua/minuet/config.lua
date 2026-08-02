@@ -362,7 +362,7 @@ M.provider_options = {
         get_text_fn = {},
     },
     openai = {
-        model = 'gpt-5.4-nano',
+        model = 'gpt-5.6-luna',
         api_key = 'OPENAI_API_KEY',
         end_point = 'https://api.openai.com/v1/chat/completions',
         system = M.default_system_prefix_first,
