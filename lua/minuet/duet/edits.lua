@@ -182,7 +182,7 @@ end
 ---@param diff string
 ---@return string
 local function format_event(display_name, diff)
-    return string.format('User edited "%s":\n\n```diff\n%s\n```', display_name, diff)
+    return string.format('User edited "%s":\n\n%s', display_name, diff)
 end
 
 ---@param bufnr integer
@@ -484,9 +484,9 @@ function M.flush(bufnr, opts)
 end
 
 ---Formatted edit history for the prompt: stored events ordered oldest to
----newest, joined by blank lines. Returns an empty string when the recorder is
----disabled or there is no history. The stored events are already bounded by
----max_total_chars.
+---newest, joined by blank lines, and wrapped in an XML element. Returns an
+---empty string when the recorder is disabled or there is no history. The
+---stored events are already bounded by max_total_chars.
 ---@return string
 function M.render()
     local config = get_config()
@@ -499,7 +499,12 @@ function M.render()
         table.insert(parts, event.text)
     end
 
-    return table.concat(parts, '\n\n')
+    local history = table.concat(parts, '\n\n')
+    if history == '' then
+        return ''
+    end
+
+    return '<edit_history>\n' .. history .. '\n</edit_history>'
 end
 
 ---@return minuet.DuetEditEvent[] oldest first; a copy, so callers cannot

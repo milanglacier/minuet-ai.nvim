@@ -85,9 +85,9 @@ local default_few_shots = function()
     return {
         {
             role = 'user',
-            content = render_markers [[User edited "src/api/users.ts":
+            content = render_markers [[<edit_history>
+User edited "src/api/users.ts":
 
-```diff
 @@ -1,4 +1,6 @@
  type User = {
      id: string;
@@ -95,7 +95,7 @@ local default_few_shots = function()
 +    role?: string;
 +    active?: boolean;
  };
-```
+</edit_history>
 
 type User = {
     id: string;

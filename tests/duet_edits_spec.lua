@@ -53,8 +53,8 @@ return {
             helpers.expect_match(events[1].diff, '^@@')
             helpers.expect_match(events[1].diff, '%-return 1')
             helpers.expect_match(events[1].diff, '%+return 42')
-            helpers.expect_match(events[1].text, '^User edited "%[No Name%]":\n\n```diff\n')
-            helpers.expect_match(events[1].text, '\n```$')
+            helpers.expect_match(events[1].text, '^User edited "%[No Name%]":\n\n@@')
+            helpers.expect_falsy(events[1].text:find('```', 1, true), 'event text must not contain markdown fences')
 
             helpers.delete_buffer(bufnr)
         end,
@@ -421,6 +421,9 @@ return {
             helpers.expect_match(events[2].diff, '%+local b = 2')
 
             local rendered = edits.render()
+            helpers.expect_match(rendered, '^<edit_history>\n')
+            helpers.expect_match(rendered, '\n</edit_history>$')
+            helpers.expect_falsy(rendered:find('```', 1, true), 'rendered history must not contain markdown fences')
             helpers.expect_match(rendered, 'local a = 2.*local b = 2', 'render should join events oldest first')
             helpers.expect_match(rendered, 'User edited ".*duet_edits_spec_named%.lua"')
 
@@ -1418,7 +1421,7 @@ return {
             local rendered_without = utils.make_duet_llm_shot(context, chat_input)
             helpers.expect_match(rendered_without, '^before\n', 'empty history should leave no leading blank lines')
 
-            context.recent_edits = 'User edited "foo.lua":\n\n```diff\n@@ -1 +1 @@\n-a\n+b\n```'
+            context.recent_edits = '<edit_history>\nUser edited "foo.lua":\n\n@@ -1 +1 @@\n-a\n+b\n</edit_history>'
             local rendered_with = utils.make_duet_llm_shot(context, chat_input)
 
             helpers.expect_equal(
