@@ -25,63 +25,30 @@ M.get_api_key = shared_utils.get_api_key
 M.get_or_eval_value = shared_utils.get_or_eval_value
 M.make_tmp_file = shared_utils.make_tmp_file
 
+---@param template table? System prompt spec: `template` plus placeholder values.
+---@return string
 function M.make_system_prompt(template)
     local values = vim.deepcopy(template or {})
     local rendered = M.get_or_eval_value(values.template) or ''
     values.template = nil
 
-    for key, value in pairs(values) do
-        if type(value) == 'function' then
-            value = value()
-        end
-
-        if type(value) == 'string' then
-            rendered = shared_utils.replace_string_literal(rendered, '{{{' .. key .. '}}}', value)
-        end
-    end
-
-    return rendered:gsub('{{{.-}}}', '')
+    return shared_utils.expand_template(rendered, values, M.get_or_eval_value)
 end
 
----@param chat_input minuet.DuetChatInput
 ---@param context table
+---@param chat_input minuet.DuetChatInput
 ---@return string
 function M.make_duet_llm_shot(context, chat_input)
-    local resolved_chat_input = M.get_or_eval_value(chat_input)
-    resolved_chat_input = vim.deepcopy(resolved_chat_input) or {}
-    local template = M.get_or_eval_value(resolved_chat_input.template) or ''
-    resolved_chat_input.template = nil
+    local values = vim.deepcopy(M.get_or_eval_value(chat_input)) or {}
+    local template = M.get_or_eval_value(values.template) or ''
+    values.template = nil
 
-    local parts = {}
-    local last_pos = 1
-
-    while true do
-        local start_pos, end_pos = template:find('{{{.-}}}', last_pos)
-        if not start_pos then
-            table.insert(parts, template:sub(last_pos))
-            break
-        end
-
-        table.insert(parts, template:sub(last_pos, start_pos - 1))
-
-        local key = template:sub(start_pos + 3, end_pos - 3)
-        local value = resolved_chat_input[key]
-
+    return shared_utils.expand_template(template, values, function(value)
         if type(value) == 'function' then
-            value = value(context)
+            return value(context)
         end
-
-        if type(value) == 'string' then
-            table.insert(parts, value)
-        end
-
-        last_pos = end_pos + 1
-    end
-
-    local results = table.concat(parts)
-    results = results:gsub('{{{.-}}}', '')
-
-    return results
+        return value
+    end)
 end
 
 function M.make_curl_args(end_point, headers, data_file, timeout)
