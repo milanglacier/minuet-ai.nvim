@@ -674,6 +674,7 @@ end
 function M.make_curl_args(end_point, headers, data_file)
     local config = require('minuet').config
     local curl_extra_args = M.get_or_eval_value(config.curl_extra_args)
+    ---@cast curl_extra_args string[]
     local args = {}
 
     for _, arg in ipairs(curl_extra_args or {}) do
