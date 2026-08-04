@@ -341,6 +341,37 @@ action.prev = function()
     advance(-1, ctx)
 end
 
+---Inserts the accepted portion of a suggestion at the cursor position and
+---moves the cursor to the end of the inserted text.
+---@param text string The accepted text, possibly spanning multiple lines.
+local function insert_accepted_text(text)
+    local lines = vim.split(text, '\n', { plain = true })
+
+    clear_preview()
+
+    local cursor = api.nvim_win_get_cursor(0)
+    local line, col = cursor[1] - 1, cursor[2]
+
+    if vim.fn.pumvisible() == 1 then
+        -- Accepting Minuet completion while the pum is open is temporary; when
+        -- the user closes the pum, Vim restores the buffer state and removes
+        -- Minuet's completion text. Therefore we need to close the pum before
+        -- accepting.
+        api.nvim_feedkeys(api.nvim_replace_termcodes('<C-e>', true, true, true), 'n', true)
+    end
+
+    vim.schedule(function()
+        api.nvim_buf_set_text(0, line, col, line, col, lines)
+        local new_col = #lines[#lines]
+        -- For single-line suggestions, adjust the column position by adding the
+        -- current column offset
+        if #lines == 1 then
+            new_col = new_col + col
+        end
+        api.nvim_win_set_cursor(0, { line + #lines, new_col })
+    end)
+end
+
 ---@param n_lines? integer Number of lines to accept from the suggestion. If nil, accepts all lines.
 ---Accepts the current suggestion by inserting it at the cursor position.
 ---If n_lines is provided, only the first n_lines of the suggestion are inserted.
@@ -376,29 +407,7 @@ function action.accept(n_lines)
         reset_ctx(ctx)
     end
 
-    clear_preview()
-
-    local cursor = api.nvim_win_get_cursor(0)
-    local line, col = cursor[1] - 1, cursor[2]
-
-    if vim.fn.pumvisible() == 1 then
-        -- Accepting Minuet completion while the pum is open is temporary; when
-        -- the user closes the pum, Vim restores the buffer state and removes
-        -- Minuet's completion text. Therefore we need to close the pum before
-        -- accepting.
-        api.nvim_feedkeys(api.nvim_replace_termcodes('<C-e>', true, true, true), 'n', true)
-    end
-
-    vim.schedule(function()
-        api.nvim_buf_set_text(0, line, col, line, col, suggestions)
-        local new_col = #suggestions[#suggestions]
-        -- For single-line suggestions, adjust the column position by adding the
-        -- current column offset
-        if #suggestions == 1 then
-            new_col = new_col + col
-        end
-        api.nvim_win_set_cursor(0, { line + #suggestions, new_col })
-    end)
+    insert_accepted_text(table.concat(suggestions, '\n'))
 end
 
 function action.accept_n_lines()
@@ -424,6 +433,29 @@ end
 
 function action.accept_line()
     action.accept(1)
+end
+
+---Accepts the next word of the current suggestion. A word is a run of
+---'iskeyword' characters or a run of other non-blank symbols, plus any
+---leading whitespace (including newlines).
+function action.accept_word()
+    local ctx = get_ctx()
+
+    local suggestion = get_current_suggestion(ctx)
+    if not suggestion then
+        return
+    end
+
+    local word = vim.fn.matchstr(suggestion, [=[^\_s*\%(\k\+\|[^[:keyword:][:space:]]\+\)]=])
+    if word == '' then
+        return
+    end
+
+    if #word >= #suggestion then
+        reset_ctx(ctx)
+    end
+
+    insert_accepted_text(word)
 end
 
 function action.dismiss()
@@ -564,6 +596,13 @@ local function set_keymaps(keymap)
     if keymap.accept_line then
         vim.keymap.set('i', keymap.accept_line, action.accept_line, {
             desc = '[minuet.virtualtext] accept suggestion (line)',
+            silent = true,
+        })
+    end
+
+    if keymap.accept_word then
+        vim.keymap.set('i', keymap.accept_word, action.accept_word, {
+            desc = '[minuet.virtualtext] accept suggestion (word)',
             silent = true,
         })
     end
