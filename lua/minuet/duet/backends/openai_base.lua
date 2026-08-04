@@ -72,7 +72,7 @@ function M.complete_openai_base(options, context, callback)
             callback(text)
         end,
         on_spawn_error = function()
-            os.remove(data_file)
+            vim.uv.fs_unlink(data_file)
             utils.run_event('MinuetDuetRequestFinished', {
                 provider = options.provider,
                 name = options.name,

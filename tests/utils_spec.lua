@@ -2,6 +2,34 @@ local helpers = require 'tests.helpers'
 
 return {
     {
+        name = 'utils.make_tmp_file writes the exact JSON body in the nvim temp directory',
+        run = function()
+            helpers.setup_root_config()
+
+            local utils = helpers.reload 'minuet.utils'
+            local content = {
+                message = 'hello',
+                count = 2,
+            }
+            local expected = vim.json.encode(content)
+            local data_file = utils.make_tmp_file(content)
+
+            helpers.expect_truthy(data_file)
+            helpers.expect_equal(
+                vim.fs.dirname(data_file),
+                vim.fs.dirname(vim.fn.tempname()),
+                "request files must use Neovim's private temp directory"
+            )
+
+            local file = assert(io.open(data_file, 'rb'))
+            local actual = file:read '*a'
+            file:close()
+            vim.uv.fs_unlink(data_file)
+
+            helpers.expect_equal(actual, expected)
+        end,
+    },
+    {
         name = 'utils.trim_completion_items skips whitespace-only completion items',
         run = function()
             helpers.setup_root_config()

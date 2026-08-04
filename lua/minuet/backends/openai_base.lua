@@ -99,7 +99,7 @@ function M.complete_openai_base(options, context, callback)
             callback(items)
         end,
         on_spawn_error = function()
-            os.remove(data_file)
+            vim.uv.fs_unlink(data_file)
             utils.run_event('MinuetRequestFinished', {
                 provider = provider_name,
                 model = options.model,
@@ -203,7 +203,7 @@ function M.complete_openai_fim_base(options, get_text_fn, context, callback)
                 callback(prepare_fim_items(items, context))
             end,
             on_spawn_error = function()
-                os.remove(data_file)
+                vim.uv.fs_unlink(data_file)
                 utils.run_event('MinuetRequestFinished', {
                     provider = provider_name,
                     name = options.name,

@@ -110,7 +110,7 @@ M.complete = function(context, callback)
             callback(items)
         end,
         on_spawn_error = function()
-            os.remove(data_file)
+            vim.uv.fs_unlink(data_file)
             utils.run_event('MinuetRequestFinished', {
                 provider = provider_name,
                 name = provider_name,

@@ -80,7 +80,7 @@ function M.complete(context, callback)
             callback(text)
         end,
         on_spawn_error = function()
-            os.remove(data_file)
+            vim.uv.fs_unlink(data_file)
             utils.run_event('MinuetDuetRequestFinished', {
                 provider = 'claude',
                 name = 'Claude',

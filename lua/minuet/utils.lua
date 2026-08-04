@@ -52,24 +52,24 @@ function M.get_api_key(env_var)
 end
 
 -- referenced from cmp_ai
+---@param content table
+---@return string?
 function M.make_tmp_file(content)
-    local tmp_file = os.tmpname()
-
-    local f = io.open(tmp_file, 'w+')
-    if f == nil then
-        M.notify('Cannot open temporary message file: ' .. tmp_file, 'error', vim.log.levels.ERROR)
-        return
-    end
-
-    local result, json = pcall(vim.json.encode, content)
-
-    if not result then
+    local ok, json = pcall(vim.json.encode, content)
+    if not ok then
         M.notify('Failed to encode completion request data', 'error', vim.log.levels.ERROR)
         return
     end
 
-    f:write(json)
-    f:close()
+    local tmp_file = vim.fn.tempname()
+    -- Keep the request body byte-for-byte unchanged and skip fsync for this
+    -- short-lived file.
+    local write_ok, result = pcall(vim.fn.writefile, { json }, tmp_file, 'bS')
+    if not write_ok or result ~= 0 then
+        vim.uv.fs_unlink(tmp_file)
+        M.notify('Cannot write temporary message file: ' .. tmp_file, 'error', vim.log.levels.ERROR)
+        return
+    end
 
     return tmp_file
 end
@@ -533,7 +533,7 @@ end
 
 ---@param response vim.SystemCompleted
 function M.no_stream_decode(response, data_file, provider, get_text_fn)
-    os.remove(data_file)
+    vim.uv.fs_unlink(data_file)
 
     if response.code ~= 0 then
         if response.code == 28 then
@@ -575,7 +575,7 @@ end
 
 ---@param response vim.SystemCompleted
 function M.stream_decode(response, data_file, provider, get_text_fn)
-    os.remove(data_file)
+    vim.uv.fs_unlink(data_file)
 
     if not (response.code == 28 or response.code == 0) then
         M.notify(string.format('Request failed with exit code %d', response.code), 'error', vim.log.levels.ERROR)
