@@ -1551,7 +1551,7 @@ require('minuet').setup {
             diff_context_lines = 3, -- Context lines around each hunk in the unified diff.
             max_buffer_size = 1000000, -- Buffers larger than this (bytes) are not tracked.
             max_event_chars = 2000, -- A single edit burst whose diff exceeds this is truncated to the leading whole hunks that fit (dropped if not even the first hunk fits).
-            diff_program = 'diff', -- External diff program invoked as `PROG -U<n> OLD NEW`; must emit unified diffs and exit 0 (identical) / 1 (differences) / >= 2 (error).
+            diff_program = 'diff', -- External diff program used to compute edit diffs; on Windows, Git for Windows ships one bundled with it.
             flush_timeout = 200, -- Max milliseconds a prediction waits for in-flight diffs before proceeding with slightly stale history.
             enable_predicates = { ... }, -- Per-buffer predicates called with a buffer number; a buffer is tracked only while all return true. Defaults to rejecting dotenv files (.env, .env.*); overriding replaces that default.
         },
