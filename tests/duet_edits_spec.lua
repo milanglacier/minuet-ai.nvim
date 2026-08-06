@@ -1042,6 +1042,76 @@ return {
         end,
     },
     {
+        name = 'duet.edits records a burst with a list-valued diff program (git diff --no-index)',
+        run = function()
+            if vim.fn.executable 'git' ~= 1 then
+                return
+            end
+
+            helpers.setup_root_config {
+                duet = {
+                    recent_edits = {
+                        diff_program = { 'git', 'diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv' },
+                    },
+                },
+            }
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 42' })
+            flush_sync(bufnr)
+
+            local events = edits.get_events()
+            helpers.expect_equal(#events, 1, 'a list-valued diff program must record events')
+            -- git prepends `diff --git` and `index` lines to the file
+            -- headers; all of them must be stripped down to the first hunk.
+            helpers.expect_match(events[1].diff, '^@@')
+            helpers.expect_match(events[1].diff, '%-return 1')
+            helpers.expect_match(events[1].diff, '%+return 42')
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
+        name = 'duet.edits leaves the recorder off when a list-valued diff program is not executable',
+        run = function()
+            helpers.setup_root_config {
+                notify = 'verbose',
+                duet = {
+                    recent_edits = {
+                        enabled = true,
+                        diff_program = { 'minuet-no-such-diff-program', 'diff', '--no-index' },
+                    },
+                },
+            }
+
+            local notifications, restore_notifications = helpers.capture_notifications()
+            local duet = helpers.reload 'minuet.duet'
+            duet.setup()
+            local edits = require 'minuet.duet.edits'
+
+            local bufnr = create_normal_buffer { 'return 1' }
+            edits.track(bufnr)
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { 'return 2' })
+            vim.v.errmsg = ''
+            flush_sync(bufnr)
+            restore_notifications()
+
+            helpers.expect_equal(#edits.get_events(), 0, 'a missing diff program must never produce events')
+            helpers.expect_equal(vim.v.errmsg, '', 'a missing diff program must not raise')
+            helpers.expect_equal(#notifications, 1, 'a missing diff program must notify only during setup')
+            helpers.expect_match(
+                notifications[1].msg,
+                'minuet%-no%-such%-diff%-program diff %-%-no%-index',
+                'the setup warning must show the full command'
+            )
+
+            helpers.delete_buffer(bufnr)
+        end,
+    },
+    {
         name = 'duet.edits setup recovers after the diff program becomes executable',
         run = function()
             if not has_fixture_support() then

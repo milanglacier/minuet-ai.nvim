@@ -234,9 +234,19 @@ end
 ---@field diff_context_lines integer context lines around each hunk (the -U argument of the external diff, which merges touching hunks itself)
 ---@field max_buffer_size integer bytes; buffers larger than this are not tracked
 ---@field max_event_chars integer a single edit burst diff larger than this is truncated to the leading whole hunks that fit (dropped when not even the first hunk fits)
----@field diff_program string external diff program invoked as `PROG -U<n> OLD NEW`; must emit unified diffs and exit with 0 (identical), 1 (differences), or >= 2 (error)
+---@field diff_program string|string[] external diff program, as a command name or a command list; defaults to `diff`, or `git diff --no-index` on Windows when `diff` is not available
 ---@field flush_timeout integer milliseconds a prompt-building flush waits for in-flight diffs before proceeding with slightly stale history
 ---@field enable_predicates (fun(bufnr: integer): boolean)[] predicates called with a buffer number; the recorder tracks a buffer only while all of them return true
+
+-- The extra flags shield the output from the user's gitconfig:
+-- `--no-color` from `color.ui = always`, `--no-ext-diff` and `--no-textconv`
+-- from external diff and textconv drivers, all of which apply even outside a
+-- repository.
+---@type string|string[]
+local default_diff_program = 'diff'
+if vim.fn.has 'win32' == 1 and vim.fn.executable 'diff' ~= 1 then
+    default_diff_program = { 'git', 'diff', '--no-index', '--no-color', '--no-ext-diff', '--no-textconv' }
+end
 
 ---@class minuet.DuetConfig
 ---@field provider string
@@ -268,7 +278,7 @@ local M = {
         diff_context_lines = 3,
         max_buffer_size = 1000000,
         max_event_chars = 2000,
-        diff_program = 'diff',
+        diff_program = default_diff_program,
         flush_timeout = 200,
         -- Overriding this list replaces the default dotenv guard. The
         -- predicates run at every trackability check (per keystroke for a

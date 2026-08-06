@@ -304,10 +304,17 @@ local function start_flush(bufnr)
         if result.signal ~= 0 or result.code ~= 1 then
             return nil
         end
-        -- Strip the `--- OLD` / `+++ NEW` file headers (they leak temp
-        -- paths into the prompt) and the trailing newline.
-        local unified = (result.stdout or ''):gsub('^%-%-%-[^\n]*\n%+%+%+[^\n]*\n', ''):gsub('\n$', '')
-        return unified:find '^@@' and unified or nil
+        -- Drop everything before the first hunk: the `--- OLD` / `+++ NEW`
+        -- file headers (they leak temp paths into the prompt), plus the
+        -- `diff --git` and `index` lines that git diff prepends. A `@@` at
+        -- the start of a line is always a hunk header, because hunk body
+        -- lines begin with ' ', '+', '-', or '\'.
+        local unified = (result.stdout or ''):gsub('\n$', '')
+        if unified:find '^@@' then
+            return unified
+        end
+        local boundary = unified:find('\n@@', 1, true)
+        return boundary and unified:sub(boundary + 1) or nil
     end
 
     local function on_exit(result)
@@ -387,12 +394,14 @@ local function start_flush(bufnr)
         end)
     end
 
-    local ok, result = pcall(vim.system, {
-        config.diff_program,
-        '-U' .. config.diff_context_lines,
-        state.snapshot_file,
-        state.pending_file,
-    }, { text = true, env = { LC_ALL = 'C' } }, on_exit)
+    -- Copy a list-valued program so the -U flag and file paths are never
+    -- appended onto the config table itself.
+    ---@type string[]
+    local cmd = type(config.diff_program) == 'table' and vim.list_extend({}, config.diff_program)
+        or { config.diff_program }
+    vim.list_extend(cmd, { '-U' .. config.diff_context_lines, state.snapshot_file, state.pending_file })
+
+    local ok, result = pcall(vim.system, cmd, { text = true, env = { LC_ALL = 'C' } }, on_exit)
 
     if not ok then
         -- The executable() check at setup passed, so the program vanished
@@ -402,7 +411,7 @@ local function start_flush(bufnr)
         require('minuet.utils').notify(
             string.format(
                 'minuet duet recent-edits recorder disabled: failed to run diff program "%s": %s',
-                config.diff_program,
+                type(config.diff_program) == 'table' and table.concat(config.diff_program, ' ') or config.diff_program,
                 result
             ),
             'error',
@@ -571,7 +580,9 @@ function M.ensure_setup()
         return
     end
 
-    if vim.fn.executable(config.diff_program) ~= 1 then
+    local program = config.diff_program
+    local executable = type(program) == 'table' and (program[1] or '') or program
+    if vim.fn.executable(executable) ~= 1 then
         -- Not marked started: the disabled flag alone blocks retries, and a
         -- reset (which clears it) lets a later start succeed once the
         -- program is installed.
@@ -579,8 +590,9 @@ function M.ensure_setup()
         require('minuet.utils').notify(
             string.format(
                 'minuet duet recent-edits recorder disabled: diff program "%s" is not executable.'
-                    .. ' Install it or set duet.recent_edits.diff_program.',
-                config.diff_program
+                    .. ' Install diff (or git, via { "git", "diff", "--no-index", ... })'
+                    .. ' or set duet.recent_edits.diff_program.',
+                type(program) == 'table' and table.concat(program, ' ') or program
             ),
             'warn',
             vim.log.levels.WARN
