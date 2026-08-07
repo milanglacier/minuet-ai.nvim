@@ -195,6 +195,10 @@ local function make_openai_compatible_options()
     return {
         model = 'google/gemini-3.1-flash-lite',
         api_key = 'OPENROUTER_API_KEY',
+        -- Defaults to Openrouter. To use another OpenAI-compatible gateway such
+        -- as Requesty, set api_key = 'REQUESTY_API_KEY', end_point =
+        -- 'https://router.requesty.ai/v1/chat/completions', name = 'Requesty',
+        -- and use provider/model style model names (e.g. 'openai/gpt-4o-mini').
         end_point = 'https://openrouter.ai/api/v1/chat/completions',
         name = 'Openrouter',
         system = vim.deepcopy(default_system),

@@ -11,6 +11,7 @@
     - [Inline completion](#inline-completion)
   - [LLM Provider Examples](#llm-provider-examples)
     - [Openrouter deepseek-v4-flash](#openrouter-deepseek-v4-flash)
+    - [Requesty openai/gpt-4o-mini](#requesty-openaigpt-4o-mini)
     - [Opencode Go deepseek-v4-flash](#opencode-go-deepseek-v4-flash)
     - [Deepseek deepseek-v4-flash](#deepseek-deepseek-v4-flash)
     - [Ollama Qwen-2.5-coder:7b](#ollama-qwen-25-coder7b)
@@ -425,6 +426,39 @@ require('minuet').setup {
                 },
                 -- disable thinking to avoid first token latency
                 reasoning_effort = 'none'
+            },
+        },
+    },
+}
+```
+
+</details>
+
+### Requesty openai/gpt-4o-mini
+
+[Requesty](https://requesty.ai) is an OpenAI-compatible LLM gateway. Set the
+`end_point` to the Requesty router and use `provider/model` style model names
+(e.g. `openai/gpt-4o-mini`). Get an API key at
+<https://app.requesty.ai/api-keys> and see <https://docs.requesty.ai> for
+details.
+
+<details>
+
+```lua
+require('minuet').setup {
+    provider = 'openai_compatible',
+    request_timeout = 2.5,
+    throttle = 1500, -- Increase to reduce costs and avoid rate limits
+    debounce = 600, -- Increase to reduce costs and avoid rate limits
+    provider_options = {
+        openai_compatible = {
+            api_key = 'REQUESTY_API_KEY',
+            end_point = 'https://router.requesty.ai/v1/chat/completions',
+            model = 'openai/gpt-4o-mini',
+            name = 'Requesty',
+            optional = {
+                max_tokens = 56,
+                top_p = 0.9,
             },
         },
     },
@@ -1144,6 +1178,13 @@ Use any providers compatible with OpenAI's chat completion API.
 
 For example, you can set the `end_point` to
 `http://localhost:11434/v1/chat/completions` to use `ollama`.
+
+You can also point it at a hosted gateway such as
+[Requesty](https://requesty.ai) by setting `end_point` to
+`https://router.requesty.ai/v1/chat/completions`, `api_key` to
+`REQUESTY_API_KEY`, `name` to `Requesty`, and using `provider/model` style
+model names (e.g. `openai/gpt-4o-mini`). See <https://docs.requesty.ai> and
+grab a key at <https://app.requesty.ai/api-keys>.
 
 <details>
 
