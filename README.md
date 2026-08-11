@@ -38,6 +38,7 @@
   - [`Minuet duet`](#minuet-duet)
   - [`Minuet lsp`](#minuet-lsp)
 - [Duet (Next Edit Prediction)](#duet-next-edit-prediction)
+  - [Auto Trigger](#auto-trigger)
   - [Recent Edits](#recent-edits)
   - [TODO](#todo)
   - [Default Config](#default-config)
@@ -1390,12 +1391,15 @@ Example usage: `Minuet virtualtext toggle`, `Minuet virtualtext enable`,
 
 ## `Minuet duet`
 
-The Minuet duet command provides manual next-edit prediction controls:
+The Minuet duet command provides next-edit prediction controls:
 
 - `:Minuet duet predict`: Request an NES prediction for the current editable
   region and show it as a preview.
 - `:Minuet duet apply`: Apply the current duet prediction.
 - `:Minuet duet dismiss`: Dismiss the current duet prediction preview.
+- `:Minuet duet enable`: Enable automatic duet prediction in the **current buffer**.
+- `:Minuet duet disable`: Disable automatic duet prediction in the **current buffer**.
+- `:Minuet duet toggle`: Toggle automatic duet prediction in the **current buffer**.
 
 ## `Minuet lsp`
 
@@ -1471,8 +1475,6 @@ This feature is highly experimental:
   lack local GPU resources for testing.
 - Comparable small models from competitors of Google—`claude-haiku-4.5` and
   `gpt-5.4-mini`—perform poorly.
-- Given completion latency constraints, automatic duet prediction is not
-  implemented.
 
 It is recommended to configure the thinking levels of the models; refer to the
 [provider sections](#providers) for guidance on managing thinking settings for
@@ -1483,6 +1485,18 @@ requests. Duet expects the model to return the complete rewritten editable
 region, including the cursor marker; if the response is truncated, the parser
 will reject it. Leave the limit unset when the provider allows that, or set it
 large enough to cover the full rewritten region.
+
+## Auto Trigger
+
+```lua
+require('minuet').setup {
+    duet = {
+        auto_trigger = {
+            auto_trigger_ft = { 'lua', 'python' },
+        },
+    },
+}
+```
 
 ## Recent Edits
 
@@ -1524,7 +1538,7 @@ recent_edits = {
 - [x] Implement a proper diff mechanism to include recent edit changes in prompts.
 - [ ] Add support for specialized NES models (Zeta, Sweep).
 - [ ] Integrate with Inception's hosted API.
-- [ ] Implement automatically triggered duet prediction.
+- [x] Implement automatically triggered duet prediction.
 
 ## Default Config
 
@@ -1533,6 +1547,12 @@ require('minuet').setup {
     duet = {
         provider = 'gemini', -- Provider used by `:Minuet duet predict`.
         request_timeout = 15, -- Timeout in seconds for a single duet request.
+        auto_trigger = {
+            debounce = 600, -- Milliseconds of idle after a text change before an automatic prediction fires.
+            flush_timeout = 50, -- Max milliseconds an automatic prediction waits for in-flight recent-edit diffs; smaller than recent_edits.flush_timeout (used by manual prediction) so automatic triggering never stalls the editor for long.
+            auto_trigger_ft = {}, -- Filetypes where automatic duet prediction is enabled; an empty list disables automatic prediction.
+            auto_trigger_ignore_ft = {}, -- Filetypes excluded from automatic prediction, useful when auto_trigger_ft = { '*' }.
+        },
         editable_region = {
             lines_before = 8, -- Number of editable lines included before the cursor.
             lines_after = 15, -- Number of editable lines included after the cursor.
@@ -1644,6 +1664,10 @@ The duet module provides functions to programmatically control duet prediction:
     require('minuet.duet').action.dismiss,
     -- Check if a duet preview is currently visible in the current buffer
     require('minuet.duet').action.is_visible,
+    -- Control automatic duet prediction in the current buffer
+    require('minuet.duet').action.enable_auto_trigger,
+    require('minuet.duet').action.disable_auto_trigger,
+    require('minuet.duet').action.toggle_auto_trigger,
 }
 ```
 

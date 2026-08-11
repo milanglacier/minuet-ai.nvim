@@ -226,6 +226,12 @@ end
 ---@field context_window integer
 ---@field context_ratio number
 
+---@class minuet.DuetAutoTrigger
+---@field debounce integer milliseconds of idle after a text change before an automatic prediction fires
+---@field flush_timeout integer milliseconds an automatic prediction waits for in-flight recent-edit diffs; deliberately smaller than recent_edits.flush_timeout (used by manual prediction) so automatic triggering never stalls the editor for long
+---@field auto_trigger_ft string[] filetypes where automatic duet prediction is enabled; an empty list disables automatic prediction
+---@field auto_trigger_ignore_ft string[] filetypes excluded from automatic prediction, useful when auto_trigger_ft = { '*' }
+
 ---@class minuet.DuetRecentEdits
 ---@field enabled boolean|'lazy' 'lazy' starts the recorder on the first duet prediction, true starts it at plugin setup, false disables it entirely
 ---@field debounce integer milliseconds of idle typing before an edit burst is flushed
@@ -251,6 +257,7 @@ end
 ---@class minuet.DuetConfig
 ---@field provider string
 ---@field request_timeout integer
+---@field auto_trigger minuet.DuetAutoTrigger
 ---@field editable_region minuet.DuetEditableRegion
 ---@field non_editable_region minuet.DuetNonEditableRegion
 ---@field recent_edits minuet.DuetRecentEdits
@@ -260,6 +267,22 @@ end
 local M = {
     provider = 'gemini',
     request_timeout = 15,
+    auto_trigger = {
+        -- milliseconds of idle after a text change before an automatic
+        -- prediction fires
+        debounce = 600,
+        -- how long (in milliseconds) an automatic prediction waits for
+        -- in-flight recent-edit diffs; deliberately smaller than
+        -- recent_edits.flush_timeout (used by manual prediction) so automatic
+        -- triggering never stalls the editor for long
+        flush_timeout = 50,
+        -- filetypes where automatic duet prediction is enabled; an empty
+        -- list disables automatic prediction
+        auto_trigger_ft = {},
+        -- filetypes excluded from automatic prediction, useful when
+        -- auto_trigger_ft = { '*' }
+        auto_trigger_ignore_ft = {},
+    },
     editable_region = {
         lines_before = 8,
         lines_after = 15,

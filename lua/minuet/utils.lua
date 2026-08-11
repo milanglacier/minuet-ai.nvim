@@ -726,4 +726,37 @@ function M.run_hooks_until_failure(hooks, ...)
     return true
 end
 
+---Whether a completion menu (nvim-cmp, blink-cmp, or the builtin popup menu)
+---is currently visible.
+---@return boolean
+function M.completion_menu_visible()
+    local has_cmp = pcall(require, 'cmp')
+    local cmp_visible = false
+
+    local has_blink = pcall(require, 'blink-cmp')
+    local blink_visible = false
+
+    if has_cmp then
+        local ok, _cmp_visible = pcall(function()
+            return require('cmp').core.view:visible()
+        end)
+
+        if ok then
+            cmp_visible = _cmp_visible
+        end
+    end
+
+    if has_blink then
+        local ok, _blink_visible = pcall(function()
+            return require('blink-cmp').is_visible()
+        end)
+
+        if ok then
+            blink_visible = _blink_visible
+        end
+    end
+
+    return vim.fn.pumvisible() == 1 or cmp_visible or blink_visible
+end
+
 return M

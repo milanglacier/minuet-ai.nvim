@@ -26,36 +26,6 @@ local function should_auto_trigger()
     return vim.b.minuet_virtual_text_auto_trigger
 end
 
-local function completion_menu_visible()
-    local has_cmp = pcall(require, 'cmp')
-    local cmp_visible = false
-
-    local has_blink = pcall(require, 'blink-cmp')
-    local blink_visible = false
-
-    if has_cmp then
-        local ok, _cmp_visible = pcall(function()
-            return require('cmp').core.view:visible()
-        end)
-
-        if ok then
-            cmp_visible = _cmp_visible
-        end
-    end
-
-    if has_blink then
-        local ok, _blink_visible = pcall(function()
-            return require('blink-cmp').is_visible()
-        end)
-
-        if ok then
-            blink_visible = _blink_visible
-        end
-    end
-
-    return vim.fn.pumvisible() == 1 or cmp_visible or blink_visible
-end
-
 ---@param bufnr? integer
 ---@return minuet.VirtualtextSuggestionContext
 local function get_ctx(bufnr)
@@ -153,7 +123,7 @@ local function update_preview(ctx)
 
     local show_on_completion_menu = require('minuet').config.virtualtext.show_on_completion_menu
 
-    if not suggestion or #display_lines == 0 or (not show_on_completion_menu and completion_menu_visible()) then
+    if not suggestion or #display_lines == 0 or (not show_on_completion_menu and utils.completion_menu_visible()) then
         return
     end
 
@@ -300,7 +270,7 @@ local function schedule()
 
         if
             internal.is_on_throttle
-            or (not show_on_completion_menu and completion_menu_visible())
+            or (not show_on_completion_menu and utils.completion_menu_visible())
             or (not utils.run_hooks_until_failure(config.enable_predicates))
         then
             return
