@@ -134,7 +134,7 @@ function M.track(bufnr)
     end
 
     -- tempname() paths live in Neovim's private 0700 temp directory, which
-    -- is removed when Neovim exits - stranded snapshots cannot outlive the
+    -- is removed when Neovim exits - snapshots left behind cannot outlive the
     -- session even if a buffer dies without its autocmds firing.
     local snapshot_file = vim.fn.tempname()
     local changedtick = write_snapshot(bufnr, snapshot_file)
@@ -434,8 +434,9 @@ end
 ---`recent_edits.flush_timeout` milliseconds (or `opts.timeout` when given),
 ---until no diff is in flight in any buffer, so a caller about to build a
 ---prompt sees the freshest possible history; past the deadline it returns
----anyway and the prompt is built with slightly stale history. A wedged diff
----can therefore never hang the caller.
+---anyway and the prompt is built with slightly stale history. Even if a diff
+---process never finishes, the caller still returns at the deadline instead
+---of hanging.
 ---@param bufnr integer
 ---@param opts? { wait?: boolean, timeout?: integer }
 function M.flush(bufnr, opts)
