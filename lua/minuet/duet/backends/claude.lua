@@ -1,5 +1,6 @@
 local common = require 'minuet.duet.backends.common'
 local utils = require 'minuet.duet.utils'
+local vertex = require 'minuet.vertex'
 
 local M = {}
 
@@ -11,9 +12,9 @@ function M.complete(context, callback)
     local root_config = require('minuet').config
     local duet_config = root_config.duet
     local options = vim.deepcopy(duet_config.provider_options.claude)
-    local api_key = utils.get_api_key(options.api_key)
+    local use_vertex = vertex.is_enabled(options.vertex)
 
-    if not api_key then
+    if not use_vertex and not utils.get_api_key(options.api_key) then
         utils.notify('Minuet duet Anthropic API key is not set.', 'error', vim.log.levels.ERROR)
         callback(nil)
         return
@@ -35,13 +36,26 @@ function M.complete(context, callback)
 
     data = vim.tbl_deep_extend('force', data, options.optional or {})
 
-    local headers = {
-        ['Content-Type'] = 'application/json',
-        ['x-api-key'] = api_key,
-        ['anthropic-version'] = '2023-06-01',
-    }
+    local end_point, headers
 
-    local transformed_data = common.apply_transforms(options.transform, options.end_point, headers, data)
+    if use_vertex then
+        local request = vertex.make_request(options.vertex, data, true)
+        if not request then
+            callback(nil)
+            return
+        end
+
+        end_point, headers, data = request.end_point, request.headers, request.body
+    else
+        end_point = options.end_point
+        headers = {
+            ['Content-Type'] = 'application/json',
+            ['x-api-key'] = utils.get_api_key(options.api_key),
+            ['anthropic-version'] = '2023-06-01',
+        }
+    end
+
+    local transformed_data = common.apply_transforms(options.transform, end_point, headers, data)
     local data_file = utils.make_tmp_file(transformed_data.body)
 
     if not data_file then

@@ -385,6 +385,24 @@ M.provider_options = {
         chat_input = M.default_chat_input,
         few_shots = M.default_few_shots,
         stream = true,
+        -- Send the requests to Claude on Google Cloud Vertex AI instead of the
+        -- Anthropic API. Vertex AI is used when `project_id` is set, and
+        -- `api_key` and `end_point` are then ignored.
+        ---@type minuet.VertexOptions
+        vertex = {
+            -- the Google Cloud project id, or a function returning it
+            project_id = nil,
+            -- the Vertex AI location, for example 'global' or 'us-east5'
+            location = 'global',
+            -- the name of an environment variable holding an OAuth access
+            -- token, or a function returning one. When unset, minuet runs
+            -- `gcloud auth print-access-token` and reuses the result.
+            access_token = nil,
+            -- the command run to obtain an OAuth access token
+            token_cmd = { 'gcloud', 'auth', 'print-access-token' },
+            -- how long, in seconds, a token from the command above is reused
+            token_ttl = 3000,
+        },
         optional = {
             stop_sequences = nil,
         },
