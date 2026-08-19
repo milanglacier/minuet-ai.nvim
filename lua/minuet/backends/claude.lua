@@ -1,11 +1,15 @@
 local utils = require 'minuet.utils'
 local common = require 'minuet.backends.common'
+local vertex = require 'minuet.vertex'
 
 local M = {}
 
 M.is_available = function()
-    local config = require('minuet').config
-    return utils.get_api_key(config.provider_options.claude.api_key) and true or false
+    local options = require('minuet').config.provider_options.claude
+    if vertex.is_enabled(options.vertex) then
+        return true
+    end
+    return utils.get_api_key(options.api_key) and true or false
 end
 
 if not M.is_available() then
@@ -51,16 +55,31 @@ M.complete = function(context, callback)
 
     data.messages = few_shots
 
-    local headers = {
-        ['Content-Type'] = 'application/json',
-        ['x-api-key'] = utils.get_api_key(options.api_key),
-        ['anthropic-version'] = '2023-06-01',
-    }
-    local transformed_data = common.apply_transforms(options.transform, options.end_point, headers, data)
+    local end_point, headers
+
+    if vertex.is_enabled(options.vertex) then
+        local request = vertex.make_request(options.vertex, data, options.stream)
+        if not request then
+            callback()
+            return
+        end
+
+        end_point, headers, data = request.end_point, request.headers, request.body
+    else
+        end_point = options.end_point
+        headers = {
+            ['Content-Type'] = 'application/json',
+            ['x-api-key'] = utils.get_api_key(options.api_key),
+            ['anthropic-version'] = '2023-06-01',
+        }
+    end
+
+    local transformed_data = common.apply_transforms(options.transform, end_point, headers, data)
 
     local data_file = utils.make_tmp_file(transformed_data.body)
 
     if data_file == nil then
+        callback()
         return
     end
 

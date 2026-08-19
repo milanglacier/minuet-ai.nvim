@@ -24,6 +24,7 @@
 - [Providers](#providers)
   - [OpenAI](#openai)
   - [Claude](#claude)
+    - [Claude on Vertex AI](#claude-on-vertex-ai)
   - [Codestral](#codestral)
   - [Mercury Coder](#mercury-coder)
   - [Gemini](#gemini)
@@ -823,6 +824,9 @@ itself (e.g., `sk-xxxx`).
 If using Ollama, you need to assign an arbitrary, non-null environment variable
 as a placeholder for it to function.
 
+Claude on Google Cloud Vertex AI uses a Google OAuth access token instead of an
+Anthropic API key, see the [Claude on Vertex AI](#claude-on-vertex-ai) section.
+
 Alternatively, you can provide a function that returns the API key. This
 function should return the result instantly as it will be called for each
 completion request.
@@ -984,6 +988,15 @@ provider_options = {
         stream = true,
         api_key = 'ANTHROPIC_API_KEY',
         end_point = 'https://api.anthropic.com/v1/messages',
+        -- Send the requests to Claude on Google Cloud Vertex AI instead of the
+        -- Anthropic API. See the [Claude on Vertex AI] section below.
+        vertex = {
+            project_id = nil,
+            location = 'global',
+            access_token = nil,
+            token_cmd = { 'gcloud', 'auth', 'print-access-token' },
+            token_ttl = 3000,
+        },
         optional = {
             -- pass any additional parameters you want to send to claude request,
             -- e.g.
@@ -994,6 +1007,49 @@ provider_options = {
     },
 }
 ```
+
+### Claude on Vertex AI
+
+Set `vertex.project_id` to send the requests to Claude on Google Cloud Vertex
+AI. Minuet then ignores `api_key` and `end_point`, builds the Vertex AI URL from
+the project, the location, and the model, and authenticates with a Google OAuth
+access token:
+
+```lua
+provider_options = {
+    claude = {
+        model = 'claude-haiku-4-5',
+        vertex = {
+            project_id = 'my-gcp-project',
+            location = 'us-east5',
+        },
+    },
+}
+```
+
+The available options are:
+
+- `project_id`: the Google Cloud project id, as a string or a function returning
+  one. Vertex AI is used only when this is set.
+- `location`: the Vertex AI location, such as `global` (the default) or
+  `us-east5`. The model has to be available in that location.
+- `access_token`: the name of an environment variable holding an OAuth access
+  token, or a function returning one. When it is unset, minuet gets a token by
+  running `token_cmd`.
+- `token_cmd`: the command run to get an access token, `gcloud auth
+  print-access-token` by default. The command runs in the foreground, so the
+  editor pauses for as long as it takes to finish.
+- `token_ttl`: how many seconds a token from `token_cmd` is reused before it is
+  fetched again. Google access tokens are valid for one hour, and the default is
+  3000 seconds.
+
+Before the first request, log in with `gcloud auth login`, and make sure the
+account can use Vertex AI in your project (the `roles/aiplatform.user` role) and
+that the Claude model is enabled in the Vertex AI Model Garden.
+
+Vertex AI has its own model names. Aliases such as `claude-haiku-4-5` work as
+they are, while a dated model version uses an `@` separator, for example
+`claude-haiku-4-5@20251001`.
 
 </details>
 
@@ -1638,6 +1694,7 @@ require('minuet').setup {
                 few_shots = { ... },
                 chat_input = { ... },
                 max_tokens = 8192,
+                vertex = { ... }, -- Send the requests to Claude on Google Cloud Vertex AI. Same options as the completion provider, see the [Claude on Vertex AI] section.
                 optional = {},
                 transform = {},
             },

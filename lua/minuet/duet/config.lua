@@ -173,6 +173,17 @@ local function make_claude_options()
         few_shots = default_few_shots,
         chat_input = vim.deepcopy(default_chat_input),
         max_tokens = 8192,
+        -- Send the requests to Claude on Google Cloud Vertex AI instead of the
+        -- Anthropic API. See the `vertex` options of the completion provider
+        -- for the meaning of each field.
+        ---@type minuet.VertexOptions
+        vertex = {
+            project_id = nil,
+            location = 'global',
+            access_token = nil,
+            token_cmd = { 'gcloud', 'auth', 'print-access-token' },
+            token_ttl = 3000,
+        },
         optional = {},
         transform = {},
     }
