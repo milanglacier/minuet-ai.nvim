@@ -1198,6 +1198,32 @@ provider_options = {
 
 </details>
 
+### Tsubasa
+
+Use Tsubasa through the existing chat-completion backend. Set
+`TSUBASA_API_KEY` in Neovim's environment, then configure Minuet:
+
+```lua
+require('minuet').setup({
+  provider = "openai_compatible",
+  n_completions = 1,
+  provider_options = {
+    openai_compatible = {
+      name = "Tsubasa",
+      model = "tsubasa-fast",
+      api_key = "TSUBASA_API_KEY",
+      end_point = "https://api.tsubasa.sh/v1/chat/completions",
+      stream = true,
+      optional = { max_tokens = 256 },
+    },
+  },
+})
+```
+
+Use `tsubasa-pro` in the same configuration to select Pro. Both aliases have a
+32,768-token total context window. The example requests one completion and
+reserves 256 output tokens. It does not use the FIM endpoint.
+
 ## OpenAI-FIM-compatible
 
 Use any provider compatible with OpenAI's completion API. This request uses the
