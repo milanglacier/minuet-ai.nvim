@@ -396,6 +396,10 @@ M.provider_options = {
         system = M.default_system_prefix_first,
         chat_input = M.default_chat_input_prefix_first,
         few_shots = M.default_few_shots_prefix_first,
+        -- Defaults to Openrouter. To use another OpenAI-compatible gateway such
+        -- as Requesty, set end_point = 'https://router.requesty.ai/v1/chat/completions',
+        -- api_key = 'REQUESTY_API_KEY', name = 'Requesty', and use provider/model
+        -- style model names (e.g. 'openai/gpt-4o-mini').
         end_point = 'https://openrouter.ai/api/v1/chat/completions',
         api_key = 'OPENROUTER_API_KEY',
         name = 'Openrouter',
