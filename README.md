@@ -159,6 +159,8 @@ require('minuet').setup {
             accept = '<A-A>',
             -- accept one line
             accept_line = '<A-a>',
+            -- accept the next word
+            accept_word = '<A-w>',
             -- accept n lines (prompts for number)
             -- e.g. "A-z 2 CR" will accept 2 lines
             accept_n_lines = '<A-z>',
@@ -687,6 +689,7 @@ default_config = {
         keymap = {
             accept = nil,
             accept_line = nil,
+            accept_word = nil,
             accept_n_lines = nil,
             -- Cycle to next completion item, or manually invoke completion
             next = nil,
@@ -1706,6 +1709,8 @@ require('minuet').setup {
     require('minuet.virtualtext').action.accept,
     -- accept by line
     require('minuet.virtualtext').action.accept_line,
+    -- accept the next word
+    require('minuet.virtualtext').action.accept_word,
     -- accept n lines (prompts for number)
     require('minuet.virtualtext').action.accept_n_lines,
     require('minuet.virtualtext').action.next,
