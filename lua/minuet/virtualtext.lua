@@ -41,9 +41,9 @@ local function get_ctx(bufnr)
     return ctx
 end
 
+---@param ctx minuet.VirtualtextSuggestionContext
 ---@return string[]?
 local function get_last_typed_text(ctx)
-    ctx = ctx or get_ctx()
     local last_typed = nil
     local last_pos = ctx.last_pos
     if not last_pos then
@@ -69,7 +69,8 @@ end
 ---@field suggestions? string[]
 ---@field choice? integer
 ---@field shown_choices? table<string, true>
----@field last_pos integer[]
+---@field last_pos? integer[]
+---@field last_tick? integer
 
 ---@param ctx minuet.VirtualtextSuggestionContext
 local function reset_ctx(ctx)
@@ -77,6 +78,7 @@ local function reset_ctx(ctx)
     ctx.choice = nil
     ctx.shown_choices = nil
     ctx.last_pos = nil
+    ctx.last_tick = nil
 end
 
 local function stop_timer()
@@ -117,13 +119,17 @@ local function update_preview(ctx)
     ctx = ctx or get_ctx()
 
     local suggestion = get_current_suggestion(ctx)
-    local display_lines = suggestion and vim.split(suggestion, '\n', { plain = true }) or {}
-
     clear_preview()
 
-    local show_on_completion_menu = require('minuet').config.virtualtext.show_on_completion_menu
+    if not suggestion then
+        return
+    end
 
-    if not suggestion or #display_lines == 0 or (not show_on_completion_menu and utils.completion_menu_visible()) then
+    ctx.last_pos = api.nvim_win_get_cursor(0)
+    ctx.last_tick = api.nvim_buf_get_changedtick(0)
+
+    local show_on_completion_menu = require('minuet').config.virtualtext.show_on_completion_menu
+    if not show_on_completion_menu and utils.completion_menu_visible() then
         return
     end
 
@@ -133,6 +139,7 @@ local function update_preview(ctx)
         annot = '(' .. ctx.choice .. '/' .. #ctx.suggestions .. ')'
     end
 
+    local display_lines = vim.split(suggestion, '\n', { plain = true })
     local cursor_col = vim.fn.col '.'
     local cursor_line = vim.fn.line '.'
 
@@ -161,8 +168,6 @@ local function update_preview(ctx)
     if not ctx.shown_choices[suggestion] then
         ctx.shown_choices[suggestion] = true
     end
-
-    ctx.last_pos = api.nvim_win_get_cursor(0)
 end
 
 ---@param ctx? minuet.VirtualtextSuggestionContext
@@ -174,13 +179,34 @@ local function cleanup(ctx)
 end
 
 ---@param ctx minuet.VirtualtextSuggestionContext
----@return boolean Returns true if there are suggestions matching the user’s typed text; otherwise, false.
+---@param prefix string
+local function trim_suggestions(ctx, prefix)
+    for i, suggestion in ipairs(ctx.suggestions) do
+        if suggestion:sub(1, #prefix) == prefix then
+            ctx.suggestions[i] = suggestion:sub(#prefix + 1)
+        else
+            ctx.suggestions[i] = ''
+        end
+    end
+
+    update_preview(ctx)
+    stop_timer()
+end
+
+---@param ctx minuet.VirtualtextSuggestionContext
+---@return boolean Returns true if the current suggestion still matches the buffer.
 local function update_suggestion_on_typing(ctx)
-    if not (ctx and ctx.suggestions and ctx.choice) then
+    if not (ctx.suggestions and ctx.choice) then
         return false
     end
 
-    local last_typed_text = get_last_typed_text()
+    if
+        ctx.last_tick == api.nvim_buf_get_changedtick(0) and vim.deep_equal(ctx.last_pos, api.nvim_win_get_cursor(0))
+    then
+        return true
+    end
+
+    local last_typed_text = get_last_typed_text(ctx)
     if not (last_typed_text and #last_typed_text > 0) then
         return false
     end
@@ -190,16 +216,7 @@ local function update_suggestion_on_typing(ctx)
         return false
     end
 
-    for i, suggestion in ipairs(ctx.suggestions) do
-        if suggestion:sub(1, #typed) == typed then
-            ctx.suggestions[i] = suggestion:sub(#typed + 1, -1)
-        else
-            ctx.suggestions[i] = ''
-        end
-    end
-
-    update_preview(ctx)
-    stop_timer()
+    trim_suggestions(ctx, typed)
     return true
 end
 
@@ -311,90 +328,82 @@ action.prev = function()
     advance(-1, ctx)
 end
 
----Inserts lines at the cursor and moves the cursor to the end of the
----inserted text. Resets the suggestion context when nothing is left to
----accept.
----@param ctx minuet.VirtualtextSuggestionContext
----@param lines string[] Lines to insert.
----@param has_remaining boolean Whether part of the suggestion is left after this insertion.
-local function insert_suggestion(ctx, lines, has_remaining)
-    if not has_remaining then
-        reset_ctx(ctx)
+---Inserts a prefix of the current suggestion and updates what remains.
+---@param select_prefix fun(suggestion: string): string?
+local function accept_suggestion(select_prefix)
+    local win = api.nvim_get_current_win()
+    local buf = api.nvim_get_current_buf()
+    local ctx = get_ctx(buf)
+    local suggestions = ctx.suggestions
+    if not get_current_suggestion(ctx) then
+        return
     end
 
-    clear_preview()
-
-    local cursor = api.nvim_win_get_cursor(0)
-    local line, col = cursor[1] - 1, cursor[2]
-
     if vim.fn.pumvisible() == 1 then
-        -- Accepting Minuet completion while the pum is open is temporary; when
-        -- the user closes the pum, Vim restores the buffer state and removes
-        -- Minuet's completion text. Therefore we need to close the pum before
-        -- accepting.
-        api.nvim_feedkeys(api.nvim_replace_termcodes('<C-e>', true, true, true), 'n', true)
+        -- Cancel native completion before inserting text it could revert.
+        api.nvim_feedkeys(vim.keycode '<C-e>', 'in', false)
     end
 
     vim.schedule(function()
-        api.nvim_buf_set_text(0, line, col, line, col, lines)
-        local new_col = #lines[#lines]
-        -- For single-line suggestions, adjust the column position by adding the
-        -- current column offset
-        if #lines == 1 then
-            new_col = new_col + col
+        if win ~= api.nvim_get_current_win() or buf ~= api.nvim_get_current_buf() or suggestions ~= ctx.suggestions then
+            return
         end
-        api.nvim_win_set_cursor(0, { line + #lines, new_col })
+
+        -- Earlier accepts may have consumed part of this suggestion.
+        local suggestion = get_current_suggestion(ctx)
+        if not suggestion then
+            return
+        end
+
+        local prefix = select_prefix(suggestion)
+        if not prefix or (prefix == '' and suggestion ~= '') then
+            return
+        end
+
+        if prefix ~= '' then
+            local lines = vim.split(prefix, '\n', { plain = true })
+            local cursor = api.nvim_win_get_cursor(win)
+            local row, col = cursor[1] - 1, cursor[2]
+            api.nvim_buf_set_text(buf, row, col, row, col, lines)
+            local new_col = #lines[#lines] + (#lines == 1 and col or 0)
+            api.nvim_win_set_cursor(win, { row + #lines, new_col })
+        end
+
+        if prefix == suggestion then
+            reset_ctx(ctx)
+            clear_preview()
+        else
+            trim_suggestions(ctx, prefix)
+        end
     end)
 end
 
----@param n_lines? integer Number of lines to accept from the suggestion. If nil, accepts all lines.
----Accepts the current suggestion by inserting it at the cursor position.
----If n_lines is provided, only the first n_lines of the suggestion are inserted.
----After insertion, moves the cursor to the end of the inserted text.
+---Accepts the current suggestion, or only its first `n_lines` lines.
+---@param n_lines? integer
 function action.accept(n_lines)
-    local ctx = get_ctx()
-
-    local suggestion = get_current_suggestion(ctx)
-    if not suggestion then
-        return
-    end
-
-    local suggestions = vim.split(suggestion, '\n')
-    local remaining_suggestions = {}
-
-    if n_lines then
-        -- NOTE: If the first line is an empty string (""), it indicates that
-        -- the original suggestion began with a newline character. This
-        -- typically occurs during partial completion: when the user accepts
-        -- the first line, the remaining suggestion may start with '\n'. In
-        -- this scenario, we increment n_lines by 1 because the user intends to
-        -- accept the next visible line of text, which corresponds to the
-        -- subsequent element in the suggestions list.
-        if suggestions[1] == '' then
-            n_lines = n_lines + 1
+    accept_suggestion(function(suggestion)
+        if not n_lines then
+            return suggestion
         end
-        n_lines = math.min(n_lines, #suggestions)
-        remaining_suggestions = vim.list_slice(suggestions, n_lines + 1, #suggestions)
-        suggestions = vim.list_slice(suggestions, 1, n_lines)
-    end
 
-    insert_suggestion(ctx, suggestions, #remaining_suggestions > 0)
+        local lines = vim.split(suggestion, '\n', { plain = true })
+        -- Count the next visible line after an initial newline.
+        local count = lines[1] == '' and n_lines + 1 or n_lines
+        return table.concat(lines, '\n', 1, math.min(count, #lines))
+    end)
 end
 
----Accepts the next word of the current suggestion. The word includes any
----whitespace or punctuation before it and any spaces or tabs after it.
+---Accepts the next word, including whitespace and punctuation before it
+---and spaces or tabs after it.
 function action.accept_word()
-    local ctx = get_ctx()
+    accept_suggestion(function(suggestion)
+        if suggestion == '' then
+            return nil
+        end
 
-    local suggestion = get_current_suggestion(ctx)
-    if not suggestion or suggestion == '' then
-        return
-    end
-
-    -- Letters, digits, underscores, and non-ASCII bytes count as word
-    -- characters.
-    local word = suggestion:match '^%s*[^%w_%s\128-\255]*[%w_\128-\255]*[ \t]*'
-    insert_suggestion(ctx, vim.split(word, '\n'), #word < #suggestion)
+        -- Letters, digits, underscores, and non-ASCII bytes count as word characters.
+        return suggestion:match '^%s*[^%w_%s\128-\255]*[%w_\128-\255]*[ \t]*'
+    end)
 end
 
 function action.accept_n_lines()
